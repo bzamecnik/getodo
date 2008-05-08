@@ -1,11 +1,12 @@
 class Task {
 	int taskID; // TODO: int or some abstraction?
 	string description;
+	string longDescription; // incl. links, attachments, etc.
 
 	List<Tag&> tags;
 	List<Task&> subtasks;
 
-	Date dateCreated;
+	DateTime dateCreated;
 	Date dateStarted;
 	FuzzyDate dateDeadline;
 	Date dateCompleted;
@@ -14,8 +15,6 @@ class Task {
 	
 	int priority; // TODO: number or symbol?
 	int completedPercentage;
-	
-	string comment;
 }
 
 class Tag {
@@ -32,7 +31,7 @@ class Date {
 	*/ 
 }
 
-class Date {
+class FuzzyDate {
 	/*
 	Date should be able to express:
 		* date + time exactly given
@@ -50,15 +49,15 @@ class Recurrence {
 		*  every Nth week - given selected weekdays
 		*  every Nth month - given day in month
 		*  every Nth year - given day and month
-		*  every Nth day in an interval between two days		 		
+		*  every day in an interval between two days		 		
 	*/		
 }
 
 class Duration {
 	/*
 		Duration should express:
-			* unit or order (minutes, hours, days, weeks, months, years)
-			* count of units
+			* units of given magnitude (minutes, hours, days, weeks, months, years)
+			* - lesser magnitude => greater precision			
 			* or no information					
 	*/
 }

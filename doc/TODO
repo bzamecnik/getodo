@@ -1,0 +1,19 @@
+GeToDo TODO
+
+- creating new database
+- transformation: database <-> object representation
+- database triggers for checking date format validity
+- Task operations
+- TaskManager operations
+	- filtering
+	- tag collection operations
+
+- install & use Boost library
+	- date & time handling (Date Time)!
+	- parsing (Spirit)!, Tokenizer, Format
+	- regex (Regex, Xpresive)
+	- tesing (Test)
+	- Program Options
+	- File System
+
+- SVN repo - (local + online copy) or online only? 
