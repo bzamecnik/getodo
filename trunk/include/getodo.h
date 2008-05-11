@@ -1,8 +1,13 @@
-// $ID $
+// $ID$
+
+#include <list>
+#include <map>
+#include <string>
 
 #include "boost/date_time/gregorian/gregorian.hpp"
 
 typedef int id_t;
+typedef std::map<string,string> databaseRow_t;
 
 class Task {
 	id_t taskId;
@@ -30,17 +35,27 @@ public:
 	//}
 	Task(Task& t); // copy constructor
 	virtual ~Task(); // delete tags, subtasks
-	// setters and getter for some properties
+	
+	// setters and getters for some properties
 
 	// convert representation: database <-> object
 	static std::map<string,string> toDatabaseRow(Task& task);
 	std::map<string,string> toDatabaseRow();
-	static Task& fromDatabaseRow(std::map<string,string>);
+	static Task& fromDatabaseRow();
 }
 
 class Tag {
 	id_t tagId;
 	string tagName;
+
+public:	
+	Tag();
+	Tag(string tagName);
+	~Tag();
+	
+	string getTagName();
+	Tag& setTagName(string tagName);
+	id_t getTagId();
 }
 
 class DateTime {
