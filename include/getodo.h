@@ -1,5 +1,7 @@
 // $ID $
 
+#include "boost/date_time/gregorian/gregorian.hpp"
+
 typedef int id_t;
 
 class Task {
@@ -10,13 +12,13 @@ class Task {
 	std::list<Tag&> tags;
 	std::list<Task&> subtasks;
 
-	Date dateCreated;
-	Date dateLastModified;
-	Date& dateStarted;
-	FuzzyDate& dateDeadline;
-	Date& dateCompleted;
+	DateTime dateCreated;
+	DateTime dateLastModified;
+	Date dateStarted;
+	FuzzyDate dateDeadline;
+	Date dateCompleted;
 	Duration& estDuration; // estimated duration
-	Recurrence recurrence;
+	Recurrence& recurrence;
 	
 	int priority; // TODO: number or symbol?
 	int completedPercentage;
@@ -41,13 +43,13 @@ class Tag {
 	string tagName;
 }
 
+class DateTime {
+	// Date should be able to express: date + time exactly given
+	boost::posix_time::ptime date;
+}		
 class Date {
-	/*
-	Date should be able to express:
-		* date + time exactly given
-		* date alone
-		* no information		
-	*/
+	// date alone or no information
+	boost::gregorian::date date;		
 }
 
 class FuzzyDate {
@@ -68,8 +70,9 @@ class Recurrence {
 		*  every Nth week - given selected weekdays
 		*  every Nth month - given day in month
 		*  every Nth year - given day and month
-		*  every day in an interval between two days		 		
-	*/		
+		*  every day in an interval between two days
+		Use: boost::gregorian::date_iterator				 		
+	*/
 }
 
 class Duration {
@@ -77,7 +80,11 @@ class Duration {
 		Duration should express:
 			* units of given magnitude (minutes, hours, days, weeks, months, years)
 			* - lesser magnitude => greater precision			
-			* or no information					
+			* or no information
+		Use:
+			boost::gregorian::years, boost::gregorian::months, boost::gregorian::weeks
+			boost::gregorian::date_duration 
+			boost::posix_time::hours, boost::posix_time::minutes, boost::posix_time::seconds								
 	*/
 }
 
@@ -89,6 +96,7 @@ class FilterRule {
 
 class DatabaseConnection {
 	// connection to a SQLite file
+	//sqlite3 db;
 }
 
 class TaskManager {
