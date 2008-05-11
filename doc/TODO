@@ -17,3 +17,7 @@ GeToDo TODO
 	- File System
 
 - SVN repo - (local + online copy) or online only? 
+
+- GUI
+	- using gtkmm
+	- GUI designer: Glade
