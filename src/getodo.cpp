@@ -1,4 +1,4 @@
-// $ID$
+// $Id$
 
 #include "getodo.cpp"
 
