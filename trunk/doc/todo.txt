@@ -1,0 +1,67 @@
+GeToDo TODO
+
+==== Source Code Organizing ====
+
+- libgetodo (library)
+	- form: static or dynamic library
+	- content
+		- data reprezentation
+		- object <-> relation conversion
+		- operations with data
+- getodo (GUI client)
+	- form: executable
+	- content
+		- user interface
+
+- VCS
+	*- SVN repo at google code
+	- other options:
+		- git (git.or.cz), darcs, svn+svk, svn+git
+
+==== Libraries ====
+
+- boost
+	- date & time handling (Date Time)!
+	- parsing (Spirit)!, Tokenizer, Format
+	- regex (Regex, Xpresive)
+	- tesing (Test)
+	- Program Options
+	- File System
+	[- Variant (for date, recurrence etc. types)]
+		- better would be class hierarchy
+
+- GUI
+	- using gtkmm
+	- GUI designer: Glade
+
+- database libraries
+	- sqlite3
+	- what wrapper?
+		- sqlite3x (original)
+		- sqlite3x (s11n.net) - probably this
+		- sqlitewrapper - or this
+		- QtSql (?)
+
+==== Building ====
+
+- some options for building:
+
+- build environment
+	- MinGW on Windows + autotools (autoconf, automake, libtool)
+	- MinGW on Linux as cross compiler + autotools
+	- gcc on Linux + autotools
+	- Visual Studion on Windows + autotools | MS automagic 
+- editor/IDE
+	- NetBeans
+	- Visual Studio
+	- vim
+
+==== Write Source Code ====
+
+- creating new database
+- transformation: database <-> object representation
+- database triggers for checking date format validity
+- Task operations
+- TaskManager operations
+	- filtering
+	- tag collection operations
