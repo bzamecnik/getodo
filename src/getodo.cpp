@@ -2,6 +2,8 @@
 
 #include "getodo.h"
 
+namespace getodo {
+
 Date Date::fromString(std::string str) {
 	return boost::gregorian::from_string(str);
 }
@@ -62,3 +64,9 @@ TaskManager::TaskManager(std::string const& dbname) {
 Task& TaskManager::addTask(Task* task) {
 	if(task) tasks.insert(std::pair<id_t,Task*>(task->getTaskId(),task));
 }
+
+void TaskManager::loadFromDatabase() {
+	
+}
+
+}  // namespace getodo

@@ -9,7 +9,9 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-#include <sqlite3x.hpp>
+#include "sqlite3x/sqlite3x.hpp"
+
+namespace getodo {
 
 typedef int id_t;
 typedef std::map<std::string,std::string> databaseRow_t;
@@ -70,7 +72,7 @@ public:
 		* date + time exactly given
 		* date alone
 		* indefinite date
-		* no information			
+		* no information
 	*/
 //}
 
@@ -83,10 +85,10 @@ class Recurrence {
 		*  every Nth month - given day in month
 		*  every Nth year - given day and month
 		*  every day in an interval between two days
-		Use: boost::gregorian::date_iterator				 		
+		Use: boost::gregorian::date_iterator
 	*/
 	virtual Date next()=0;
-	virtual Recurrence fromString(std::string str)=0;
+	virtual Recurrence& fromString(std::string str)=0;
 	virtual std::string toString(Recurrence const& r)=0;
 	virtual std::string toString()=0;
 	virtual ~Recurrence();
@@ -103,12 +105,12 @@ class Duration {
 	/*
 		Duration should express:
 			* units of given magnitude (minutes, hours, days, weeks, months, years)
-			* - lesser magnitude => greater precision			
+			* - lesser magnitude => greater precision
 			* or no information
 		Use:
 			boost::gregorian::years, boost::gregorian::months, boost::gregorian::weeks
 			boost::gregorian::date_duration
-			boost::posix_time::hours, boost::posix_time::minutes, boost::posix_time::seconds								
+			boost::posix_time::hours, boost::posix_time::minutes, boost::posix_time::seconds
 	*/
 };
 
@@ -186,3 +188,5 @@ private:
 	void loadFromDatabase();
 	void loadFromDatabase(FilterRule& filter);
 };
+
+} // namespace getodo
