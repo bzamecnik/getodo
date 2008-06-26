@@ -1,4 +1,17 @@
 // $Id: getodo.h 11 2008-06-25 13:20:57Z bohumir.zamecnik $
+//
+// Base libgetodo header file.
+//
+// Description: classes DateTime, Date, Recurrence*, Duration
+//
+//
+// Author: Bohumir Zamecnik <bohumir@zamecnik.org>, (C) 2008
+//
+// Copyright: See COPYING file that comes with this distribution
+//
+
+#ifndef LIBGETODO_GETODO_H
+#define LIBGETODO_GETODO_H
 
 #include <list>
 #include <map>
@@ -16,38 +29,19 @@ namespace getodo {
 typedef int id_t;
 typedef std::map<std::string,std::string> databaseRow_t;
 
-class Tag {
-	id_t tagId;
-	std::string tagName;
-public:	
-	Tag();
-	Tag(std::string tagName);
-	~Tag();
-	
-	std::string getTagName();
-	Tag& setTagName(std::string tagName);
-	id_t getTagId();
-};
-
 // THINK: make AbstractDate a common ancestor to Date and DateTime?
 
 class DateTime {
 public:
 	boost::posix_time::ptime date;
 	
-	DateTime() {
-		date = boost::posix_time::ptime(boost::date_time::not_a_date_time);
-	}
-	DateTime(boost::posix_time::ptime const& date) {
-		this->date = date;
-	}
-	DateTime(DateTime const& date) {
-		this->date = date.date;
-	}
+	DateTime();
+	DateTime(boost::posix_time::ptime const& date);
+	DateTime(DateTime const& date);
 	
 	// For database storage.
 	// Format: YYYY-MM-DD HH:MM:SS
-	DateTime fromString(std::string str);
+	static DateTime fromString(std::string str);
 	std::string toString(DateTime const& date);
 };
 
@@ -114,79 +108,6 @@ class Duration {
 	*/
 };
 
-class FilterRule {
-	id_t filterRuleId;
-	std::string name;
-	std::string rule;
-};
-
-class Task {
-	id_t taskId;
-	std::string description;
-	std::string longDescription; // including links, attachments, etc.
-
-	// what to use: sets of id_t or Task&?
-	std::set<id_t> tags;
-	std::set<id_t> subtasks;
-
-	DateTime dateCreated;
-	DateTime dateLastModified;
-	Date dateStarted;
-	Date dateDeadline; // should be FuzzyDate
-	Date dateCompleted;
-//	Duration& estDuration; // estimated duration
-//	Recurrence& recurrence;
-	
-	int priority; // TODO: number or symbol?
-	int completedPercentage;
-
-public:
-	Task();
-	Task(Task const& t); // copy constructor
-	virtual ~Task(); // delete tags, subtasks
-	
-	// setters and getters for some properties
-	id_t getTaskId();
-	
-	// convert representation: database <-> object
-	static std::map<std::string,std::string> toDatabaseRow(Task& task);
-	std::map<std::string,std::string> toDatabaseRow();
-	static Task& fromDatabaseRow();
-};
-
-class TaskManager {
-	std::map<id_t,Task*> tasks;
-	std::map<id_t,Tag*> tags;
-	std::list<FilterRule> filters;
-
-	sqlite3x::sqlite3_connection* db;
-
-public:
-	TaskManager(std::string const &dbname);
-	~TaskManager();
-
-	Task& addTask(Task* task);
-	Task& getTask(id_t taskId);
-	Task& editTask(id_t taskId, Task& task);
-	bool deleteTask(id_t taskId);
-
-	Tag& addTag(Tag& tag);
-	Tag& editTag(id_t tagId, Tag& tag);
-	bool deleteTag(id_t tagId);
-
-	bool assignTag(id_t tagId, id_t taskId);
-	bool removeTag(id_t tagId, id_t taskId);
-
-	FilterRule& addFilterRule(FilterRule& filter);
-	FilterRule& editFilterRule(id_t filterRuleId, FilterRule& filter);
-	bool deleteFilterRule(id_t filterRuleId);
-
-	std::map<id_t,Task*> filterTask(id_t filterRuleId);
-	std::map<id_t,Task*> filterTask(FilterRule& filter);
-
-private:
-	void loadFromDatabase();
-	void loadFromDatabase(FilterRule& filter);
-};
-
 } // namespace getodo
+
+#endif // LIBGETODO_GETODO_H
