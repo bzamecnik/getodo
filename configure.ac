@@ -16,5 +16,5 @@ AX_BOOST_DATE_TIME
 #AC_CONFIG_SRCDIR([src/libgetodo/getodo.cpp])
 #AC_CONFIG_HEADER([config.h])
 
-AC_CONFIG_FILES([Makefile lib/Makefile lib/sqlite3x/Makefile src/Makefile src/libgetodo/Makefile src/getodogui/Makefile])
+AC_CONFIG_FILES([Makefile lib/Makefile src/Makefile src/libgetodo/Makefile src/getodogui/Makefile])
 AC_OUTPUT
