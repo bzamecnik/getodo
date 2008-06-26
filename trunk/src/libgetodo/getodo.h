@@ -1,4 +1,4 @@
-// $Id: getodo.h 11 2008-06-25 13:20:57Z bohumir.zamecnik $
+// $Id$
 //
 // Base libgetodo header file.
 //
@@ -42,7 +42,8 @@ public:
 	// For database storage.
 	// Format: YYYY-MM-DD HH:MM:SS
 	static DateTime fromString(std::string str);
-	std::string toString(DateTime const& date);
+	static std::string toString(DateTime const& date);
+	std::string toString();
 };
 
 class Date {

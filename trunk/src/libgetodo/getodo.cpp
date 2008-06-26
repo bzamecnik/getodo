@@ -1,4 +1,4 @@
-// $Id: getodo.cpp 11 2008-06-25 13:20:57Z bohumir.zamecnik $
+// $Id$
 
 #include "getodo.h"
 

@@ -18,7 +18,7 @@ namespace getodo {
 
 TaskManager::TaskManager(std::string const& dbname) {
 	//try {
-	db = new sqlite3x::sqlite3_connection(dbname);
+	conn = new sqlite3x::sqlite3_connection(dbname);
 	//} catch(...) { return; }
 	
 	loadAllFromDatabase();

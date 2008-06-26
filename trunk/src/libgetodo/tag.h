@@ -16,33 +16,32 @@
 
 #include "getodo.h"
 
+using namespace sqlite3x;
+
 namespace getodo {
 
 class Tag {
-	id_t tagId;
-	std::string tagName;
 public:
+	id_t tagId; // -1, if not already in database
+	std::string tagName;
+
+	Tag();
 	Tag(std::string tagName);
+	Tag(id_t tagId, std::string tagName);
 	~Tag();
-
-	id_t getTagId();
-
-	std::string getTagName();
-	void setTagName(const std::string tagName);
 };
 
 class TagPersistence {
-	sqlite3x::sqlite3_connection* db;
+	sqlite3_connection* conn;
 public:
-	// Constructor for loading new Tags
-	TagPersistence(sqlite3x::sqlite3_connection* db);
+	// constructor for loading new Tags
+	TagPersistence(sqlite3_connection* conn);
 
 	// save Tag to database
-	void save(const Tag& tag);
+	// - if it has no tagId (eg. it was newly created), assign some
+	Tag& save(Tag& tag);
 	// load Tag from database
 	Tag& load(id_t tagId);
-	
-	void setTagName(const std::string tagName);
 };
 
 } // namespace getodo
