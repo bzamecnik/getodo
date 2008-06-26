@@ -13,8 +13,8 @@ AX_BOOST_BASE([1.33])
 AX_BOOST_DATE_TIME
 
 ## create a config.h file (Automake will add -DHAVE_CONFIG_H)
-#AC_CONFIG_SRCDIR([libgetodo/getodo.cpp])
+#AC_CONFIG_SRCDIR([src/libgetodo/getodo.cpp])
 #AC_CONFIG_HEADER([config.h])
 
-AC_CONFIG_FILES([Makefile libgetodo/Makefile getodogui/Makefile])
+AC_CONFIG_FILES([Makefile lib/Makefile lib/sqlite3x/Makefile src/Makefile src/libgetodo/Makefile src/getodogui/Makefile])
 AC_OUTPUT
