@@ -26,11 +26,11 @@ class TaskManager {
 	std::map<id_t,Tag*> tags;
 	std::list<FilterRule> filters;
 
-	sqlite3x::sqlite3_connection* db;
+	sqlite3x::sqlite3_connection* conn;
 public:
 	// TaskManager(); // for in-memory database (sqlite filename :memory:)
 	TaskManager(std::string const &dbname);
-	TaskManager(sqlite3x::sqlite3_connection* db);
+	TaskManager(sqlite3x::sqlite3_connection* conn);
 	~TaskManager();
 
 	// tip: a function for switching database connection
@@ -57,6 +57,8 @@ public:
 private:
 	void loadAllFromDatabase(); // to be called by the constructor
 	// void loadFromDatabase(const FilterRule& filter);
+	
+	void fillEmptyDatabase(); // make inital database scheme
 };
 
 } // namespace getodo

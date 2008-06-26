@@ -11,35 +11,36 @@
 //
 //
 
+#ifndef LIBGETODO_FILTERRULE_H
+#define LIBGETODO_FILTERRULE_H
+
 #include "getodo.h"
+
+using namespace sqlite3x;
 
 namespace getodo {
 
 class FilterRule {
-	id_t filterRuleId;
+public:
+	id_t filterRuleId; // -1, if not already in database
 	std::string name;
 	std::string rule;
-public:
+
+	FilterRule();
 	FilterRule(std::string name, std::string rule);
+	FilterRule(id_t filterRuleId, std::string name, std::string rule);
 	~FilterRule();
-
-	id_t getFilterRuleId();
-
-	std::string getName();
-	void setName(const std::string name);
-	
-	std::string getRule();
-	void setRule(const std::string rule);
 };
 
 class FilterRulePersistence {
-	sqlite3x::sqlite3_connection* db;
+	sqlite3_connection* conn;
 public:
-	// Constructor for loading new FilterRules
-	FilterRulePersistence(sqlite3x::sqlite3_connection* db);
+	// constructor for loading new FilterRules
+	FilterRulePersistence(sqlite3_connection* conn);
 
 	// save FilterRule to database
-	void save(const FilterRule& filterRule);
+	// - if it has no filterRuleId (eg. it was newly created), assign some
+	FilterRule& save(FilterRule& filterRule);
 	// load FilterRule from database
 	FilterRule& load(id_t filterRuleId);
 
@@ -48,3 +49,5 @@ public:
 };
 
 } // namespace getodo
+
+#endif // LIBGETODO_FILTERRULE_H

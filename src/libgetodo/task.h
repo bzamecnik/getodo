@@ -22,7 +22,7 @@ namespace getodo {
 typedef std::set<id_t> taskset_t;
 
 class Task {
-	id_t taskId;
+	id_t taskId; // -1, if not already in database
 	std::string description;
 	std::string longDescription; // including links, attachments, etc.
 
@@ -51,7 +51,7 @@ public:
 	// Getters & Setters
 
 	id_t getTaskId();
-	// void setTaskId(id_t taskId); // really?
+	void setTaskId(id_t taskId);
 
 	std::string getDescription();
 	void setDescription(const std::string description);
@@ -99,18 +99,20 @@ public:
 };
 
 class TaskPersistence {
-	sqlite3x::sqlite3_connection* db;
+	sqlite3x::sqlite3_connection* conn;
 	Task* task;
 public:
 	// Constructor for loading new Tasks
-	TaskPersistence(sqlite3x::sqlite3_connection* db);
+	TaskPersistence(sqlite3x::sqlite3_connection* conn);
 	// Constructor for modifying particular things in a Task
-	TaskPersistence(sqlite3x::sqlite3_connection* db, Task& task);
+	TaskPersistence(sqlite3x::sqlite3_connection* conn, Task& task);
 	// save whole Task to database
 	void save();
 	// load Task from database
 	Task& load(id_t taskId);
 
+	Task* getTask();
+	
 	// Wrappers of member functions from Task that modify the Task
 	// - will call original function
 	// - will make SQL query to reflect changes into database
