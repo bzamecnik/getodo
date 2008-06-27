@@ -1,4 +1,4 @@
-// $Id:$
+// $Id$
 //
 // C++ Interface: Tag
 //
@@ -26,6 +26,7 @@ public:
 	std::string tagName;
 
 	Tag();
+	Tag(const Tag& t);
 	Tag(std::string tagName);
 	Tag(id_t tagId, std::string tagName);
 	~Tag();

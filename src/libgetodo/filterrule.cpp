@@ -1,4 +1,4 @@
-// $Id:$
+// $Id$
 //
 // C++ Implementation: filterrule
 //
@@ -17,25 +17,19 @@ namespace getodo {
 
 // ----- class FilterRule --------------------
 
-FilterRule::FilterRule() : filterRuleId(-1) {}
-
-FilterRule::FilterRule(std::string name, std::string rule)
-	: filterRuleId(-1) {
-	this->name = name;
-	this->rule = rule;
-}
-
-FilterRule::FilterRule(id_t filterRuleId, std::string name, std::string rule) {
-	this->filterRuleId = filterRuleId;
-	this->name = name;
-	this->rule = rule;
-}
+FilterRule::FilterRule()
+	: filterRuleId(-1) {}
+FilterRule::FilterRule(const FilterRule& r)
+	: filterRuleId(r.filterRuleId), name(r.name), rule(r.name) {}
+FilterRule::FilterRule(std::string n, std::string r)
+	: filterRuleId(-1), name(n), rule(r) {}
+FilterRule::FilterRule(id_t id, std::string n, std::string r)
+	: filterRuleId(id), name(n), rule(r) {}
 
 // ----- class FilterRulePersistence --------------------
 
-FilterRulePersistence::FilterRulePersistence(sqlite3_connection* conn) {
-	this->conn = conn;
-}
+FilterRulePersistence::FilterRulePersistence(sqlite3_connection* c)
+	: conn(c) {}
 
 FilterRule& FilterRulePersistence::save(FilterRule& filterRule) {
 	// if(!conn) { TODO: throw ...}
