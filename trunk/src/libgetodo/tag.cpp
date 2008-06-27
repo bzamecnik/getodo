@@ -1,4 +1,4 @@
-// $Id:$
+// $Id$
 //
 // C++ Implementation: tag
 //
@@ -20,19 +20,13 @@ namespace getodo {
 // ----- class Tag --------------------
 
 Tag::Tag() : tagId(-1) {}
-Tag::Tag(std::string tagName) : tagId(-1) {
-	this->tagName = tagName;
-}
-Tag::Tag(id_t tagId, std::string tagName) {
-	this->tagId = tagId;
-	this->tagName = tagName;
-}
+Tag::Tag(const Tag& t) : tagId(t.tagId), tagName(t.tagName) {}
+Tag::Tag(std::string name) : tagId(-1), tagName(name) {}
+Tag::Tag(id_t id, std::string name) : tagId(id), tagName(name) {}
 
 // ----- class TagPersistence --------------------
 
-TagPersistence::TagPersistence(sqlite3_connection* conn) {
-	this->conn = conn;
-}
+TagPersistence::TagPersistence(sqlite3_connection* c) : conn(c) {}
 
 Tag& TagPersistence::save(Tag& tag) {
 	// if(!conn) { TODO: throw ...}

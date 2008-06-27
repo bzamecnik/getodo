@@ -1,4 +1,4 @@
-// $Id:$
+// $Id$
 //
 // C++ Interface: TaskManager
 //
@@ -29,7 +29,7 @@ class TaskManager {
 	sqlite3x::sqlite3_connection* conn;
 public:
 	// TaskManager(); // for in-memory database (sqlite filename :memory:)
-	TaskManager(std::string const &dbname);
+	TaskManager(std::string dbname);
 	TaskManager(sqlite3x::sqlite3_connection* conn);
 	~TaskManager();
 

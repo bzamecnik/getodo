@@ -36,29 +36,29 @@ public:
 	boost::posix_time::ptime date;
 	
 	DateTime();
-	DateTime(boost::posix_time::ptime const& date);
-	DateTime(DateTime const& date);
+	DateTime(const boost::posix_time::ptime& d);
+	DateTime(const DateTime& d);
 	
 	// For database storage.
 	// Format: YYYY-MM-DD HH:MM:SS
 	static DateTime fromString(std::string str);
-	static std::string toString(DateTime const& date);
-	std::string toString();
+	static std::string toString(const DateTime& date);
+	std::string toString() const;
 };
 
 class Date {
 public:
 	boost::gregorian::date date;
 	
-	Date() : date(boost::gregorian::date(boost::date_time::not_a_date_time)) {}
-	Date(boost::gregorian::date const& d) :	date(d) {}
-	Date(Date const& d) : date(d.date) {}
+	Date();
+	Date(const boost::gregorian::date& d);
+	Date(const Date& d);
 	
 	// For database storage.
 	// Format: YYYY-MM-DD
 	static Date fromString(std::string str);
-	static std::string toString(Date const& date);
-	std::string toString();
+	static std::string toString(const Date& date);
+	std::string toString() const;
 };
 
 //class FuzzyDate {
@@ -84,8 +84,8 @@ class Recurrence {
 	*/
 	virtual Date next()=0;
 	virtual Recurrence& fromString(std::string str)=0;
-	virtual std::string toString(Recurrence const& r)=0;
-	virtual std::string toString()=0;
+	virtual std::string toString(const Recurrence& r)=0;
+	virtual std::string toString()const =0;
 	virtual ~Recurrence();
 };
 

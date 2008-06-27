@@ -1,4 +1,4 @@
-// $Id:$
+// $Id$
 //
 // C++ Interface: Task
 //
@@ -13,9 +13,9 @@
 #ifndef LIBGETODO_TASK_H
 #define LIBGETODO_TASK_H
 
-#include <set>
 #include "getodo.h"
 #include "tag.h"
+#include <set>
 
 namespace getodo {
 
@@ -50,52 +50,55 @@ public:
 
 	// Getters & Setters
 
-	id_t getTaskId();
+	id_t getTaskId() const;
 	void setTaskId(id_t taskId);
 
-	std::string getDescription();
+	std::string getDescription() const;
 	void setDescription(const std::string description);
 
-	std::string getLongDescription();
+	std::string getLongDescription() const;
 	void setLongDescription(const std::string longDescription);
 
 	void addTag(id_t tagId); //should throw an exception on failure (?)
-	bool hasTag(id_t tagId);
+	bool hasTag(id_t tagId) const;
 	void removeTag(id_t tagId); //should throw an exception on failure
+	std::list<id_t> getTagsList() const;
 
 	void addSubTask(id_t taskId); //should throw an exception on failure (?)
-	bool hasTask(id_t taskId);
+	bool hasTask(id_t taskId) const;
 	void removeSubTask(id_t taskId); //should throw an exception on failure
+	std::list<id_t> getSubtasksList() const;
 
-	DateTime getDateCreated();
+	DateTime getDateCreated() const;
 	void setDateCreated(const DateTime& dateCreated);
 
-	DateTime getDateLastModified();
+	DateTime getDateLastModified() const;
 	void setDateLastModified(const DateTime& dateLastModified);
 
-	Date getDateStarted();
+	Date getDateStarted() const;
 	void setDateStarted(const Date& dateStarted);
 
-	Date getDateDeadline(); // should be FuzzyDate
+	Date getDateDeadline() const; // should be FuzzyDate
 	void setDateDeadline(const Date& dateDeadline);
 
-	Date getDateCompleted();
+	Date getDateCompleted() const;
 	void setDateCompleted(const Date& dateCompleted);
 
-	int getPriority();
+	int getPriority() const;
 	void setPriority(int priority);
 
-	int getCompletedPercentage();
+	int getCompletedPercentage() const;
 	void setCompletedPercentage(int completedPercentage);
 	void setDone();
 
 	// Convert representation: database rows(s) <-> object
 	static databaseRow_t toDatabaseRow(const Task& task);
-	databaseRow_t toDatabaseRow();
+	databaseRow_t toDatabaseRow() const;
 	static Task& fromDatabaseRow(databaseRow_t);
 
-	std::list<databaseRow_t> toSubtaskRelation();
-	std::list<databaseRow_t> toTagRelation();
+	// maybe wouldn't be needed at all - see getTagsList(), getSubtasksList()
+	//std::list<databaseRow_t> toSubtaskRelation();
+	//std::list<databaseRow_t> toTagRelation();
 };
 
 class TaskPersistence {
@@ -105,11 +108,12 @@ public:
 	// Constructor for loading new Tasks
 	TaskPersistence(sqlite3x::sqlite3_connection* conn);
 	// Constructor for modifying particular things in a Task
-	TaskPersistence(sqlite3x::sqlite3_connection* conn, Task& task);
+	TaskPersistence(sqlite3x::sqlite3_connection* conn, Task* task);
+	
 	// save whole Task to database
 	void save();
 	// load Task from database
-	Task& load(id_t taskId);
+	Task* load(id_t taskId);
 
 	Task* getTask();
 	
@@ -119,7 +123,6 @@ public:
 	// Reason: We don't want to always save whole object, while making small changes.
 
 	void setDescription(const std::string description);
-
 	void setLongDescription(const std::string longDescription);
 
 	void addTag(id_t tagId); //should throw an exception on failure (?)
@@ -129,13 +132,9 @@ public:
 	void removeSubTask(id_t taskId); //should throw an exception on failure
 
 	void setDateCreated(const DateTime& dateCreated);
-
 	void setDateLastModified(const DateTime& dateLastModified);
-
 	void setDateStarted(const Date& dateStarted);
-
 	void setDateDeadline(const Date& dateDeadline);
-
 	void setDateCompleted(const Date& dateCompleted);
 
 	void setPriority(int priority);

@@ -1,4 +1,4 @@
-// $Id:$
+// $Id$
 //
 // C++ Interface: FilterRule
 //
@@ -27,6 +27,7 @@ public:
 	std::string rule;
 
 	FilterRule();
+	FilterRule(const FilterRule& r);
 	FilterRule(std::string name, std::string rule);
 	FilterRule(id_t filterRuleId, std::string name, std::string rule);
 	~FilterRule();

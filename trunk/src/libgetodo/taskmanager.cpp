@@ -1,4 +1,4 @@
-// $Id:$
+// $Id$
 //
 // C++ Implementation: taskmanager
 //
@@ -16,7 +16,7 @@
 
 namespace getodo {
 
-TaskManager::TaskManager(std::string const& dbname) {
+TaskManager::TaskManager(std::string dbname) {
 	//try {
 	conn = new sqlite3x::sqlite3_connection(dbname);
 	//} catch(...) { return; }
