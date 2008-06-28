@@ -93,7 +93,7 @@ std::list<id_t> Task::getTagsList() const {
 	return list;
 }
 
-void Task::addSubTask(id_t taskId) {
+void Task::addSubtask(id_t taskId) {
 	//should throw an exception on failure (?)
 	subtasks.insert(taskId);
 }
@@ -102,7 +102,7 @@ bool Task::hasTask(id_t taskId) const {
 	return (subtasks.find(taskId) != subtasks.end());
 }
 
-void Task::removeSubTask(id_t taskId) {
+void Task::removeSubtask(id_t taskId) {
 	//should throw an exception on failure
 	subtasks.erase(taskId);
 }
@@ -184,7 +184,7 @@ databaseRow_t Task::toDatabaseRow() const {
 	return toDatabaseRow(*this);
 }
 
-Task& Task::fromDatabaseRow(databaseRow_t row) {
+Task* Task::fromDatabaseRow(databaseRow_t row) {
 	std::istringstream ss;
 	Task* task = new Task();
 	
@@ -212,7 +212,7 @@ Task& Task::fromDatabaseRow(databaseRow_t row) {
 	ss >> task->completedPercentage;
 	ss.clear();
 	
-	return *task;
+	return task;
 }
 
 // ----- class TaskPersistence --------------------
@@ -225,6 +225,8 @@ TaskPersistence::TaskPersistence(sqlite3_connection* c)
 TaskPersistence::TaskPersistence(sqlite3x::sqlite3_connection* c, Task* t)
 	: conn(c), task(t) {}
 
+TaskPersistence::~TaskPersistence() {}
+
 // save whole Task to database
 // void TaskPersistence::save() {
 // 	// - task.toDatabaseRow() --> Task table (one row)
@@ -232,12 +234,81 @@ TaskPersistence::TaskPersistence(sqlite3x::sqlite3_connection* c, Task* t)
 // 	// - task.getSubtasksList() --> Subtask table in a loop
 // }
 
-// void TaskPersistence::save() {
-// 
-// }
 
-Task* TaskPersistence::getTask() {
+Task* TaskPersistence::load(id_t taskId) {
+	// if(!conn) { TODO: throw ...}
+	
+	// Load task itself
+	
+	sqlite3_command cmd(*conn, "SELECT * FROM Task WHERE taskId = (?);");
+	cmd.bind(1, taskId);
+	sqlite3_cursor cursor = cmd.executecursor();
+	if(!cursor.step()) {
+		// TODO: throw, if there is not record  with this tagID
+		return 0;
+	}
+	databaseRow_t row;
+	int columnsCount = cursor.colcount();
+	for (int i = 1; i <= columnsCount; i++) {
+		row[cursor.getcolname(i)] = cursor.getstring(i);
+	}
+	task = Task::fromDatabaseRow(row);
+	if(!task) {
+		// TODO: throw an exception
+		return 0;
+	}
+	
+	// Load its tags
+	id_t id;
+	
+	cmd.prepare("SELECT tagId FROM Tagged WHERE taskId = (?);");
+	cmd.bind(1, taskId);
+	cursor = cmd.executecursor();
+	
+	while(cursor.step()) {
+		id = cursor.getint(1);
+		task->addTag(id);
+	}
+	
+	// Load its subtasks
+	
+	cmd.prepare("SELECT sub_taskId FROM Subtask WHERE super_taskId = (?);");
+	cmd.bind(1, taskId);
+	cursor = cmd.executecursor();
+	while(cursor.step()) {
+		id = cursor.getint(1);
+		task->addSubtask(id);
+	}
+	
 	return task;
+}
+
+void TaskPersistence::erase() {
+	// if(!conn) { TODO: throw ...}
+	if(!task) { return; } // throw
+	if(task->getTaskId() < 0) { return; } // throw
+	
+	sqlite3_command cmd(*conn, "DELETE FROM Tagged WHERE taskID = (?);");
+	cmd.bind(1, task->getTaskId());
+	cmd.executenonquery();
+	
+	cmd.prepare("DELETE FROM Subtasks WHERE super_taskID = (?);");
+	cmd.bind(1, task->getTaskId());
+	cmd.executenonquery();
+	
+	cmd.prepare("DELETE FROM Task WHERE taskID = (?);");
+	cmd.bind(1, task->getTaskId());
+	cmd.executenonquery();
+	
+	delete task;
+}
+
+Task* TaskPersistence::getTask() const {
+	return task;
+}
+
+void TaskPersistence::setTask(Task* task) {
+	this->task = task;
 }
 
 } // namespace getodo

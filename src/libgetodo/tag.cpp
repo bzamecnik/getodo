@@ -28,7 +28,7 @@ Tag::Tag(id_t id, std::string name) : tagId(id), tagName(name) {}
 
 TagPersistence::TagPersistence(sqlite3_connection* c) : conn(c) {}
 
-Tag& TagPersistence::save(Tag& tag) {
+Tag& TagPersistence::save(const Tag& tag) {
 	// if(!conn) { TODO: throw ...}
 	int count = 0;
 	if (tag.tagId >= 0) {
@@ -37,6 +37,7 @@ Tag& TagPersistence::save(Tag& tag) {
 		cmd.bind(1, tag.tagId);
 		count = cmd.executeint();
 	}
+	Tag* tagCopy = new Tag(tag);
 	if (count > 0) {
 		// it is already there -> update
 		sqlite3_command cmd(*conn, "UPDATE Tag SET tagName = ? WHERE tagId = (?);");
@@ -49,9 +50,10 @@ Tag& TagPersistence::save(Tag& tag) {
 		cmd.bind(1, tag.tagName);
 		cmd.executenonquery();
 		// get tagId which database automatically created
-		tag.tagId = sqlite3_last_insert_rowid(conn->db());
+		tagCopy->tagId = sqlite3_last_insert_rowid(conn->db());
+		
 	}
-	return tag;
+	return *tagCopy;
 }
 
 Tag& TagPersistence::load(id_t tagId) {

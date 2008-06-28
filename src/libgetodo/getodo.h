@@ -82,6 +82,7 @@ class Recurrence {
 		*  every day in an interval between two days
 		Use: boost::gregorian::date_iterator
 	*/
+public:
 	virtual Date next()=0;
 	virtual Recurrence& fromString(std::string str)=0;
 	virtual std::string toString(const Recurrence& r)=0;

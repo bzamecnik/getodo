@@ -64,14 +64,14 @@ FilterRule& FilterRulePersistence::load(id_t filterRuleId) {
 
 	sqlite3_command cmd(*conn, "SELECT name,rule FROM FilterRule WHERE filterRuleId = (?);");
 	cmd.bind(1, filterRuleId);
-	sqlite3_cursor cur = cmd.executecursor();
+	sqlite3_cursor cursor = cmd.executecursor();
 	std::string name, rule;
-	if (cur.step()) {
-		name = cur.getstring(1);
-		rule = cur.getstring(2);
+	if (cursor.step()) {
+		name = cursor.getstring(1);
+		rule = cursor.getstring(2);
 	}
 	// TODO: throw, if there is not record  with this filterRuleID
-	cur.close();
+	cursor.close();
 	return *(new FilterRule(filterRuleId, name, rule));
 }
 
