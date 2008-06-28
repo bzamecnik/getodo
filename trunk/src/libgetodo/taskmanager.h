@@ -25,7 +25,7 @@ class TaskManager {
 private:
 	std::map<id_t,Task*> tasks;
 	std::map<id_t,Tag*> tags;
-	std::list<FilterRule> filters;
+	std::map<id_t,FilterRule*> filters;
 
 	sqlite3x::sqlite3_connection* conn;
 public:
@@ -37,12 +37,16 @@ public:
 	// tip: a function for switching database connection
 	// eg. when Save As is invoked (from one file to another, or from memory to file)
 
+	// ----- Task operations -----
+
 	Task* addTask(Task* task);
-	//bool hasTask(id_t taskId);
+	bool hasTask(id_t taskId);
 	Task* getTask(id_t taskId);
 	TaskPersistence& getPersistentTask(id_t taskId); // for modyfing particular things
 	Task* editTask(id_t taskId, const Task& task);
 	void deleteTask(id_t taskId); //should throw an exception on failure
+
+	// ----- Tag operations -----
 
 	Tag& addTag(const Tag& tag);
 	bool hasTag(id_t tagId);
@@ -51,19 +55,24 @@ public:
 	Tag& editTag(id_t tagId, const Tag& tag);
 	void deleteTag(id_t tagId); //should throw an exception on failure
 
+	// ----- FilterRule operations -----
+
 	FilterRule& addFilterRule(const FilterRule& filter);
-	// bool hasFilterRule(id_t filterRuleId);
+	bool hasFilterRule(id_t filterRuleId);
 	FilterRule& getFilterRule(id_t filterRuleId);
 	FilterRule& editFilterRule(id_t filterRuleId, const FilterRule& filter);
 	void deleteFilterRule(id_t filterRuleId); //should throw an exception on failure
 
+	// TODO:
+	// - specify a format for FilterRules
+	// - parse it, convert it to SQL query (WHERE)
 	taskset_t filterTasks(id_t filterRuleId);
 	taskset_t filterTasks(const FilterRule& filterRule);
 private:
 	void loadAllFromDatabase(); // to be called by the constructor
 	// void loadFromDatabase(const FilterRule& filter);
 	
-	void fillEmptyDatabase(); // make inital database scheme
+	void fillEmptyDatabase(); // create inital database structure
 };
 
 } // namespace getodo

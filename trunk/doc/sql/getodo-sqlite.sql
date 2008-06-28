@@ -43,4 +43,10 @@ CONSTRAINT pk_Tagged PRIMARY KEY (taskId, tagId),
 CONSTRAINT fk_Tagged_Task FOREIGN KEY (taskId) REFERENCES Task(taskId),
 CONSTRAINT fk_Tagged_Tag FOREIGN KEY (tagId) REFERENCES Tag(tagId));
 
+CREATE TABLE FilterRule (
+filterRuleId      INTEGER      NOT NULL,
+name      STRING      NOT NULL  UNIQUE,
+rule      STRING      NOT NULL,
+CONSTRAINT pk_FilterRule PRIMARY KEY (filterRuleId));
+
 -- Konec skriptu --
