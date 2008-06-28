@@ -37,6 +37,7 @@ class TagPersistence {
 public:
 	// constructor for loading new Tags
 	TagPersistence(sqlite3_connection* conn);
+	virtual ~TagPersistence();
 
 	// save Tag to database
 	// - if it has no tagId (eg. it was newly created), assign some

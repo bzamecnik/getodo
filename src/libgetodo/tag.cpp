@@ -28,6 +28,8 @@ Tag::Tag(id_t id, std::string name) : tagId(id), tagName(name) {}
 
 TagPersistence::TagPersistence(sqlite3_connection* c) : conn(c) {}
 
+TagPersistence::~TagPersistence() {}
+
 Tag& TagPersistence::save(const Tag& tag) {
 	// if(!conn) { TODO: throw ...}
 	int count = 0;
@@ -64,6 +66,18 @@ Tag& TagPersistence::load(id_t tagId) {
 	std::string tagName = cmd.executestring();
 	// TODO: throw, if there is not record  with this tagID
 	return *(new Tag(tagId, tagName));
+}
+
+void TagPersistence::erase(id_t tagId) {
+	// if(!conn) { TODO: throw ...}
+	
+	sqlite3_command cmd(*conn, "DELETE FROM Tagged WHERE tagId = (?);");
+	cmd.bind(1, tagId);
+	cmd.executenonquery();
+	
+	cmd.prepare("DELETE FROM Tag WHERE tagId = (?);");
+	cmd.bind(1, tagId);
+	cmd.executenonquery();
 }
 
 } // namespace getodo

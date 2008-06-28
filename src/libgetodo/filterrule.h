@@ -39,17 +39,18 @@ private:
 public:
 	// constructor for loading new FilterRules
 	FilterRulePersistence(sqlite3_connection* conn);
+	virtual ~FilterRulePersistence();
 
 	// save FilterRule to database
 	// - if it has no filterRuleId (eg. it was newly created), assign some
-	FilterRule& save(FilterRule& filterRule);
+	FilterRule& save(const FilterRule& filterRule);
 	// load FilterRule from database
 	FilterRule& load(id_t filterRuleId);
 	
 	void erase(id_t filterRuleId);
 
-	void setName(const std::string name);
-	void setRule(const std::string rule);
+	void setName(id_t filterRuleId, const std::string name);
+	void setRule(id_t filterRuleId, const std::string rule);
 };
 
 } // namespace getodo

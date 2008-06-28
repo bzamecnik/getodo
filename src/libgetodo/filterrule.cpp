@@ -31,7 +31,9 @@ FilterRule::FilterRule(id_t id, std::string n, std::string r)
 FilterRulePersistence::FilterRulePersistence(sqlite3_connection* c)
 	: conn(c) {}
 
-FilterRule& FilterRulePersistence::save(FilterRule& filterRule) {
+FilterRulePersistence::~FilterRulePersistence() {}
+
+FilterRule& FilterRulePersistence::save(const FilterRule& filterRule) {
 	// if(!conn) { TODO: throw ...}
 	int count = 0;
 	if (filterRule.filterRuleId >= 0) {
@@ -40,6 +42,7 @@ FilterRule& FilterRulePersistence::save(FilterRule& filterRule) {
 		cmd.bind(1, filterRule.filterRuleId);
 		count = cmd.executeint();
 	}
+	FilterRule* ruleCopy = new FilterRule(filterRule);
 	if (count > 0) {
 		// it is already there -> update
 		sqlite3_command cmd(*conn, "UPDATE FilterRule SET name = ?, rule = ? WHERE filterRuleId = (?);");
@@ -54,9 +57,9 @@ FilterRule& FilterRulePersistence::save(FilterRule& filterRule) {
 		cmd.bind(2, filterRule.rule);
 		cmd.executenonquery();
 		// get filterRuleId which database automatically created
-		filterRule.filterRuleId = sqlite3_last_insert_rowid(conn->db());
+		ruleCopy->filterRuleId = sqlite3_last_insert_rowid(conn->db());
 	}
-	return filterRule;
+	return *ruleCopy;
 }
 
 FilterRule& FilterRulePersistence::load(id_t filterRuleId) {
@@ -73,6 +76,37 @@ FilterRule& FilterRulePersistence::load(id_t filterRuleId) {
 	// TODO: throw, if there is not record  with this filterRuleID
 	cursor.close();
 	return *(new FilterRule(filterRuleId, name, rule));
+}
+
+void FilterRulePersistence::erase(id_t filterRuleId) {
+	// if(!conn) { TODO: throw ...}
+	
+	sqlite3_command cmd(*conn, "DELETE FROM FilterRule WHERE filterRuleId = (?);");
+	cmd.bind(1, filterRuleId);
+	cmd.executenonquery();
+}
+
+void FilterRulePersistence::setName(id_t filterRuleId, const std::string name) {
+	// if(!conn) { TODO: throw ...}
+	
+	// TODO: check, if the filter rule really exixsts in database, else throw
+	// TODO: make setName and setRule share its code
+	
+	sqlite3_command cmd(*conn, "UPDATE FilterRule SET (name) VALUES (?) WHERE filterRuleId = (?);");
+	cmd.bind(1, name);
+	cmd.bind(2, filterRuleId);
+	cmd.executenonquery();
+}
+
+void FilterRulePersistence::setRule(id_t filterRuleId, const std::string rule) {
+	// if(!conn) { TODO: throw ...}
+	
+	// TODO: check, if the filter rule really exixsts in database, else throw
+	
+	sqlite3_command cmd(*conn, "UPDATE FilterRule SET (rule) VALUES (?) WHERE filterRuleId = (?);");
+	cmd.bind(1, rule);
+	cmd.bind(2, filterRuleId);
+	cmd.executenonquery();
 }
 
 } // namespace getodo
