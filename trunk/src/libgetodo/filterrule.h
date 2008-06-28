@@ -34,6 +34,7 @@ public:
 };
 
 class FilterRulePersistence {
+private:
 	sqlite3_connection* conn;
 public:
 	// constructor for loading new FilterRules
@@ -44,6 +45,8 @@ public:
 	FilterRule& save(FilterRule& filterRule);
 	// load FilterRule from database
 	FilterRule& load(id_t filterRuleId);
+	
+	void erase(id_t filterRuleId);
 
 	void setName(const std::string name);
 	void setRule(const std::string rule);

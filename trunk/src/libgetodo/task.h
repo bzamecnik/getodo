@@ -22,12 +22,13 @@ namespace getodo {
 typedef std::set<id_t> taskset_t;
 
 class Task {
+private:
 	id_t taskId; // -1, if not already in database
 	std::string description;
 	std::string longDescription; // including links, attachments, etc.
 
 	// Using sets of id_t here is better than Task& because of possible
-	// cycles in SubTask relation while loading from database.
+	// cycles in Subtask relation while loading from database.
 	std::set<id_t> tags;
 	std::set<id_t> subtasks;
 
@@ -64,9 +65,9 @@ public:
 	void removeTag(id_t tagId); //should throw an exception on failure
 	std::list<id_t> getTagsList() const;
 
-	void addSubTask(id_t taskId); //should throw an exception on failure (?)
+	void addSubtask(id_t taskId); //should throw an exception on failure (?)
 	bool hasTask(id_t taskId) const;
-	void removeSubTask(id_t taskId); //should throw an exception on failure
+	void removeSubtask(id_t taskId); //should throw an exception on failure
 	std::list<id_t> getSubtasksList() const;
 
 	DateTime getDateCreated() const;
@@ -94,7 +95,7 @@ public:
 	// Convert representation: database rows(s) <-> object
 	static databaseRow_t toDatabaseRow(const Task& task);
 	databaseRow_t toDatabaseRow() const;
-	static Task& fromDatabaseRow(databaseRow_t);
+	static Task* fromDatabaseRow(databaseRow_t);
 
 	// maybe wouldn't be needed at all - see getTagsList(), getSubtasksList()
 	//std::list<databaseRow_t> toSubtaskRelation();
@@ -102,6 +103,7 @@ public:
 };
 
 class TaskPersistence {
+private:
 	sqlite3x::sqlite3_connection* conn;
 	Task* task;
 public:
@@ -109,14 +111,18 @@ public:
 	TaskPersistence(sqlite3x::sqlite3_connection* conn);
 	// Constructor for modifying particular things in a Task
 	TaskPersistence(sqlite3x::sqlite3_connection* conn, Task* task);
+	~TaskPersistence();
 	
 	// save whole Task to database
 	void save();
 	// load Task from database
 	Task* load(id_t taskId);
 
-	Task* getTask();
-	
+	void erase();
+
+	Task* getTask() const;
+	void setTask(Task* task);
+
 	// Wrappers of member functions from Task that modify the Task
 	// - will call original function
 	// - will make SQL query to reflect changes into database
@@ -128,8 +134,8 @@ public:
 	void addTag(id_t tagId); //should throw an exception on failure (?)
 	void removeTag(id_t tagId); //should throw an exception on failure
 
-	void addSubTask(id_t taskId); //should throw an exception on failure (?)
-	void removeSubTask(id_t taskId); //should throw an exception on failure
+	void addSubtask(id_t taskId); //should throw an exception on failure (?)
+	void removeSubtask(id_t taskId); //should throw an exception on failure
 
 	void setDateCreated(const DateTime& dateCreated);
 	void setDateLastModified(const DateTime& dateLastModified);

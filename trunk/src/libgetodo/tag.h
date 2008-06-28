@@ -40,9 +40,11 @@ public:
 
 	// save Tag to database
 	// - if it has no tagId (eg. it was newly created), assign some
-	Tag& save(Tag& tag);
+	Tag& save(const Tag& tag);
 	// load Tag from database
 	Tag& load(id_t tagId);
+	// delete Tag from database
+	void erase(id_t tagId);
 };
 
 } // namespace getodo
