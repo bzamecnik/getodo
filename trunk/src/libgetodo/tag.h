@@ -29,7 +29,7 @@ public:
 	Tag(const Tag& t);
 	Tag(std::string tagName);
 	Tag(id_t tagId, std::string tagName);
-	~Tag();
+	virtual ~Tag();
 };
 
 class TagPersistence {

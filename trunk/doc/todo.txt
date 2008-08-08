@@ -1,21 +1,21 @@
-GeToDo TODO
+===== GeToDo TODO =====
 
-- creating new database
-- transformation: database <-> object representation
-- database triggers for checking date format validity
-- Task operations
-- TaskManager operations
-	- filtering
-	- tag collection operations
+- TaskPersistence - saving, access methods
+- TaskManager - editing Task, filtering, filling empty database
 
-* run autoreconf --install
-* in Makefile run make v sqlite3x/
-* break project into several modules (with separate subdirs)
-	* libgetodo (library)
-	* gui (application)
-	* sqlite3x (3rd party library)
-* set LD_CONFIG_... for running main executable (for .so libraries)
-
-- make a plan
-
+- Recurrence, Duration, FuzzyDate - think of
+- FilterRule - think about format and function
+- Task - think of priority
+- think of exceptions
+- avoid duplicating code
 - save sqlite table names somewhere as constants
+- database triggers for checking date format validity
+
+- think of GUI
+
+- try linking with GTKmm (autotools etc.)
+
+== Done - kept for reference ==
+
+* run autoreconf --install (only once)
+* set LD_CONFIG_... for running main executable (for .so libraries)

@@ -43,7 +43,7 @@ public:
 	bool hasTask(id_t taskId);
 	Task* getTask(id_t taskId);
 	TaskPersistence& getPersistentTask(id_t taskId); // for modyfing particular things
-	Task* editTask(id_t taskId, const Task& task);
+	Task* editTask(id_t taskId, const Task& task); // TODO
 	void deleteTask(id_t taskId); //should throw an exception on failure
 
 	// ----- Tag operations -----
@@ -66,13 +66,15 @@ public:
 	// TODO:
 	// - specify a format for FilterRules
 	// - parse it, convert it to SQL query (WHERE)
-	taskset_t filterTasks(id_t filterRuleId);
-	taskset_t filterTasks(const FilterRule& filterRule);
+	taskset_t filterTasks(id_t filterRuleId); // TODO
+	taskset_t filterTasks(const FilterRule& filterRule); // TODO
 private:
 	void loadAllFromDatabase(); // to be called by the constructor
+	// TODO: move functionality here and make loadAllFromDatabase()
+	// call this function with empty filter
 	// void loadFromDatabase(const FilterRule& filter);
 	
-	void fillEmptyDatabase(); // create inital database structure
+	void fillEmptyDatabase(); // TODO, create inital database structure
 };
 
 } // namespace getodo

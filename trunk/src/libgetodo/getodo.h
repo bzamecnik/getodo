@@ -62,7 +62,7 @@ public:
 };
 
 //class FuzzyDate {
-	/*
+	/* TODO
 	Date should be able to express:
 		* date + time exactly given
 		* date alone
@@ -72,7 +72,7 @@ public:
 //}
 
 class Recurrence {
-	/*
+	/* TODO
 	Recurrence should be:
 		*  once - no recurrence - default
 		*  every Nth day
@@ -98,15 +98,15 @@ class RecurrenceYearly : public Recurrence {};
 class RecurrenceIntervalDays : public Recurrence {};
 
 class Duration {
-	/*
-		Duration should express:
-			* units of given magnitude (minutes, hours, days, weeks, months, years)
-			* - lesser magnitude => greater precision
-			* or no information
-		Use:
-			boost::gregorian::years, boost::gregorian::months, boost::gregorian::weeks
-			boost::gregorian::date_duration
-			boost::posix_time::hours, boost::posix_time::minutes, boost::posix_time::seconds
+	/* TODO
+	Duration should express:
+		* units of given magnitude (minutes, hours, days, weeks, months, years)
+		* - lesser magnitude => greater precision
+		* or no information
+	Use:
+		boost::gregorian::years, boost::gregorian::months, boost::gregorian::weeks
+		boost::gregorian::date_duration
+		boost::posix_time::hours, boost::posix_time::minutes, boost::posix_time::seconds
 	*/
 };
 

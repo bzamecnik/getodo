@@ -30,7 +30,7 @@ public:
 	FilterRule(const FilterRule& r);
 	FilterRule(std::string name, std::string rule);
 	FilterRule(id_t filterRuleId, std::string name, std::string rule);
-	~FilterRule();
+	virtual ~FilterRule();
 };
 
 class FilterRulePersistence {

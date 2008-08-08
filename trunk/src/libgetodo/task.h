@@ -21,6 +21,8 @@ namespace getodo {
 
 typedef std::set<id_t> taskset_t;
 
+// ----- class Task --------------------
+
 class Task {
 private:
 	id_t taskId; // -1, if not already in database
@@ -44,12 +46,12 @@ private:
 	int completedPercentage;
 
 public:
-	// Constructors
+	// ----- Constructors -----
 	Task();
 	Task(const Task& t); // copy constructor
-	virtual ~Task(); // delete tags, subtasks
+	virtual ~Task();
 
-	// Getters & Setters
+	// ----- Getters & Setters -----
 
 	id_t getTaskId() const;
 	void setTaskId(id_t taskId);
@@ -66,7 +68,7 @@ public:
 	std::list<id_t> getTagsList() const;
 
 	void addSubtask(id_t taskId); //should throw an exception on failure (?)
-	bool hasTask(id_t taskId) const;
+	bool hasSubtask(id_t taskId) const;
 	void removeSubtask(id_t taskId); //should throw an exception on failure
 	std::list<id_t> getSubtasksList() const;
 
@@ -92,15 +94,13 @@ public:
 	void setCompletedPercentage(int completedPercentage);
 	void setDone();
 
-	// Convert representation: database rows(s) <-> object
+	// ----- object-relation representation conversion ----------
 	static databaseRow_t toDatabaseRow(const Task& task);
 	databaseRow_t toDatabaseRow() const;
 	static Task* fromDatabaseRow(databaseRow_t);
-
-	// maybe wouldn't be needed at all - see getTagsList(), getSubtasksList()
-	//std::list<databaseRow_t> toSubtaskRelation();
-	//std::list<databaseRow_t> toTagRelation();
 };
+
+// ----- class Task --------------------
 
 class TaskPersistence {
 private:
@@ -114,7 +114,7 @@ public:
 	~TaskPersistence();
 	
 	// save whole Task to database
-	void save();
+	void save(); // TODO
 	// load Task from database
 	Task* load(id_t taskId);
 
@@ -128,25 +128,25 @@ public:
 	// - will make SQL query to reflect changes into database
 	// Reason: We don't want to always save whole object, while making small changes.
 
-	void setDescription(const std::string description);
-	void setLongDescription(const std::string longDescription);
+	void setDescription(const std::string description); // TODO
+	void setLongDescription(const std::string longDescription); // TODO
 
-	void addTag(id_t tagId); //should throw an exception on failure (?)
-	void removeTag(id_t tagId); //should throw an exception on failure
+	void addTag(id_t tagId);  // TODO //should throw an exception on failure (?)
+	void removeTag(id_t tagId);  // TODO //should throw an exception on failure
 
-	void addSubtask(id_t taskId); //should throw an exception on failure (?)
-	void removeSubtask(id_t taskId); //should throw an exception on failure
+	void addSubtask(id_t taskId);  // TODO //should throw an exception on failure (?)
+	void removeSubtask(id_t taskId);  // TODO //should throw an exception on failure
 
-	void setDateCreated(const DateTime& dateCreated);
-	void setDateLastModified(const DateTime& dateLastModified);
-	void setDateStarted(const Date& dateStarted);
-	void setDateDeadline(const Date& dateDeadline);
-	void setDateCompleted(const Date& dateCompleted);
+	void setDateCreated(const DateTime& dateCreated); // TODO
+	void setDateLastModified(const DateTime& dateLastModified); // TODO
+	void setDateStarted(const Date& dateStarted); // TODO
+	void setDateDeadline(const Date& dateDeadline); // TODO
+	void setDateCompleted(const Date& dateCompleted); // TODO
 
-	void setPriority(int priority);
+	void setPriority(int priority); // TODO
 
-	void setCompletedPercentage(int completedPercentage);
-	void setDone();
+	void setCompletedPercentage(int completedPercentage); // TODO
+	void setDone(); // TODO
 };
 
 } // namespace getodo
