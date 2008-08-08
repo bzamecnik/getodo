@@ -43,7 +43,8 @@ public:
 	bool hasTask(id_t taskId);
 	Task* getTask(id_t taskId);
 	TaskPersistence& getPersistentTask(id_t taskId); // for modyfing particular things
-	Task* editTask(id_t taskId, const Task& task); // TODO
+	Task* editTask(id_t taskId, const Task& task);
+	Task* editTask(Task* task);
 	void deleteTask(id_t taskId); //should throw an exception on failure
 
 	// ----- Tag operations -----
@@ -70,9 +71,10 @@ public:
 	taskset_t filterTasks(const FilterRule& filterRule); // TODO
 private:
 	void loadAllFromDatabase(); // to be called by the constructor
+	
+	// void loadFromDatabase(const FilterRule& filter);
 	// TODO: move functionality here and make loadAllFromDatabase()
 	// call this function with empty filter
-	// void loadFromDatabase(const FilterRule& filter);
 	
 	void fillEmptyDatabase(); // TODO, create inital database structure
 };

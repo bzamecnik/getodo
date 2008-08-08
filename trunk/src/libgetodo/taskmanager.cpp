@@ -45,13 +45,12 @@ TaskManager::~TaskManager() {
 
 Task* TaskManager::addTask(Task* task) {
 	if(!task) { return 0; } // throw an exception
-	// insert the task into TaskManager...
-	tasks[task->getTaskId()] = task;
-	// ...and save it to database
+	// save it to database and get the new taskID
 	TaskPersistence tp(conn, task);
 	tp.save();
-	// taskId was assigned
-	return tp.getTask();
+	// insert the task into TaskManager
+	tasks[task->getTaskId()] = task;
+	return task;
 }
 
 bool TaskManager::hasTask(id_t taskId) {
@@ -74,7 +73,22 @@ TaskPersistence& TaskManager::getPersistentTask(id_t taskId) {
 	return *(new TaskPersistence(conn, getTask(taskId)));
 }
 
-// Task* TaskManager::editTask(id_t taskId, const Task& task);
+Task* TaskManager::editTask(Task* task) {
+	// taskId is specified inside the task
+	Task* t = getTask(task->getTaskId());
+	if (!t) { return 0; }
+	delete t;
+	t = task;
+	TaskPersistence tp(conn, t);
+	tp.save();
+	return task;
+}
+
+Task* TaskManager::editTask(id_t taskId, const Task& task) {
+	Task * t = new Task(task); // copy
+	t->setTaskId(taskId);
+	return editTask(t);
+}
 
 void TaskManager::deleteTask(id_t taskId) {
 	TaskPersistence& tp = getPersistentTask(taskId);
