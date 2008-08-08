@@ -52,15 +52,15 @@ Task::Task(const Task& t) :
 {}
 
 Task::~Task() {
-	tags.clear(); // is it needed?
-	subtasks.clear(); // -//-
+	// is it really needed?
+	tags.clear();
+	subtasks.clear();
 }
 
 // ----- access methods ----------
 
 id_t Task::getTaskId() const { return taskId; }
 void Task::setTaskId(id_t taskId) { this->taskId = taskId; }
-
 
 std::string Task::getDescription() const { return description; }
 void Task::setDescription(const std::string description) {
@@ -97,16 +97,13 @@ void Task::addSubtask(id_t taskId) {
 	//should throw an exception on failure (?)
 	subtasks.insert(taskId);
 }
-
-bool Task::hasTask(id_t taskId) const {
+bool Task::hasSubtask(id_t taskId) const {
 	return (subtasks.find(taskId) != subtasks.end());
 }
-
 void Task::removeSubtask(id_t taskId) {
 	//should throw an exception on failure
 	subtasks.erase(taskId);
 }
-
 std::list<id_t> Task::getSubtasksList() const {
 	std::list<id_t> list;
 	std::set<id_t>::const_iterator it;
@@ -117,7 +114,6 @@ std::list<id_t> Task::getSubtasksList() const {
 }
 
 DateTime Task::getDateCreated() const { return dateCreated; }
-
 void Task::setDateCreated(const DateTime& dateCreated) {
 	this->dateCreated = dateCreated;
 }
@@ -284,7 +280,7 @@ Task* TaskPersistence::load(id_t taskId) {
 }
 
 void TaskPersistence::erase() {
-	// if(!conn) { TODO: throw ...}
+	if(!conn) { return; } // throw
 	if(!task) { return; } // throw
 	if(task->getTaskId() < 0) { return; } // throw
 	

@@ -35,7 +35,10 @@ TaskManager::TaskManager(sqlite3_connection* c) : conn(c) {}
 
 TaskManager::~TaskManager() {
 	if(conn) { conn->close(); }
-	// TODO: delete tasks, tags, filterrules
+	// is it needed?
+	tasks.clear();
+	tags.clear();
+	filters.clear();
 }
 
 // ----- Task operations -----
@@ -43,7 +46,7 @@ TaskManager::~TaskManager() {
 Task* TaskManager::addTask(Task* task) {
 	if(!task) { return 0; } // throw an exception
 	// insert the task into TaskManager...
-	tasks.insert(std::pair<id_t,Task*>(task->getTaskId(),task));
+	tasks[task->getTaskId()] = task;
 	// ...and save it to database
 	TaskPersistence tp(conn, task);
 	tp.save();

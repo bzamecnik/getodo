@@ -23,6 +23,7 @@ Tag::Tag() : tagId(-1) {}
 Tag::Tag(const Tag& t) : tagId(t.tagId), tagName(t.tagName) {}
 Tag::Tag(std::string name) : tagId(-1), tagName(name) {}
 Tag::Tag(id_t id, std::string name) : tagId(id), tagName(name) {}
+Tag::~Tag() {}
 
 // ----- class TagPersistence --------------------
 
