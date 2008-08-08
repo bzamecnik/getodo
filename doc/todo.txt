@@ -1,13 +1,15 @@
 ===== GeToDo TODO =====
 
-- TaskManager - editing Task, filtering, filling empty database
+- TaskManager - filtering, filling empty database
+
+- think of an API between lib and GUI
 
 - Recurrence, Duration, FuzzyDate - think of
 - FilterRule - think of format and function
 - Task - think of priority
 	- explicitly set
 	- computed from other things
-- think of exceptions
+- exceptions
 - avoid duplicating code!!!
 - save sqlite table names somewhere as constants
 - database triggers for checking date format validity
