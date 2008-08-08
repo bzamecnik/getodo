@@ -43,7 +43,7 @@ Tag& TagPersistence::save(const Tag& tag) {
 	Tag* tagCopy = new Tag(tag);
 	if (count > 0) {
 		// it is already there -> update
-		sqlite3_command cmd(*conn, "UPDATE Tag SET tagName = ? WHERE tagId = (?);");
+		sqlite3_command cmd(*conn, "UPDATE Tag SET tagName = (?) WHERE tagId = (?);");
 		cmd.bind(1, tag.tagName);
 		cmd.bind(2, tag.tagId);
 		cmd.executenonquery();
@@ -65,7 +65,7 @@ Tag& TagPersistence::load(id_t tagId) {
 	sqlite3_command cmd(*conn, "SELECT tagName FROM Tag WHERE tagId = (?);");
 	cmd.bind(1, tagId);
 	std::string tagName = cmd.executestring();
-	// TODO: throw, if there is not record  with this tagID
+	// TODO: throw, if there is no record  with this tagID
 	return *(new Tag(tagId, tagName));
 }
 

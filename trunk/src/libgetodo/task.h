@@ -128,25 +128,25 @@ public:
 	// - will make SQL query to reflect changes into database
 	// Reason: We don't want to always save whole object, while making small changes.
 
-	void setDescription(const std::string description); // TODO
-	void setLongDescription(const std::string longDescription); // TODO
+	void setDescription(const std::string description);
+	void setLongDescription(const std::string longDescription);
 
-	void addTag(id_t tagId);  // TODO //should throw an exception on failure (?)
-	void removeTag(id_t tagId);  // TODO //should throw an exception on failure
+	void addTag(id_t tagId);
+	void removeTag(id_t tagId);
 
-	void addSubtask(id_t taskId);  // TODO //should throw an exception on failure (?)
-	void removeSubtask(id_t taskId);  // TODO //should throw an exception on failure
+	void addSubtask(id_t taskId);
+	void removeSubtask(id_t taskId);
 
-	void setDateCreated(const DateTime& dateCreated); // TODO
-	void setDateLastModified(const DateTime& dateLastModified); // TODO
-	void setDateStarted(const Date& dateStarted); // TODO
-	void setDateDeadline(const Date& dateDeadline); // TODO
-	void setDateCompleted(const Date& dateCompleted); // TODO
+	void setDateCreated(const DateTime& dateCreated);
+	void setDateLastModified(const DateTime& dateLastModified);
+	void setDateStarted(const Date& dateStarted);
+	void setDateDeadline(const Date& dateDeadline);
+	void setDateCompleted(const Date& dateCompleted);
 
-	void setPriority(int priority); // TODO
+	void setPriority(int priority);
 
-	void setCompletedPercentage(int completedPercentage); // TODO
-	void setDone(); // TODO
+	void setCompletedPercentage(int completedPercentage);
+	void setDone();
 };
 
 } // namespace getodo
