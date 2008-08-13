@@ -13,7 +13,7 @@
 #ifndef LIBGETODO_TASK_H
 #define LIBGETODO_TASK_H
 
-#include "getodo.h"
+#include "common.h"
 #include "tag.h"
 #include <set>
 
@@ -114,7 +114,7 @@ public:
 	~TaskPersistence();
 	
 	// save whole Task to database
-	void save(); // TODO
+	void save();
 	// load Task from database
 	Task* load(id_t taskId);
 

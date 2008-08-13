@@ -11,9 +11,10 @@
 //
 //
 
-#include "getodo.h"
 #include "task.h"
 #include <sstream>
+
+using namespace sqlite3x;
 
 namespace getodo {
 
@@ -217,7 +218,7 @@ TaskPersistence::TaskPersistence(sqlite3_connection* c)
 	: conn(c), task(0) {}
 
 // Constructor for modifying particular things in a Task
-TaskPersistence::TaskPersistence(sqlite3x::sqlite3_connection* c, Task* t)
+TaskPersistence::TaskPersistence(sqlite3_connection* c, Task* t)
 	: conn(c), task(t) {}
 
 TaskPersistence::~TaskPersistence() {}

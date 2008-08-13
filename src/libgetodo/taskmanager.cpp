@@ -11,7 +11,6 @@
 //
 //
 
-#include "getodo.h"
 #include "taskmanager.h"
 #include <sstream>
 
@@ -297,6 +296,12 @@ void TaskManager::loadAllFromDatabase() {
 		addFilterRule(FilterRule(filterRuleId, row["name"], row["rule"]));
 		row.clear();
 	}
+}
+
+void TaskManager::createEmptyDatabase() {
+	if (!conn) { return; } // throw
+	sqlite3_command cmd(*conn,TaskManager::createDBSQLCommand);
+	cmd.executenonquery();
 }
 
 } // namespace getodo

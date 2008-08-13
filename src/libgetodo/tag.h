@@ -14,7 +14,7 @@
 #ifndef LIBGETODO_TAG_H
 #define LIBGETODO_TAG_H
 
-#include "getodo.h"
+#include "common.h"
 
 using namespace sqlite3x;
 

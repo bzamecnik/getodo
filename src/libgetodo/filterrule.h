@@ -14,7 +14,7 @@
 #ifndef LIBGETODO_FILTERRULE_H
 #define LIBGETODO_FILTERRULE_H
 
-#include "getodo.h"
+#include "common.h"
 
 using namespace sqlite3x;
 
