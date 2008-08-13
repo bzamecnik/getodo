@@ -14,7 +14,10 @@
 - save sqlite table names somewhere as constants
 - database triggers for checking date format validity
 
-- think of GUI
+- design GUI
+	- in Glade
+	- Glade will generate a XML that will be dynamically loaded into the program
+	- http://www.gtkmm.org/docs/gtkmm-2.4/docs/tutorial/html/sec-libglademm-loading-glade-file.html
 
 - try linking with GTKmm (autotools etc.)
 
