@@ -4493,7 +4493,7 @@ echo "$as_me: error: Could not link against $ax_lib !" >&2;}
 #AC_CONFIG_SRCDIR([src/libgetodo/getodo.cpp])
 #AC_CONFIG_HEADER([config.h])
 
-ac_config_files="$ac_config_files Makefile lib/Makefile src/Makefile src/libgetodo/Makefile src/getodogui/Makefile"
+ac_config_files="$ac_config_files Makefile lib/Makefile src/Makefile src/libgetodo/Makefile src/getodogui/Makefile src/test/Makefile src/test/test1-sql/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -5100,6 +5100,8 @@ do
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "src/libgetodo/Makefile") CONFIG_FILES="$CONFIG_FILES src/libgetodo/Makefile" ;;
     "src/getodogui/Makefile") CONFIG_FILES="$CONFIG_FILES src/getodogui/Makefile" ;;
+    "src/test/Makefile") CONFIG_FILES="$CONFIG_FILES src/test/Makefile" ;;
+    "src/test/test1-sql/Makefile") CONFIG_FILES="$CONFIG_FILES src/test/test1-sql/Makefile" ;;
 
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
 echo "$as_me: error: invalid argument: $ac_config_target" >&2;}

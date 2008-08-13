@@ -1,19 +1,18 @@
--- GeToDo
--- Vygenerovan ERTOSem: 2.5.2008 17:44
+-- GeToDo - initial SQL database structure
 
--- Odstraneni tabulek --
+-- Drop tables --
 
 --DROP TABLE Tagged;
 --DROP TABLE Subtask;
 --DROP TABLE Tag;
 --DROP TABLE Task;
 
--- Vytvoreni tabulek --
+-- Create tables --
 
 CREATE TABLE Task (
 taskId      INTEGER      NOT NULL,
 description      STRING      NOT NULL,
-longDescription      STRING      NOT NULL,
+longDescription      STRING,
 dateCreated      STRING      NOT NULL,
 dateLastModified      STRING      NOT NULL,
 dateStarted      STRING,
@@ -48,5 +47,3 @@ filterRuleId      INTEGER      NOT NULL,
 name      STRING      NOT NULL  UNIQUE,
 rule      STRING      NOT NULL,
 CONSTRAINT pk_FilterRule PRIMARY KEY (filterRuleId));
-
--- Konec skriptu --

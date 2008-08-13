@@ -1,6 +1,6 @@
 ===== GeToDo TODO =====
 
-- TaskManager - filtering, filling empty database
+- TaskManager - filtering
 
 - think of an API between lib and GUI
 
