@@ -499,7 +499,7 @@ endef
 # $(1).a
 define ShakeNMake.EVAL.RULES.LIB
 $(1).LIB = $(1).a
-$(1).LIB: $$($(1).LIB)
+$(1).LIB: $($($(1).LIB))
 CLEAN_FILES += $$($(1).LIB)
 $$($(1).LIB): $$($(1).LIB.OBJECTS)
 	@$(call ShakeNMake.CALL.SETX,"AR [$$@] ..."); \

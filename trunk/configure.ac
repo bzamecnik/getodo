@@ -11,11 +11,14 @@ AC_PROG_RANLIB
 
 AX_BOOST_BASE([1.33])
 AX_BOOST_DATE_TIME
+AC_CHECK_LIB(sqlite3,main)
 
 ## create a config.h file (Automake will add -DHAVE_CONFIG_H)
 #AC_CONFIG_SRCDIR([src/libgetodo/getodo.cpp])
 #AC_CONFIG_HEADER([config.h])
 
-AC_CONFIG_FILES([Makefile lib/Makefile src/Makefile src/libgetodo/Makefile
-src/getodogui/Makefile src/test/Makefile src/test/test1-sql/Makefile])
+AC_CONFIG_FILES([Makefile \
+	lib/Makefile lib/sqlite3x/Makefile \
+	src/Makefile src/libgetodo/Makefile src/getodogui/Makefile \
+	src/test/Makefile src/test/test1-sql/Makefile])
 AC_OUTPUT
