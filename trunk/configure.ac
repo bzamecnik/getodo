@@ -11,7 +11,10 @@ AC_PROG_RANLIB
 
 AX_BOOST_BASE([1.33])
 AX_BOOST_DATE_TIME
-AC_CHECK_LIB(sqlite3,main)
+# find SQLite and set @SQLITE3_LDFLAGS@ and @SQLITE3_CFLAGS@
+AX_LIB_SQLITE3([3.0.0])
+## otherwise can be used this (but is not so mighty)
+#AC_CHECK_LIB([sqlite3],[main])
 
 ## create a config.h file (Automake will add -DHAVE_CONFIG_H)
 #AC_CONFIG_SRCDIR([src/libgetodo/getodo.cpp])
