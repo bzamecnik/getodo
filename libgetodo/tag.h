@@ -41,7 +41,7 @@ public:
 
 	// save Tag to database
 	// - if it has no tagId (eg. it was newly created), assign some
-	Tag& save(const Tag& tag);
+	void save(Tag& tag);
 	// load Tag from database
 	Tag& load(id_t tagId);
 	// delete Tag from database

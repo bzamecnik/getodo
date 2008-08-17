@@ -46,7 +46,7 @@ TaskManager::~TaskManager() {
 
 // ----- SQLite connection -----
 
-sqlite3_connection* TaskManager::getConnestion() {
+sqlite3_connection* TaskManager::getConnection() {
 	return conn;
 }
 
@@ -107,12 +107,12 @@ void TaskManager::deleteTask(id_t taskId) {
 
 // ----- Tag operations -----
 
-Tag& TaskManager::addTag(const Tag& tag) {
+void TaskManager::addTag(const Tag& tag) {
 	TagPersistence tp(conn);
 	// when saving, tagId is assigned by database
-	Tag* tagCopy = new Tag(tp.save(tag));
+	Tag* tagCopy = new Tag(tag);
+	tp.save(*tagCopy);
 	tags[tagCopy->tagId] = tagCopy;
-	return *tagCopy;
 }
 
 bool TaskManager::hasTag(id_t tagId) {

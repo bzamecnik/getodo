@@ -42,7 +42,7 @@ public:
 	
 	// ----- SQLite connection -----
 	
-	sqlite3_connection* getConnestion();
+	sqlite3_connection* getConnection(); // really publish?
 	
 	// ----- Task operations -----
 
@@ -56,7 +56,7 @@ public:
 
 	// ----- Tag operations -----
 
-	Tag& addTag(const Tag& tag);
+	void addTag(const Tag& tag);
 	bool hasTag(id_t tagId);
 	// bool hasTag(std::string tagName); // TODO
 	Tag& getTag(id_t tagId);
