@@ -1,1 +1,0 @@
-SUBDIRS = libgetodo getodogui test
