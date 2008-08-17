@@ -22,7 +22,7 @@ std::string DateTime::toString(const DateTime& date) {
 }
 
 std::string DateTime::toString() const {
-	DateTime::toString(*this);
+	return DateTime::toString(*this);
 }
 
 // ----- class Date --------------------
@@ -40,7 +40,7 @@ std::string Date::toString(const Date& date) {
 	return boost::gregorian::to_iso_extended_string(date.date);
 }
 
-std::string Date::toString() const { Date::toString(*this); }
+std::string Date::toString() const { return Date::toString(*this); }
 
 // ----- class Recurrence --------------------
 
