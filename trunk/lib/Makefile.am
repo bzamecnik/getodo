@@ -1,1 +1,0 @@
-SUBDIRS = sqlite3x
