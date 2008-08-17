@@ -26,8 +26,11 @@ TaskManager::TaskManager(std::string dbname) {
 	//try {
 	conn = new sqlite3_connection(dbname);
 	//} catch(...) { return; }
-	
-	loadAllFromDatabase();
+	if (checkDatabaseStructure()) {
+		loadAllFromDatabase();
+	} else {
+		createEmptyDatabase();
+	}
 }
 
 TaskManager::TaskManager(sqlite3_connection* c) : conn(c) {}
@@ -38,6 +41,13 @@ TaskManager::~TaskManager() {
 	tasks.clear();
 	tags.clear();
 	filters.clear();
+}
+
+
+// ----- SQLite connection -----
+
+sqlite3_connection* TaskManager::getConnestion() {
+	return conn;
 }
 
 // ----- Task operations -----
@@ -102,6 +112,7 @@ Tag& TaskManager::addTag(const Tag& tag) {
 	// when saving, tagId is assigned by database
 	Tag* tagCopy = new Tag(tp.save(tag));
 	tags[tagCopy->tagId] = tagCopy;
+	return *tagCopy;
 }
 
 bool TaskManager::hasTag(id_t tagId) {
@@ -149,6 +160,7 @@ FilterRule& TaskManager::addFilterRule(const FilterRule& filter) {
 	// when saving, filterRuleId is assigned by database
 	FilterRule* ruleCopy = new FilterRule(p.save(filter));
 	filters[ruleCopy->filterRuleId] = ruleCopy;
+	return *ruleCopy;
 }
 
 bool TaskManager::hasFilterRule(id_t filterRuleId) {
@@ -204,8 +216,8 @@ void TaskManager::loadAllFromDatabase() {
 	cmd.prepare("SELECT * FROM Task;");
 	cursor = cmd.executecursor();
 	columnsCount = cursor.colcount();
-	while(cursor.step()) {
-		for (int i = 1; i <= columnsCount; i++) {
+	while (cursor.step()) {
+		for (int i = 0; i < columnsCount; i++) {
 			row[cursor.getcolname(i)] = cursor.getstring(i);
 		}
 		Task* task = Task::fromDatabaseRow(row);
@@ -218,10 +230,10 @@ void TaskManager::loadAllFromDatabase() {
 	cmd.prepare("SELECT * FROM Tag;");
 	cursor = cmd.executecursor();
 	columnsCount = cursor.colcount();
-	while(cursor.step()) {
+	while (cursor.step()) {
 		// Remark: Don't assume any order of columns to make things
 		// more robust with future changes in mind.
-		for (int i = 1; i <= columnsCount; i++) {
+		for (int i = 0; i < columnsCount; i++) {
 			row[cursor.getcolname(i)] = cursor.getstring(i);
 		}
 		ss.str(row["tagId"]);
@@ -236,8 +248,8 @@ void TaskManager::loadAllFromDatabase() {
 	cmd.prepare("SELECT * FROM Tagged;");
 	cursor = cmd.executecursor();
 	columnsCount = cursor.colcount();
-	while(cursor.step()) {
-		for (int i = 1; i <= columnsCount; i++) {
+	while (cursor.step()) {
+		for (int i = 0; i < columnsCount; i++) {
 			row[cursor.getcolname(i)] = cursor.getstring(i);
 		}
 		// convert string -> id_t
@@ -260,8 +272,8 @@ void TaskManager::loadAllFromDatabase() {
 	cmd.prepare("SELECT * FROM Subtask;");
 	cursor = cmd.executecursor();
 	columnsCount = cursor.colcount();
-	while(cursor.step()) {
-		for (int i = 1; i <= columnsCount; i++) {
+	while (cursor.step()) {
+		for (int i = 0; i < columnsCount; i++) {
 			row[cursor.getcolname(i)] = cursor.getstring(i);
 		}
 		// convert string -> id_t
@@ -284,8 +296,8 @@ void TaskManager::loadAllFromDatabase() {
 	cmd.prepare("SELECT * FROM FilterRule;");
 	cursor = cmd.executecursor();
 	columnsCount = cursor.colcount();
-	while(cursor.step()) {
-		for (int i = 1; i <= columnsCount; i++) {
+	while (cursor.step()) {
+		for (int i = 0; i < columnsCount; i++) {
 			row[cursor.getcolname(i)] = cursor.getstring(i);
 		}
 		// convert string -> id_t
@@ -298,9 +310,96 @@ void TaskManager::loadAllFromDatabase() {
 	}
 }
 
+// return true, if there exist all the tables needed
+bool TaskManager::checkDatabaseStructure() {
+	if (!conn) { return false; } // throw
+	// TODO
+	// * this code could be optimized, using sets may be overkill
+	// * tables named shouldn't be hard-coded
+	std::set<std::string> tablesNeeded;
+	tablesNeeded.insert("Task");
+	tablesNeeded.insert("Tag");
+	tablesNeeded.insert("Subtask");
+	tablesNeeded.insert("Tagged");
+	tablesNeeded.insert("FilterRule");
+	sqlite3_command cmd(*conn,"SELECT name FROM sqlite_master "
+		"WHERE type='table' ORDER BY name;");
+	sqlite3_cursor cursor = cmd.executecursor();
+	std::set<std::string>::iterator tableIt;
+	while (cursor.step()) {
+		std::string table = cursor.getstring(0);
+		tableIt = tablesNeeded.find(table);
+		if (tableIt != tablesNeeded.end()) {
+			tablesNeeded.erase(tableIt);
+		}
+	}
+	return tablesNeeded.empty();
+}
+
 void TaskManager::createEmptyDatabase() {
 	if (!conn) { return; } // throw
-	sqlite3_command cmd(*conn,TaskManager::createDBSQLCommand);
+	// TODO: better would be to include this SQL in the compile-time
+	// from an external file
+	sqlite3_command cmd(*conn);
+	// the command has to be split into separate queries
+	cmd.prepare(
+		"CREATE TABLE Task ("
+		"taskId      INTEGER      NOT NULL,"
+		"description      STRING      NOT NULL,"
+		"longDescription      STRING,"
+		"dateCreated      STRING      NOT NULL,"
+		"dateLastModified      STRING      NOT NULL,"
+		"dateStarted      STRING,"
+		"dateDeadline      STRING,"
+		"dateCompleted      STRING,"
+		"estDuration      STRING,"
+		"recurrence      STRING,"
+		"priority      STRING      NOT NULL,"
+		"completedPercentage      INTEGER      DEFAULT '0'  NOT NULL,"
+		"CONSTRAINT pk_Task PRIMARY KEY (taskId)"
+		");"
+	);
+	cmd.executenonquery();
+	
+	cmd.prepare(
+		"CREATE TABLE Tag ("
+		"tagId      INTEGER      NOT NULL,"
+		"tagName      STRING      NOT NULL  UNIQUE,"
+		"CONSTRAINT pk_Tag PRIMARY KEY (tagId)"
+		");"
+	);
+	cmd.executenonquery();
+	
+	cmd.prepare(
+		"CREATE TABLE Subtask ("
+		"sub_taskId      INTEGER      NOT NULL,"
+		"super_taskId      INTEGER      NOT NULL,"
+		"CONSTRAINT pk_Subtask PRIMARY KEY (sub_taskId, super_taskId),"
+		"CONSTRAINT fk_Subtask_Task FOREIGN KEY (sub_taskId, super_taskId) "
+		"REFERENCES Task(taskId,taskId)"
+		");"
+	);
+	cmd.executenonquery();
+	
+	cmd.prepare(
+		"CREATE TABLE Tagged ("
+		"taskId      INTEGER      NOT NULL,"
+		"tagId      INTEGER      NOT NULL,"
+		"CONSTRAINT pk_Tagged PRIMARY KEY (taskId, tagId),"
+		"CONSTRAINT fk_Tagged_Task FOREIGN KEY (taskId) REFERENCES Task(taskId),"
+		"CONSTRAINT fk_Tagged_Tag FOREIGN KEY (tagId) REFERENCES Tag(tagId)"
+		");"
+	);
+	cmd.executenonquery();
+	
+	cmd.prepare(
+		"CREATE TABLE FilterRule ("
+		"filterRuleId      INTEGER      NOT NULL,"
+		"name      STRING      NOT NULL  UNIQUE,"
+		"rule      STRING      NOT NULL,"
+		"CONSTRAINT pk_FilterRule PRIMARY KEY (filterRuleId)"
+		");"
+	);
 	cmd.executenonquery();
 }
 

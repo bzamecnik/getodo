@@ -25,6 +25,7 @@ FilterRule::FilterRule(std::string n, std::string r)
 	: filterRuleId(-1), name(n), rule(r) {}
 FilterRule::FilterRule(id_t id, std::string n, std::string r)
 	: filterRuleId(id), name(n), rule(r) {}
+FilterRule::~FilterRule() {}
 
 // ----- class FilterRulePersistence --------------------
 
