@@ -1,0 +1,27 @@
+===== GeToDo TODO =====
+
+- TaskManager - filtering
+
+- think of an API between lib and GUI
+
+- Recurrence, Duration, FuzzyDate - think of
+- FilterRule - think of format and function
+- Task - think of priority
+	- explicitly set
+	- computed from other things
+- exceptions
+- avoid duplicating code!!!
+- save sqlite table names somewhere as constants
+- database triggers for checking date format validity
+
+- design GUI
+	- in Glade
+	- Glade will generate a XML that will be dynamically loaded into the program
+	- http://www.gtkmm.org/docs/gtkmm-2.4/docs/tutorial/html/sec-libglademm-loading-glade-file.html
+
+- try linking with GTKmm (autotools etc.)
+
+== Done - kept for reference ==
+
+* run autoreconf --install (only once)
+* set LD_CONFIG_... for running main executable (for .so libraries)

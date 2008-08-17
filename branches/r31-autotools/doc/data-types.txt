@@ -1,0 +1,28 @@
+- SQLite supports string and some number data types (but not date or enum)
+- I must create a format for custom data types (fuzzy dates, etc.)
+
+- Date
+	- 2008-05-02 16:51:00 // date+time
+	- 2008-05-02 // date
+	- 2008-05-02+10w // indefinite (???)
+	- "" // unknown (or use NULL?)
+
+- Duration
+  - <order: number+letter><value>
+  	- number for proper sorting
+	- 7Y 2 // years
+	- 6M 6 // months
+	- 5W 4 // weeks
+	- 4D 14 // days
+	- 3h 12 // hours
+	- 2m 5 // minutes
+	- 1s 60 // seconds (?)
+	- "" // unknown
+
+- Recurrence
+	- "" // once - default
+	- d 2 // every two days
+	- w 2 Mo Fr // every Monday and Friday every odd week
+	- m 4 12 // every 12th day in four months
+	- y 12 1 // 1st December every year
+	- i 2008-01-02 2008-02-14 // all days in interval between two dates
