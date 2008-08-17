@@ -36,8 +36,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="0"
 				AdditionalIncludeDirectories="&quot;$(SolutionDir)&quot;;&quot;$(SolutionDir)\libgetodo&quot;;&quot;C:\Program Files\boost\boost_1_34_1&quot;;&quot;C:\program files\sqlite&quot;"
 				RuntimeLibrary="1"
+				DebugInformationFormat="3"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -52,6 +54,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="sqlite3.lib sqlite3x.lib libgetodo.lib"
 				AdditionalLibraryDirectories="&quot;$(SolutionDir)&quot;\debug;&quot;C:\Program Files\SQLite&quot;;&quot;C:\program Files\boost\boost_1_34_1\lib&quot;"
+				GenerateDebugInformation="true"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -80,6 +83,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			>

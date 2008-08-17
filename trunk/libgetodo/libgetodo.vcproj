@@ -37,8 +37,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="0"
 				AdditionalIncludeDirectories="&quot;C:\Program Files\boost\boost_1_34_1&quot;;&quot;$(SolutionDir)&quot;;&quot;C:\program files\sqlite&quot;"
 				RuntimeLibrary="1"
+				DebugInformationFormat="3"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"

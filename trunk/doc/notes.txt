@@ -1,26 +1,26 @@
-GeToDo notes
+===== GeToDo notes =====
 
-==== Source Code Organizing ====
+- GeToDo homepage: http://zamecnik.org/projekty/getodo
+- Google Code project: http://code.google.com/p/getodo
+- Subversion repository: http://getodo.googlecode.com/svn/trunk/
 
-- libgetodo (library)
-	- form: static or dynamic library
-	- content
-		- data reprezentation
-		- object <-> relation conversion
-		- operations with data
-- getodo (GUI client)
-	- form: executable
-	- content
-		- user interface
+==== Source Code Organization ====
 
-- VCS
-	*- SVN repo at google code
-	- other options:
-		- git (git.or.cz), darcs, svn+svk, svn+git
+- libgetodo (static library)
+	- data reprezentation
+	- object <-> relation conversion
+	- operations with data
+- getodo (GUI, executable)
+	- user interface
+- testing (console)
+	- testing module
+- sqlite3x (static library)
+	- C++ wrapper over SQLite
+	- included in the GeToDo source tree
 
 ==== Libraries ====
 
-- boost
+- boost - http://boost.org/
 	- date & time handling (Date Time)!
 	- parsing (Spirit)!, Tokenizer, Format
 	- regex (Regex, Xpresive)
@@ -29,30 +29,86 @@ GeToDo notes
 	- File System
 	[- Variant (for date, recurrence etc. types)]
 		- better would be class hierarchy
-
 - GUI
-	- using gtkmm
-	- GUI designer: Glade
-
-- database libraries
-	* sqlite3
-	- what wrapper?
-		- sqlite3x (original)
-		* sqlite3x (s11n.net) - probably this
-		- sqlitewrapper - or this
-		- QtSql (?)
+	- GTK+ - http://www.gtk.org/
+	- gtkmm (C++ wrapper over GTK+) - http://www.gtkmm.org/
+	- Glade (GUI designer) - http://glade.gnome.org/
+- database
+	- sqlite3 - http://sqlite.org/
+	- sqlite3x (C++ wrapper over SQLite)  - http://www.wanderinghorse.net/computing/sqlite/
 
 ==== Building ====
 
-- some options for building:
+Now we are using MS Visual Studio for building. But there is also a branch
+using GNU toolchain and Autotool. It works on Linux using gcc and also
+on Windows using MinGW and MSYS. It is prepared to for a future Linux port.
 
-- build environment
-	- MinGW on Windows + autotools (autoconf, automake, libtool)
-	- MinGW on Linux as cross compiler + autotools
-	* gcc on Linux + autotools
-	- Visual Studion on Windows + autotools | MS automagic 
-- editor/IDE
-	* KDevelop
-	- NetBeans
-	- Visual Studio
-	- vim
+- some options for building:
+	- build environment
+		* MinGW on Windows + autotools (autoconf, automake, libtool)
+		- MinGW on Linux as cross compiler + autotools
+		* gcc on Linux + autotools
+		* MS Visual Studio on Windows 
+	- editor/IDE
+		* KDevelop
+		* Visual Studio
+
+==== Notes on Autotools ====
+
+To build the project on Linux run:
+$ ./configure
+$ make
+
+To build the project on Windows with MinGW run:
+$ sh ./config-mingw-win32.sh # calls ./configure plus with some arguments
+$ make
+
+==== Installing libraries ====
+
+=== Windows ===
+
+You need GTK+, gtkmm, Boost and SQLite. SQLite3x is inside GeToDo.
+The Visual Studio project setting have the paths to these libraries harcoded.
+If you have them somewhere else, you have to edit the settings (include and
+library paths).
+Autotools on Linux can find the paths themselves, because the libaries are in
+standard paths. Autotools on Windows need some help (config-mingw-win32.sh).
+
+- GTK+
+	- installer: http://sourceforge.net/project/showfiles.php?group_id=98754
+		- gtk+-win32-devel, gtk+-win32-runtime
+	- or bundle: http://www.gtk.org/download-windows.html
+	- location: C:\GTK 
+- gtkmm
+	- installer: http://ftp.gnome.org/pub/GNOME/binaries/win32/gtkmm/
+		- gtkmm-win32-devel, gtkmm-win32-runtime
+	- location: C:\GTK
+- Boost
+	- pre-build installer for MSVC: http://www.boostpro.com/products/free
+	- source: http://www.boost.org/users/download/
+		- for MinGW you need to build Boost yourself
+			- http://www.boost.org/doc/libs/1_36_0/more/getting_started/windows.html
+		- location: C:\Program Files\Boost\boost_1_34_1
+- SQLite
+	- http://sqlite.org/download.html
+		- sqlitedll, sqlite-amalgamation
+	- you can build the library yourself or make a static library from downloaded DLL
+	- sqlite-amalgamation contains source code and header (sqlite3.h) we need
+	- Making static library from DLL:
+		- extract the zip with DLL somewhere (sqlite3.def, sqlite3.dll) 
+		- MinGW:
+			- dlltool --def sqlite3.def --dllname sqlite3.dll --output-lib libsqlite3.a
+			- place libsqlite3.a somewhere (eg. to /usr/lib in MSYS)
+			- place sqlite3.h somewhere (eg. to /usr/include in MSYS)
+		- MSVS
+			- start the MSVS console (Tools>Visual Studio 2005 Command Prompt)
+			- goto to the extracted archive
+			- lib /def:sqlite3.def
+			- place sqlite3.dll and sqlite3.h somewhere
+	- location: C:\Program Files\SQLite
+- SQLite3x
+	- is included into GeToDo source tree, so you don't have to care about it
+
+==== Installer ====
+
+- NSIS (Nullsoft Scriptable Install System) - http://nsis.sourceforge.net/
