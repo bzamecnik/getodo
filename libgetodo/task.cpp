@@ -29,7 +29,7 @@ Task::Task() :
 	completedPercentage(0)
 {
 	using namespace boost;
-	dateCreated = posix_time::ptime(gregorian::day_clock::local_day());
+	dateCreated = DateTime::now();
 	dateLastModified = dateCreated;
 	dateStarted = gregorian::date(date_time::not_a_date_time);
 	dateDeadline = gregorian::date(date_time::not_a_date_time);
@@ -233,6 +233,7 @@ void TaskPersistence::save() {
 	// TODO: delete this when Duration and Recurence will be ready
 	row["estDuration"] = "";
 	row["recurrence"] = "";
+	row["dateLastModified"] = DateTime::now().toString();
 	
 	int count = 0;
 	if (task->getTaskId() >= 0) {
@@ -278,7 +279,7 @@ void TaskPersistence::save() {
 			sql << col->first << " ";
 			values << "'" << col->second << "'";
 		}
-		sql << " VALUES (" << values.str() << ");";
+		sql << ") VALUES (" << values.str() << ");";
 		sqlite3_command cmd(*conn, sql.str());
 		sql.clear();
 		values.clear();
@@ -290,8 +291,8 @@ void TaskPersistence::save() {
 		
 		// set it to the newly created database row too
 		// this row is identified by a special ROWID column
-		cmd.prepare("INSERT INTO Task taskID VALUES (?) "
-			"WHERE ROWID = (?)");
+		cmd.prepare("INSERT INTO Task (taskId) VALUES (?) "
+			"WHERE ROWID = ?");
 		cmd.bind(1, task->getTaskId());
 		cmd.executenonquery();
 	}
@@ -321,15 +322,16 @@ Task* TaskPersistence::load(id_t taskId) {
 	sqlite3_command cmd(*conn, "SELECT * FROM Task WHERE taskId = (?);");
 	cmd.bind(1, taskId);
 	sqlite3_cursor cursor = cmd.executecursor();
-	if(!cursor.step()) {
+	if (!cursor.step()) {
 		// TODO: throw, if there is not record  with this tagID
 		return 0;
 	}
 	databaseRow_t row;
 	int columnsCount = cursor.colcount();
-	for (int i = 1; i <= columnsCount; i++) {
+	for (int i = 0; i < columnsCount; i++) {
 		row[cursor.getcolname(i)] = cursor.getstring(i);
 	}
+	cursor.close();
 	task = Task::fromDatabaseRow(row);
 	if(!task) {
 		// TODO: throw an exception
@@ -339,25 +341,27 @@ Task* TaskPersistence::load(id_t taskId) {
 	// Load its tags
 	id_t id;
 	
-	cmd.prepare("SELECT tagId FROM Tagged WHERE taskId = (?);");
+	cmd.prepare("SELECT tagId FROM Tagged WHERE taskId = ?;");
 	cmd.bind(1, taskId);
 	cursor = cmd.executecursor();
 	
-	while(cursor.step()) {
-		id = cursor.getint(1);
+	while (cursor.step()) {
+		id = cursor.getint(0);
 		task->addTag(id);
 	}
+	cursor.close();
 	
 	// Load its subtasks
 	
-	cmd.prepare("SELECT sub_taskId FROM Subtask WHERE super_taskId = (?);");
+	cmd.prepare("SELECT sub_taskId FROM Subtask WHERE super_taskId = ?;");
 	cmd.bind(1, taskId);
 	cursor = cmd.executecursor();
-	while(cursor.step()) {
-		id = cursor.getint(1);
+	while (cursor.step()) {
+		id = cursor.getint(0);
 		task->addSubtask(id);
 	}
-	
+	cursor.close();
+
 	return task;
 }
 

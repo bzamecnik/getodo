@@ -19,6 +19,8 @@ public:
 	DateTime(const boost::posix_time::ptime& d);
 	DateTime(const DateTime& d);
 	
+	static DateTime now();
+
 	// For database storage.
 	// Format: YYYY-MM-DD HH:MM:SS
 	static DateTime fromString(std::string str);

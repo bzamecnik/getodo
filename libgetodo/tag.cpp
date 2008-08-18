@@ -47,8 +47,10 @@ void TagPersistence::save(Tag& tag) {
 			// if there is already a tag with such tagName, set the
 			// tag.tagId respectively
 			tag.tagId = cursor.getint(0);
+			cursor.close();
 			return;
 		}
+		cursor.close();
 	}
 	if (count > 0) {
 		if (tag.tagId >= 0) {
@@ -81,6 +83,7 @@ Tag& TagPersistence::load(id_t tagId) {
 	if (cursor.step()) {
 		tagName = cursor.getstring(0);
 	}
+	cursor.close();
 	// TODO: throw, if there is no record with such a tagID
 	return *(new Tag(tagId, tagName));
 }

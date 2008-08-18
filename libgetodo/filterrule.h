@@ -43,7 +43,7 @@ public:
 
 	// save FilterRule to database
 	// - if it has no filterRuleId (eg. it was newly created), assign some
-	FilterRule& save(const FilterRule& filterRule);
+	void save(FilterRule& filterRule);
 	// load FilterRule from database
 	FilterRule& load(id_t filterRuleId);
 	
@@ -51,6 +51,8 @@ public:
 
 	void setName(id_t filterRuleId, const std::string name);
 	void setRule(id_t filterRuleId, const std::string rule);
+private:
+	void setColumn(id_t filterRuleId, const std::string value, const std::string column);
 };
 
 } // namespace getodo

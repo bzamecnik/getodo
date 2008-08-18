@@ -66,7 +66,7 @@ public:
 
 	// ----- FilterRule operations -----
 
-	FilterRule& addFilterRule(const FilterRule& filter);
+	void addFilterRule(FilterRule& filter);
 	bool hasFilterRule(id_t filterRuleId);
 	// bool hasFilterRule(std::string filterRuleName); // TODO
 	FilterRule& getFilterRule(id_t filterRuleId);
