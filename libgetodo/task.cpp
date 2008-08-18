@@ -189,14 +189,14 @@ Task* Task::fromDatabaseRow(databaseRow_t row) {
 	task->description = row["description"];
 	task->longDescription = row["longDescription"];
 	
-	task->dateCreated = DateTime::fromString(row["dateCreated"]);
-	task->dateLastModified = DateTime::fromString(row["dateLastModified"]);
-	task->dateStarted = Date::fromString(row["dateStarted"]);
-	task->dateDeadline = Date::fromString(row["dateDeadline"]);
-	task->dateCompleted = Date::fromString(row["dateCompleted"]);
+	task->dateCreated = DateTime(row["dateCreated"]);
+	task->dateLastModified = DateTime(row["dateLastModified"]);
+	task->dateStarted = Date(row["dateStarted"]);
+	task->dateDeadline = Date(row["dateDeadline"]);
+	task->dateCompleted = Date(row["dateCompleted"]);
 	
-	// estDuration = Duration.fromString(row["estDuration"]);
-	// recurrence = Recurrence.fromString(row["recurrence"]);
+	// estDuration = Duration(row["estDuration"]);
+	// recurrence = Recurrence(row["recurrence"]);
 	
 	ss.str(row["priority"]);
 	ss >> task->priority;
@@ -532,4 +532,3 @@ void TaskPersistence::setDone() {
 }
 
 } // namespace getodo
-

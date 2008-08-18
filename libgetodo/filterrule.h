@@ -15,6 +15,7 @@
 #define LIBGETODO_FILTERRULE_H
 
 #include "common.h"
+#include <sstream>
 
 using namespace sqlite3x;
 
@@ -22,15 +23,17 @@ namespace getodo {
 
 class FilterRule {
 public:
-	id_t filterRuleId; // -1, if not already in database
+	id_t id; // -1, if not already in database
 	std::string name;
 	std::string rule;
 
 	FilterRule();
 	FilterRule(const FilterRule& r);
 	FilterRule(std::string name, std::string rule);
-	FilterRule(id_t filterRuleId, std::string name, std::string rule);
+	FilterRule(id_t id, std::string name, std::string rule);
 	virtual ~FilterRule();
+
+	virtual std::string toString();
 };
 
 class FilterRulePersistence {
@@ -42,17 +45,17 @@ public:
 	virtual ~FilterRulePersistence();
 
 	// save FilterRule to database
-	// - if it has no filterRuleId (eg. it was newly created), assign some
-	void save(FilterRule& filterRule);
+	// - if it has no id (eg. it was newly created), assign some
+	void save(FilterRule& filter);
 	// load FilterRule from database
-	FilterRule& load(id_t filterRuleId);
+	void load(FilterRule& filter, id_t id);
 	
-	void erase(id_t filterRuleId);
+	void erase(id_t id);
 
-	void setName(id_t filterRuleId, const std::string name);
-	void setRule(id_t filterRuleId, const std::string rule);
+	void setName(FilterRule& filter, const std::string name);
+	void setRule(FilterRule& filter, const std::string rule);
 private:
-	void setColumn(id_t filterRuleId, const std::string value, const std::string column);
+	void setColumn(id_t id, const std::string value, const std::string column);
 };
 
 } // namespace getodo
