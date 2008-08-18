@@ -13,6 +13,10 @@ DateTime::DateTime() {}
 DateTime::DateTime(const boost::posix_time::ptime& d) : date(d) {}
 DateTime::DateTime(const DateTime& d) : date(d.date) {}
 
+DateTime DateTime::now() {
+	return DateTime(boost::posix_time::ptime(boost::gregorian::day_clock::local_day()));
+}
+
 DateTime DateTime::fromString(std::string str) {
 	return boost::posix_time::time_from_string(str);
 }

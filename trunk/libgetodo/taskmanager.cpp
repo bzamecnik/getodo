@@ -155,12 +155,12 @@ void TaskManager::deleteTag(id_t tagId) {
 
 // ----- FilterRule operations -----
 
-FilterRule& TaskManager::addFilterRule(const FilterRule& filter) {
+void TaskManager::addFilterRule(FilterRule& rule) {
 	FilterRulePersistence p(conn);
 	// when saving, filterRuleId is assigned by database
-	FilterRule* ruleCopy = new FilterRule(p.save(filter));
+	FilterRule* ruleCopy = new FilterRule(rule);
+	p.save(*ruleCopy);
 	filters[ruleCopy->filterRuleId] = ruleCopy;
-	return *ruleCopy;
 }
 
 bool TaskManager::hasFilterRule(id_t filterRuleId) {
@@ -225,6 +225,7 @@ void TaskManager::loadAllFromDatabase() {
 		addTask(task);
 		row.clear();
 	}
+	cursor.close();
 	
 	// load Tags
 	cmd.prepare("SELECT * FROM Tag;");
@@ -243,6 +244,7 @@ void TaskManager::loadAllFromDatabase() {
 		addTag(Tag(tagId, row["tagName"]));
 		row.clear();
 	}
+	cursor.close();
 	
 	// load Task-Tag relations
 	cmd.prepare("SELECT * FROM Tagged;");
@@ -267,6 +269,7 @@ void TaskManager::loadAllFromDatabase() {
 		}
 		row.clear();
 	}
+	cursor.close();
 	
 	// load Subtask relations
 	cmd.prepare("SELECT * FROM Subtask;");
@@ -291,6 +294,7 @@ void TaskManager::loadAllFromDatabase() {
 		}
 		row.clear();
 	}
+	cursor.close();
 	
 	// load FilterRules
 	cmd.prepare("SELECT * FROM FilterRule;");
@@ -308,6 +312,7 @@ void TaskManager::loadAllFromDatabase() {
 		addFilterRule(FilterRule(filterRuleId, row["name"], row["rule"]));
 		row.clear();
 	}
+	cursor.close();
 }
 
 // return true, if there exist all the tables needed
@@ -333,6 +338,7 @@ bool TaskManager::checkDatabaseStructure() {
 			tablesNeeded.erase(tableIt);
 		}
 	}
+	cursor.close();
 	return tablesNeeded.empty();
 }
 
@@ -395,7 +401,7 @@ void TaskManager::createEmptyDatabase() {
 	cmd.prepare(
 		"CREATE TABLE FilterRule ("
 		"filterRuleId      INTEGER      NOT NULL,"
-		"name      STRING      NOT NULL  UNIQUE,"
+		"name      STRING      NOT NULL," // +UNIQUE (?)
 		"rule      STRING      NOT NULL,"
 		"CONSTRAINT pk_FilterRule PRIMARY KEY (filterRuleId)"
 		");"
