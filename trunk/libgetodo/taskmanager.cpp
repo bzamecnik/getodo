@@ -109,10 +109,10 @@ void TaskManager::deleteTask(id_t taskId) {
 
 void TaskManager::addTag(const Tag& tag) {
 	TagPersistence tp(conn);
-	// when saving, tagId is assigned by database
+	// when saving, id is assigned by database
 	Tag* tagCopy = new Tag(tag);
 	tp.save(*tagCopy);
-	tags[tagCopy->tagId] = tagCopy;
+	tags[tagCopy->id] = tagCopy;
 }
 
 bool TaskManager::hasTag(id_t tagId) {
@@ -138,7 +138,7 @@ Tag& TaskManager::editTag(id_t tagId, const Tag& tag) {
 	Tag* tagCopy = new Tag(tag);
 	tags[tagId] = tagCopy;
 	// correct new tag's tagID to be the same as former's one
-	tags[tagId]->tagId = tagId;
+	tags[tagId]->id = tagId;
 	// Save it to database
 	TagPersistence p(conn);
 	p.save(*tagCopy);
@@ -160,7 +160,7 @@ void TaskManager::addFilterRule(FilterRule& rule) {
 	// when saving, filterRuleId is assigned by database
 	FilterRule* ruleCopy = new FilterRule(rule);
 	p.save(*ruleCopy);
-	filters[ruleCopy->filterRuleId] = ruleCopy;
+	filters[ruleCopy->id] = ruleCopy;
 }
 
 bool TaskManager::hasFilterRule(id_t filterRuleId) {
@@ -186,7 +186,7 @@ FilterRule& TaskManager::editFilterRule(id_t filterRuleId, const FilterRule& fil
 	FilterRule* ruleCopy = new FilterRule(filter);
 	filters[filterRuleId] = ruleCopy;
 	// correct new FilterRule's filterRuleId to be the same as former's one
-	filters[filterRuleId]->filterRuleId = filterRuleId;
+	filters[filterRuleId]->id = filterRuleId;
 	// Save it to database
 	FilterRulePersistence p(conn);
 	p.save(*ruleCopy);

@@ -15,6 +15,7 @@
 #define LIBGETODO_TAG_H
 
 #include "common.h"
+#include <sstream>
 
 using namespace sqlite3x;
 
@@ -22,14 +23,16 @@ namespace getodo {
 
 class Tag {
 public:
-	id_t tagId; // -1, if not already in database
-	std::string tagName;
+	id_t id; // -1, if not already in database
+	std::string name;
 
 	Tag();
 	Tag(const Tag& t);
-	Tag(std::string tagName);
+	Tag(std::string name);
 	Tag(id_t tagId, std::string tagName);
 	virtual ~Tag();
+
+	virtual std::string toString();
 };
 
 class TagPersistence {
@@ -40,12 +43,12 @@ public:
 	virtual ~TagPersistence();
 
 	// save Tag to database
-	// - if it has no tagId (eg. it was newly created), assign some
+	// - if it has no id (eg. it was newly created), assign some
 	void save(Tag& tag);
 	// load Tag from database
-	Tag& load(id_t tagId);
+	Tag& load(id_t id);
 	// delete Tag from database
-	void erase(id_t tagId);
+	void erase(id_t id);
 };
 
 } // namespace getodo

@@ -6,6 +6,7 @@
 #include <boost/date_time/date.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <sstream>
 
 namespace getodo {
 
@@ -17,15 +18,18 @@ public:
 	
 	DateTime();
 	DateTime(const boost::posix_time::ptime& d);
-	DateTime(const DateTime& d);
+	DateTime(const DateTime& d); // copy
+	explicit DateTime(std::string d);
+	// explicit DateTime(Date d);
 	
 	static DateTime now();
 
-	// For database storage.
-	// Format: YYYY-MM-DD HH:MM:SS
-	static DateTime fromString(std::string str);
 	static std::string toString(const DateTime& date);
 	std::string toString() const;
+private:
+	// format for string representation
+	// eg. YYYY-MM-DD HH:MM:SS
+	static std::string format;
 };
 
 class Date {
@@ -35,12 +39,15 @@ public:
 	Date();
 	Date(const boost::gregorian::date& d);
 	Date(const Date& d);
+	explicit Date(std::string d);
+
+	static Date now();
 	
-	// For database storage.
 	// Format: YYYY-MM-DD
-	static Date fromString(std::string str);
 	static std::string toString(const Date& date);
 	std::string toString() const;
+
+	static std::string format;
 };
 
 //class FuzzyDate {
