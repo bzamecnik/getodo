@@ -1,9 +1,6 @@
 // $Id$
 //
-// Base libgetodo header file.
-//
-// Description: classes DateTime, Date, Recurrence*, Duration
-//
+// libgetodo header file for including from external programs
 //
 // Author: Bohumir Zamecnik <bohumir@zamecnik.org>, (C) 2008
 //

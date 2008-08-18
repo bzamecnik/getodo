@@ -82,17 +82,76 @@ std::string Date::toString() const { return Date::toString(*this); }
 
 // ----- class Recurrence --------------------
 
+Recurrence* Recurrence::fromString(std::string str) {
+	Recurrence* recurrence = 0;
+	if (str.length() <= 0) {
+		recurrence = new RecurrenceOnce();
+	} else if(str.length() >= 2) {
+		// recurrence type is recognized by the first character
+		// the string representation itself is separeted by a space
+		std::string chopped = str.substr(2); // chop identifier and space
+		switch(str[0]) {
+			case 'd': recurrence = new RecurrenceDaily(chopped); break;
+			case 'w': recurrence = new RecurrenceWeekly(chopped); break;
+			case 'm': recurrence = new RecurrenceMonthly(chopped); break;
+			case 'y': recurrence = new RecurrenceYearly(chopped); break;
+			case 'i': recurrence = new RecurrenceIntervalDays(chopped); break;
+		}
+	}
+	return recurrence;
+}
+
+// ----- class Recurrence --------------------
+
+Recurrence::~Recurrence() {}
+
 // ----- class RecurrenceOnce --------------------
+
+// stub
+RecurrenceOnce::RecurrenceOnce() {}
+RecurrenceOnce::~RecurrenceOnce() {}
+Date RecurrenceOnce::next() { return Date(); }
+std::string RecurrenceOnce::toString() const { return std::string(); }
 
 // ----- class RecurrenceDaily --------------------
 
+// stub
+RecurrenceDaily::RecurrenceDaily(std::string s) {}
+RecurrenceDaily::~RecurrenceDaily() {}
+Date RecurrenceDaily::next() { return Date(); }
+std::string RecurrenceDaily::toString() const { return std::string(); }
+
 // ----- class RecurrenceWeekly --------------------
+
+// stub
+RecurrenceWeekly::RecurrenceWeekly(std::string s) {}
+RecurrenceWeekly::~RecurrenceWeekly() {}
+Date RecurrenceWeekly::next() { return Date(); }
+std::string RecurrenceWeekly::toString() const { return std::string(); }
 
 // ----- class RecurrenceMonthly --------------------
 
+// stub
+RecurrenceMonthly::RecurrenceMonthly(std::string s) {}
+RecurrenceMonthly::~RecurrenceMonthly() {}
+Date RecurrenceMonthly::next() { return Date(); }
+std::string RecurrenceMonthly::toString() const { return std::string(); }
+
 // ----- class RecurrenceYearly --------------------
 
+// stub
+RecurrenceYearly::RecurrenceYearly(std::string s) {}
+RecurrenceYearly::~RecurrenceYearly() {}
+Date RecurrenceYearly::next() { return Date(); }
+std::string RecurrenceYearly::toString() const { return std::string(); }
+
 // ----- class RecurrenceIntervalDays --------------------
+
+// stub
+RecurrenceIntervalDays::RecurrenceIntervalDays(std::string s) {}
+RecurrenceIntervalDays::~RecurrenceIntervalDays() {}
+Date RecurrenceIntervalDays::next() { return Date(); }
+std::string RecurrenceIntervalDays::toString() const { return std::string(); }
 
 // ----- class Duration --------------------
 
