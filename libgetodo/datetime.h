@@ -1,3 +1,16 @@
+// $Id:$
+//
+// C++ Interface: DateTime, Date
+//
+// Description: classes DateTime, Date, Recurrence*, Duration
+//
+//
+// Author: Bohumir Zamecnik <bohumir@zamecnik.org>, (C) 2008
+//
+// Copyright: See COPYING file that comes with this distribution
+//
+//
+
 #ifndef LIBGETODO_DATETIME_H
 #define LIBGETODO_DATETIME_H
 
@@ -72,19 +85,56 @@ class Recurrence {
 		Use: boost::gregorian::date_iterator
 	*/
 public:
-	virtual Date next()=0;
-	virtual Recurrence& fromString(std::string str)=0;
-	virtual std::string toString(const Recurrence& r)=0;
-	virtual std::string toString()const =0;
 	virtual ~Recurrence();
+
+	virtual Date next()=0;
+	virtual std::string toString()const =0;
+	
+	static Recurrence* fromString(std::string str);
 };
 
-class RecurrenceOnce : public Recurrence {};
-class RecurrenceDaily : public Recurrence {};
-class RecurrenceWeekly : public Recurrence {};
-class RecurrenceMonthly : public Recurrence {};
-class RecurrenceYearly : public Recurrence {};
-class RecurrenceIntervalDays : public Recurrence {};
+class RecurrenceOnce : public Recurrence {
+public:
+	RecurrenceOnce();
+	virtual ~RecurrenceOnce();
+	virtual Date next();
+	virtual std::string toString() const;
+};
+class RecurrenceDaily : public Recurrence {
+public:
+	explicit RecurrenceDaily(std::string s);
+	virtual ~RecurrenceDaily();
+	virtual Date next();
+	virtual std::string toString() const;
+};
+class RecurrenceWeekly : public Recurrence {
+public:
+	explicit RecurrenceWeekly(std::string s);
+	virtual ~RecurrenceWeekly();
+	virtual Date next();
+	virtual std::string toString() const;
+};
+class RecurrenceMonthly : public Recurrence {
+public:
+	explicit RecurrenceMonthly(std::string s);
+	virtual ~RecurrenceMonthly();
+	virtual Date next();
+	virtual std::string toString() const;
+};
+class RecurrenceYearly : public Recurrence {
+public:
+	explicit RecurrenceYearly(std::string s);
+	virtual ~RecurrenceYearly();
+	virtual Date next();
+	virtual std::string toString() const;
+};
+class RecurrenceIntervalDays : public Recurrence {
+public:
+	explicit RecurrenceIntervalDays(std::string s);
+	virtual ~RecurrenceIntervalDays();
+	virtual Date next();
+	virtual std::string toString() const;
+};
 
 class Duration {
 	/* TODO
