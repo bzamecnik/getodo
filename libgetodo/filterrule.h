@@ -32,7 +32,7 @@ public:
 	FilterRule(id_t id, std::string name, std::string rule);
 	virtual ~FilterRule();
 
-	virtual std::string toString();
+	virtual std::string toString() const;
 };
 
 class FilterRulePersistence {

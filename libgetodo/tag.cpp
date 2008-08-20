@@ -25,7 +25,7 @@ Tag::Tag(std::string tagName) : id(-1), name(tagName) {}
 Tag::Tag(id_t tagId, std::string tagName) : id(tagId), name(tagName) {}
 Tag::~Tag() {}
 
-std::string Tag::toString() {
+std::string Tag::toString() const {
 	std::ostringstream ss;
 	ss << "Tag [" << id << "]: " << name;
 	return ss.str();

@@ -319,14 +319,12 @@ void TaskManager::loadAllFromDatabase() {
 bool TaskManager::checkDatabaseStructure() {
 	if (!conn) { return false; } // throw
 	// TODO
-	// * this code could be optimized, using sets may be overkill
-	// * tables named shouldn't be hard-coded
-	std::set<std::string> tablesNeeded;
-	tablesNeeded.insert("Task");
-	tablesNeeded.insert("Tag");
-	tablesNeeded.insert("Subtask");
-	tablesNeeded.insert("Tagged");
-	tablesNeeded.insert("FilterRule");
+	// * this code could be optimized, using a set may be overkill
+	// * tables names shouldn't be hard-coded
+	
+	std::string tables[] = {"Task","Tag","Subtask","Tagged","FilterRule"};
+	std::set<std::string> tablesNeeded(&tables[0],&tables[5]);
+	
 	sqlite3_command cmd(*conn,"SELECT name FROM sqlite_master "
 		"WHERE type='table' ORDER BY name;");
 	sqlite3_cursor cursor = cmd.executecursor();
