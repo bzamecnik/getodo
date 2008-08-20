@@ -1,6 +1,12 @@
 ===== GeToDo TODO =====
 
 - write some testing code to test the libgetodo
+	* Tag, TagPersistence
+	* FilterRule, FilterRulePersistence
+	- Task, TaskPersistence
+	-	TaskManager
+	* Date, DateTime
+	- [Recurrence, Duration, ...]		
 - think of an API between lib and GUI
 - design GUI
 	- in Glade
@@ -8,7 +14,12 @@
 	- http://www.gtkmm.org/docs/gtkmm-2.4/docs/tutorial/html/sec-libglademm-loading-glade-file.html
 
 - TaskManager - filtering
+- TaskPersistence
+	- addTag(), addSubtask() - check if the task and the tag exist in the db
+- use boost::lexical_cast instead of stringstream for simple type conversions
 - Recurrence, Duration, FuzzyDate - think of
+- Recurrence
+	- conversion from/to string
 - FilterRule - think of format and function
 - Task - think of priority:
 	- explicitly set

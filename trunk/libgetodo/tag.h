@@ -32,7 +32,7 @@ public:
 	Tag(id_t tagId, std::string tagName);
 	virtual ~Tag();
 
-	virtual std::string toString();
+	virtual std::string toString() const ;
 };
 
 class TagPersistence {

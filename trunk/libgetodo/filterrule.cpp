@@ -27,7 +27,7 @@ FilterRule::FilterRule(id_t id, std::string n, std::string r)
 	: id(id), name(n), rule(r) {}
 FilterRule::~FilterRule() {}
 
-std::string FilterRule::toString() {
+std::string FilterRule::toString() const {
 	std::ostringstream ss;
 	ss << "FilterRule [" << id << ", " << name << "]: " << rule;
 	return ss.str();

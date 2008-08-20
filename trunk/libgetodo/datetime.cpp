@@ -87,9 +87,33 @@ Recurrence* Recurrence::fromString(std::string str) {
 	if (str.length() <= 0) {
 		recurrence = new RecurrenceOnce();
 	} else if(str.length() >= 2) {
-		// recurrence type is recognized by the first character
-		// the string representation itself is separeted by a space
+		// Recurrence type is recognized by the first character.
+		// The string representation itself is separeted by a space.
 		std::string chopped = str.substr(2); // chop identifier and space
+		
+		// TODO & NOTES: there must be parsers inside
+		//
+		// If the input string is in incorrect format the parser should throw
+		// an exception and the default type (RecurrenceOnce) should be used.
+		//
+		// So parsing should be done not in the constructor but in
+		// static fromString() method.
+		//
+		// But such a method shouldn't be confused with Recurrence::fromString().
+
+		//// example
+		//try {
+		//	switch(str[0]) {
+		//		case 'd': recurrence = RecurrenceDaily::fromString(chopped); break;
+		//		case 'w': recurrence = RecurrenceWeekly::fromString(chopped); break;
+		//		case 'm': recurrence = RecurrenceMonthly::fromString(chopped); break;
+		//		case 'y': recurrence = RecurrenceYearly::fromString(chopped); break;
+		//		case 'i': recurrence = RecurrenceIntervalDays::fromString(chopped); break;
+		//	}
+		//} catch (parser_exception) {
+		//	recurrence = new RecurrenceOnce();
+		//}
+
 		switch(str[0]) {
 			case 'd': recurrence = new RecurrenceDaily(chopped); break;
 			case 'w': recurrence = new RecurrenceWeekly(chopped); break;
@@ -110,47 +134,71 @@ Recurrence::~Recurrence() {}
 // stub
 RecurrenceOnce::RecurrenceOnce() {}
 RecurrenceOnce::~RecurrenceOnce() {}
-Date RecurrenceOnce::next() { return Date(); }
+Date RecurrenceOnce::next(Date start) { return start; }
 std::string RecurrenceOnce::toString() const { return std::string(); }
 
 // ----- class RecurrenceDaily --------------------
 
 // stub
-RecurrenceDaily::RecurrenceDaily(std::string s) {}
+RecurrenceDaily::RecurrenceDaily(std::string s) {
+	try {
+		period = boost::lexical_cast<int, std::string>(s);
+	} catch (boost::bad_lexical_cast &e) {
+		period = 1; // default - every day
+	}
+}
 RecurrenceDaily::~RecurrenceDaily() {}
-Date RecurrenceDaily::next() { return Date(); }
-std::string RecurrenceDaily::toString() const { return std::string(); }
+Date RecurrenceDaily::next(Date start) { return start; }
+std::string RecurrenceDaily::toString() const {
+	return boost::lexical_cast<std::string, int>(period);
+}
 
 // ----- class RecurrenceWeekly --------------------
 
 // stub
-RecurrenceWeekly::RecurrenceWeekly(std::string s) {}
+RecurrenceWeekly::RecurrenceWeekly(std::string s) {
+	// TODO: parse input string
+	period = 1;
+	// weekday selection
+}
 RecurrenceWeekly::~RecurrenceWeekly() {}
-Date RecurrenceWeekly::next() { return Date(); }
+Date RecurrenceWeekly::next(Date start) { return start; }
 std::string RecurrenceWeekly::toString() const { return std::string(); }
 
 // ----- class RecurrenceMonthly --------------------
 
 // stub
-RecurrenceMonthly::RecurrenceMonthly(std::string s) {}
+RecurrenceMonthly::RecurrenceMonthly(std::string s) {
+	// TODO: parse input string
+	period = 1;
+	// day in month
+}
 RecurrenceMonthly::~RecurrenceMonthly() {}
-Date RecurrenceMonthly::next() { return Date(); }
+Date RecurrenceMonthly::next(Date start) { return start; }
 std::string RecurrenceMonthly::toString() const { return std::string(); }
 
 // ----- class RecurrenceYearly --------------------
 
 // stub
-RecurrenceYearly::RecurrenceYearly(std::string s) {}
+RecurrenceYearly::RecurrenceYearly(std::string s) {
+	// TODO: parse input string
+	period = 1;
+	// day in year
+}
 RecurrenceYearly::~RecurrenceYearly() {}
-Date RecurrenceYearly::next() { return Date(); }
+Date RecurrenceYearly::next(Date start) { return start; }
 std::string RecurrenceYearly::toString() const { return std::string(); }
 
 // ----- class RecurrenceIntervalDays --------------------
 
 // stub
-RecurrenceIntervalDays::RecurrenceIntervalDays(std::string s) {}
+RecurrenceIntervalDays::RecurrenceIntervalDays(std::string s) {
+	// TODO: parse input string
+	// * date start
+	// * date end
+}
 RecurrenceIntervalDays::~RecurrenceIntervalDays() {}
-Date RecurrenceIntervalDays::next() { return Date(); }
+Date RecurrenceIntervalDays::next(Date start) { return start; }
 std::string RecurrenceIntervalDays::toString() const { return std::string(); }
 
 // ----- class Duration --------------------
