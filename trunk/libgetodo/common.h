@@ -1,4 +1,4 @@
-// $Id:$
+// $Id$
 //
 // Common includes and typedefs.
 //
@@ -16,6 +16,7 @@
 #include <string>
 #include "sqlite3x/sqlite3x.hpp"
 #include "datetime.h"
+#include <boost/lexical_cast.hpp>
 
 namespace getodo {
 

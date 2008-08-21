@@ -103,8 +103,8 @@
 	- výbìr, které sloupce budou zobrazeny a které budou skryté
 	- øazení podle sloupcù (TreeModelSort)
 		- kliknutím na hlavièku
-		- pøíkazem z menu (lze i sktyté)
+		- pøíkazem z menu (lze i skryté)
 		- bude tøeba napsat vlastní øadící funkci pro svoje typy
 	- koøenový prvek
-		- tasky tvoøí les, je tøeba je slouèit do stromu (jako potomku koøene)
+		- tasky tvoøí les, je tøeba je slouèit do stromu (jako potomky koøene)
 		- navíc skrytý koøen (pøes TreeModelFilter)

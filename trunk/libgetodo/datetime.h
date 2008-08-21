@@ -14,13 +14,12 @@
 #ifndef LIBGETODO_DATETIME_H
 #define LIBGETODO_DATETIME_H
 
-#include <string>
+#include "common.h"
 
 #include <boost/date_time/date.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <sstream>
-#include <boost/lexical_cast.hpp>
 
 namespace getodo {
 
@@ -80,22 +79,25 @@ class Recurrence {
 	// Recurrence types:
 	//   * once - no recurrence - default
 	//   * every Nth day
-	//   * every Nth week - optionally given selected weekdays (default all)
-	//   * every Nth month - optionally given a day in month
+	//   * every Nth week - optionally given selected weekdays
+	//   * every Nth month - optionally given a day of month
 	//   * every Nth year - optionally given a day and month
 	//   * every day in an interval between two days
 public:
 	virtual ~Recurrence();
 
-	// Use boost::gregorian::date_iterator inside and return date
+	// Maybe use boost::gregorian::date_iterator inside and return date
 	// or make a custom iterator
 	virtual Date next(Date start)=0;
 	virtual std::string toString()const =0;
 	
-	// Given a string create proper Recurrence* object
-	// TODO: If the input string is not in correct format
-	// create RecurrenceOnce as a default type
+	// Prepend correct recurrence type identifier
+	static std::string toString(Recurrence &r);
+	// Given a string create proper Recurrence* object using
+	// recurrence type identifier
 	static Recurrence* fromString(std::string str);
+protected:
+	virtual std::string getTypeId()=0;
 };
 
 class RecurrenceOnce : public Recurrence {
@@ -103,7 +105,9 @@ public:
 	RecurrenceOnce();
 	virtual ~RecurrenceOnce();
 	virtual Date next(Date start);
-	virtual std::string toString() const;
+	virtual std::string toString() const; // eg. ""
+protected:
+	virtual std::string getTypeId();
 };
 
 class RecurrenceDaily : public Recurrence {
@@ -113,67 +117,75 @@ public:
 	explicit RecurrenceDaily(std::string s);
 	virtual ~RecurrenceDaily();
 	virtual Date next(Date start);
-	virtual std::string toString() const;
+	virtual std::string toString() const; // eg. "2"
+protected:
+	virtual std::string getTypeId();
 };
 
 class RecurrenceWeekly : public Recurrence {
 private:
 	int period;
-	// weekday selection:
-	// std::set of boost::gregorian::greg_weekday
-	// (enum boost::date_time::weekdays)
-	// * operator >> a << pro I/O
-	// boost::date_time::weekdays;
-
-	// * format:
-	// %a - Abbreviated weekday name ("Mon")
-	// %w - Weekday as decimal number 0 to 6
-
+	typedef std::set<boost::gregorian::greg_weekday> weekdaySet_t;
+	weekdaySet_t weekdaySelection;
+	// Switch for optionally specified weekday selection:
+	// true - next date will be computed using weekday selection
+	// false - next date will be a wekk after date given in next()
+	bool useWeekdaySelection;
 public:
 	explicit RecurrenceWeekly(std::string s);
 	virtual ~RecurrenceWeekly();
 	virtual Date next(Date start);
-	virtual std::string toString() const;
+	virtual std::string toString() const; // eg. "1 Mon Tue"
+protected:
+	virtual std::string getTypeId();
 };
 
 class RecurrenceMonthly : public Recurrence {
 private:
 	int period;
-	// day in month:
-	// boost::gregorian::greg_day dayInMonth;
-	// format:
-	// %d - Day of the month as decimal 01 to 31
-	// %e - Like %d, the day of the month as a decimal number, but a leading zero is replaced by a space
+	boost::gregorian::greg_day dayOfMonth;
+	// Switch for optionally specified day of month:
+	// true - next date will be on dayOfMonth next month
+	// false - next date will be a month after date given in next()
+	bool useDayOfMonth;
 public:
 	explicit RecurrenceMonthly(std::string s);
 	virtual ~RecurrenceMonthly();
 	virtual Date next(Date start);
-	virtual std::string toString() const;
+	virtual std::string toString() const; // eg. "3 14"
+protected:
+	virtual std::string getTypeId();
 };
 
 class RecurrenceYearly : public Recurrence {
 private:
-	int period;
-	// day of year:
-	// boost::gregorian::day_of_year_type
-	// format: %j - (1..366)
+	boost::gregorian::partial_date dayAndMonth;
+	// Switch for optionally specified day and month:
+	// true - next date will be on useDayAndMonth next year
+	// false - next date will be a year after date given in next()
+	bool useDayAndMonth;
 public:
 	explicit RecurrenceYearly(std::string s);
 	virtual ~RecurrenceYearly();
 	virtual Date next(Date start);
-	virtual std::string toString() const;
+	virtual std::string toString() const; // eg. "25 Dec"
+protected:
+	virtual std::string getTypeId();
 };
 
 class RecurrenceIntervalDays : public Recurrence {
 private:
-	Date start;
-	Date end;
-	// or boost::gregorian::date_period
+	boost::gregorian::date_period interval;
 public:
+	// If input is bad, next() will return not_a_date_time,
+	// just like RecurrenceOnce::next().
+	// Period will be invalid, eg. of zero length.
 	explicit RecurrenceIntervalDays(std::string s);
 	virtual ~RecurrenceIntervalDays();
 	virtual Date next(Date start);
 	virtual std::string toString() const;
+protected:
+	virtual std::string getTypeId();
 };
 
 class Duration {
@@ -184,7 +196,7 @@ class Duration {
 		* or no information
 	Use:
 		boost::gregorian::years, boost::gregorian::months, boost::gregorian::weeks
-		boost::gregorian::date_duration
+		boost::gregorian::date_duration (boost::gregorian::days)
 		boost::posix_time::hours, boost::posix_time::minutes, boost::posix_time::seconds
 	*/
 };
