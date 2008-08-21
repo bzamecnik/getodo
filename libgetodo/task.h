@@ -15,7 +15,6 @@
 
 #include "common.h"
 #include "tag.h"
-#include <set>
 
 namespace getodo {
 
@@ -40,7 +39,7 @@ private:
 	Date dateDeadline; // should be FuzzyDate
 	Date dateCompleted;
 //	Duration& estDuration; // estimated duration
-//	Recurrence& recurrence;
+//	Recurrence* recurrence;
 	
 	int priority; // TODO: number or symbol?
 	int completedPercentage;
@@ -98,9 +97,12 @@ public:
 	static databaseRow_t toDatabaseRow(const Task& task);
 	databaseRow_t toDatabaseRow() const;
 	static Task* fromDatabaseRow(databaseRow_t);
+private:
+	template<typename T>
+	std::list<T> convertSetToList(std::set<T> s) const;
 };
 
-// ----- class Task --------------------
+// ----- class TaskPersistence --------------------
 
 class TaskPersistence {
 private:

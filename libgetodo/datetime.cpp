@@ -24,6 +24,9 @@ DateTime::DateTime(std::string d) {
 	std::istringstream ss(d);
 	ss.imbue(std::locale(ss.getloc(), time_input));
 	ss >> this->date;
+	if (ss.fail()) {
+		this->date = ptime(boost::date_time::not_a_date_time);
+	}
 }
 
 DateTime DateTime::now() {
@@ -61,6 +64,9 @@ Date::Date(std::string d) {
 	std::istringstream ss(d);
 	ss.imbue(std::locale(ss.getloc(), date_input));
 	ss >> this->date;
+	if (ss.fail()) {
+		this->date = boost::gregorian::date(boost::date_time::not_a_date_time);
+	}
 }
 
 Date Date::now() {
@@ -82,45 +88,28 @@ std::string Date::toString() const { return Date::toString(*this); }
 
 // ----- class Recurrence --------------------
 
+std::string Recurrence::toString(Recurrence &r) {
+	std::ostringstream ss;
+	ss << r.getTypeId() << ' ' << r.toString();
+	return ss.str();
+}
+
 Recurrence* Recurrence::fromString(std::string str) {
 	Recurrence* recurrence = 0;
-	if (str.length() <= 0) {
-		recurrence = new RecurrenceOnce();
-	} else if(str.length() >= 2) {
+	if (str.length() >= 2) {
 		// Recurrence type is recognized by the first character.
 		// The string representation itself is separeted by a space.
 		std::string chopped = str.substr(2); // chop identifier and space
-		
-		// TODO & NOTES: there must be parsers inside
-		//
-		// If the input string is in incorrect format the parser should throw
-		// an exception and the default type (RecurrenceOnce) should be used.
-		//
-		// So parsing should be done not in the constructor but in
-		// static fromString() method.
-		//
-		// But such a method shouldn't be confused with Recurrence::fromString().
-
-		//// example
-		//try {
-		//	switch(str[0]) {
-		//		case 'd': recurrence = RecurrenceDaily::fromString(chopped); break;
-		//		case 'w': recurrence = RecurrenceWeekly::fromString(chopped); break;
-		//		case 'm': recurrence = RecurrenceMonthly::fromString(chopped); break;
-		//		case 'y': recurrence = RecurrenceYearly::fromString(chopped); break;
-		//		case 'i': recurrence = RecurrenceIntervalDays::fromString(chopped); break;
-		//	}
-		//} catch (parser_exception) {
-		//	recurrence = new RecurrenceOnce();
-		//}
-
 		switch(str[0]) {
-			case 'd': recurrence = new RecurrenceDaily(chopped); break;
-			case 'w': recurrence = new RecurrenceWeekly(chopped); break;
-			case 'm': recurrence = new RecurrenceMonthly(chopped); break;
-			case 'y': recurrence = new RecurrenceYearly(chopped); break;
-			case 'i': recurrence = new RecurrenceIntervalDays(chopped); break;
+			case 'D': recurrence = new RecurrenceDaily(chopped); break;
+			case 'W': recurrence = new RecurrenceWeekly(chopped); break;
+			case 'M': recurrence = new RecurrenceMonthly(chopped); break;
+			case 'Y': recurrence = new RecurrenceYearly(chopped); break;
+			case 'I': recurrence = new RecurrenceIntervalDays(chopped); break;
+			default: recurrence = new RecurrenceOnce(); break;
 		}
+	} else {
+		recurrence = new RecurrenceOnce(); // default
 	}
 	return recurrence;
 }
@@ -131,75 +120,183 @@ Recurrence::~Recurrence() {}
 
 // ----- class RecurrenceOnce --------------------
 
-// stub
 RecurrenceOnce::RecurrenceOnce() {}
 RecurrenceOnce::~RecurrenceOnce() {}
-Date RecurrenceOnce::next(Date start) { return start; }
+
+Date RecurrenceOnce::next(Date start) {
+	return Date(); // not_a_date_time
+}
+
 std::string RecurrenceOnce::toString() const { return std::string(); }
+
+std::string RecurrenceOnce::getTypeId() { return std::string(); }
 
 // ----- class RecurrenceDaily --------------------
 
-// stub
 RecurrenceDaily::RecurrenceDaily(std::string s) {
 	try {
 		period = boost::lexical_cast<int, std::string>(s);
-	} catch (boost::bad_lexical_cast &e) {
-		period = 1; // default - every day
+	} catch (boost::bad_lexical_cast e) {
+		period = 1; // default: every day
 	}
 }
+
 RecurrenceDaily::~RecurrenceDaily() {}
-Date RecurrenceDaily::next(Date start) { return start; }
+
+Date RecurrenceDaily::next(Date start) {
+	return Date(start.date + boost::gregorian::days(period));
+}
+
 std::string RecurrenceDaily::toString() const {
 	return boost::lexical_cast<std::string, int>(period);
 }
 
+std::string RecurrenceDaily::getTypeId() { return std::string("D"); }
+
 // ----- class RecurrenceWeekly --------------------
 
-// stub
 RecurrenceWeekly::RecurrenceWeekly(std::string s) {
-	// TODO: parse input string
-	period = 1;
+	std::istringstream ss(s);
+	// period
+	ss >> this->period;
+	if (ss.fail()) {
+		this->period = 1;
+	}
 	// weekday selection
+	boost::gregorian::greg_weekday weekday(0);
+	while (!ss.eof()) {
+		ss >> weekday;
+		if (!ss.fail()) {
+			this->weekdaySelection.insert(weekday);
+		}
+	}
 }
+
 RecurrenceWeekly::~RecurrenceWeekly() {}
-Date RecurrenceWeekly::next(Date start) { return start; }
-std::string RecurrenceWeekly::toString() const { return std::string(); }
+
+Date RecurrenceWeekly::next(Date start) {
+	// TODO
+	return start; // stub
+}
+
+std::string RecurrenceWeekly::toString() const {
+	std::ostringstream ss;
+	//period
+	ss << boost::lexical_cast<std::string, int>(period) << ' ';
+	// weekday selection
+	for (weekdaySet_t::const_iterator it = weekdaySelection.begin();
+		it != weekdaySelection.end(); ++it) {
+		ss << *it << ' ';
+	}
+	// TODO: don't output spaces at the end
+	return ss.str();
+}
+
+std::string RecurrenceWeekly::getTypeId() { return std::string("W"); }
 
 // ----- class RecurrenceMonthly --------------------
 
-// stub
-RecurrenceMonthly::RecurrenceMonthly(std::string s) {
-	// TODO: parse input string
-	period = 1;
-	// day in month
+RecurrenceMonthly::RecurrenceMonthly(std::string s)
+: dayOfMonth(1) {
+	std::istringstream ss(s);
+	// period
+	ss >> this->period;
+	if (ss.fail()) {
+		this->period = 1;
+	}
+	// day of month
+	ss >> dayOfMonth;
+	useDayOfMonth = !ss.fail();
 }
+
 RecurrenceMonthly::~RecurrenceMonthly() {}
-Date RecurrenceMonthly::next(Date start) { return start; }
-std::string RecurrenceMonthly::toString() const { return std::string(); }
+
+Date RecurrenceMonthly::next(Date start) {
+	// TODO
+	return start; // stub
+}
+
+std::string RecurrenceMonthly::toString() const {
+	std::ostringstream ss;
+	ss << boost::lexical_cast<std::string, int>(period) << ' ';
+	if (useDayOfMonth) {
+		ss << dayOfMonth;
+	}
+	// TODO: don't output spaces at the end
+	return ss.str();
+}
+
+std::string RecurrenceMonthly::getTypeId() { return std::string("M"); }
 
 // ----- class RecurrenceYearly --------------------
 
-// stub
-RecurrenceYearly::RecurrenceYearly(std::string s) {
-	// TODO: parse input string
-	period = 1;
-	// day in year
+RecurrenceYearly::RecurrenceYearly(std::string s)
+: dayAndMonth(1) {
+	using namespace boost::gregorian;
+	std::istringstream ss(s);
+	// day and month of year
+	ss >> dayAndMonth;
+	useDayAndMonth = !ss.fail();
 }
+
 RecurrenceYearly::~RecurrenceYearly() {}
-Date RecurrenceYearly::next(Date start) { return start; }
-std::string RecurrenceYearly::toString() const { return std::string(); }
+
+Date RecurrenceYearly::next(Date start) {
+	using namespace boost::gregorian;
+	if(!useDayAndMonth) {
+		dayAndMonth = partial_date(start.date.day(), start.date.month());
+	}
+	date nextDate(not_a_date_time);
+	try {
+		nextDate = dayAndMonth.get_date(start.date.year());
+	} catch(std::out_of_range e) {
+	}
+	return Date(nextDate);
+}
+
+std::string RecurrenceYearly::toString() const {
+	std::ostringstream ss;
+	//if (useDayOfMonth) {
+		ss << dayAndMonth;
+	//}
+	return ss.str();
+}
+
+std::string RecurrenceYearly::getTypeId() { return std::string("Y"); }
 
 // ----- class RecurrenceIntervalDays --------------------
 
-// stub
-RecurrenceIntervalDays::RecurrenceIntervalDays(std::string s) {
-	// TODO: parse input string
-	// * date start
-	// * date end
+RecurrenceIntervalDays::RecurrenceIntervalDays(std::string s)
+: interval(boost::gregorian::date(), boost::gregorian::days(0)) {
+	std::istringstream ss(s);
+	// TODO: make different settings for facet (?)
+	ss >> interval;
 }
+
 RecurrenceIntervalDays::~RecurrenceIntervalDays() {}
-Date RecurrenceIntervalDays::next(Date start) { return start; }
-std::string RecurrenceIntervalDays::toString() const { return std::string(); }
+
+Date RecurrenceIntervalDays::next(Date start) {
+	using namespace boost::gregorian;
+	date nextDay = start.date + days(1);
+	if (!interval.is_null() && interval.contains(nextDay)) {
+		return Date(nextDay);
+	} else {
+		return Date();
+	}
+	
+}
+
+std::string RecurrenceIntervalDays::toString() const {
+	//// TODO: make different settings for facet (?)
+	//// - now: 2008-Dec-31
+	//// - i want: 2008-12-31
+	//std::ostringstream ss;
+	//ss << interval;
+	//return ss.str();
+	return boost::lexical_cast<std::string, boost::gregorian::date_period>(interval);
+}
+
+std::string RecurrenceIntervalDays::getTypeId() { return std::string("I"); }
 
 // ----- class Duration --------------------
 

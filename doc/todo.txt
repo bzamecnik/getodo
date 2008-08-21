@@ -3,10 +3,13 @@
 - write some testing code to test the libgetodo
 	* Tag, TagPersistence
 	* FilterRule, FilterRulePersistence
-	- Task, TaskPersistence
+	* Task
+	- TaskPersistence
 	-	TaskManager
 	* Date, DateTime
-	- [Recurrence, Duration, ...]		
+	* Recurrence, RecurrenceDaily, RecurrenceWeekly, RecurrenceMonthly,
+		RecurrenceYearly, RecurrenceIntervalDays
+	- [Duration, ...]		
 - think of an API between lib and GUI
 - design GUI
 	- in Glade
@@ -16,10 +19,10 @@
 - TaskManager - filtering
 - TaskPersistence
 	- addTag(), addSubtask() - check if the task and the tag exist in the db
-- use boost::lexical_cast instead of stringstream for simple type conversions
-- Recurrence, Duration, FuzzyDate - think of
+- Duration, FuzzyDate - think of
 - Recurrence
-	- conversion from/to string
+	- next() for RecurrenceWeekly, RecurrenceMonthly
+	- use facet for RecurrenceIntervalDays and possibly RecurrenceYearly
 - FilterRule - think of format and function
 - Task - think of priority:
 	- explicitly set
@@ -31,5 +34,6 @@
 
 == Done - kept for reference ==
 
+* use boost::lexical_cast instead of stringstream for simple type conversions
 * run autoreconf --install (only once)
 * set LD_CONFIG_... for running main executable (for .so libraries)

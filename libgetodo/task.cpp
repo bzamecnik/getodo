@@ -74,7 +74,6 @@ void Task::setLongDescription(const std::string longDescription) {
 }
 
 void Task::addTag(id_t tagId) {
-	//should throw an exception on failure (?)
 	tags.insert(tagId);
 }
 bool Task::hasTag(id_t tagId) const {
@@ -84,14 +83,8 @@ void Task::removeTag(id_t tagId) {
 	//should throw an exception on failure
 	tags.erase(tagId);
 }
-// should share a common function set->list with getSubtasksList
 std::list<id_t> Task::getTagsList() const {
-	std::list<id_t> list;
-	std::set<id_t>::const_iterator it;
-	for (it = tags.begin(); it != tags.end(); it++) {
-		list.push_front(*it);
-	}
-	return list;
+	return convertSetToList<id_t>(tags);
 }
 
 void Task::addSubtask(id_t taskId) {
@@ -106,12 +99,7 @@ void Task::removeSubtask(id_t taskId) {
 	subtasks.erase(taskId);
 }
 std::list<id_t> Task::getSubtasksList() const {
-	std::list<id_t> list;
-	std::set<id_t>::const_iterator it;
-	for(it = subtasks.begin(); it != subtasks.end(); it++) {
-		list.push_front(*it);
-	}
-	return list;
+	return convertSetToList<id_t>(subtasks);
 }
 
 DateTime Task::getDateCreated() const { return dateCreated; }
@@ -129,7 +117,7 @@ void Task::setDateStarted(const Date& dateStarted) {
 	this->dateStarted = dateStarted;
 }
 
-Date Task::getDateDeadline() const { return dateDeadline; } // should be FuzzyDate
+Date Task::getDateDeadline() const { return dateDeadline; } // should be a FuzzyDate
 void Task::setDateDeadline(const Date& dateDeadline) {
 	this->dateDeadline = dateDeadline;
 }
@@ -151,26 +139,25 @@ void Task::setDone() { setCompletedPercentage(100); } // TODO: ugly constant her
 // ----- object-relation representation conversion ----------
 
 databaseRow_t Task::toDatabaseRow(const Task& task) {
-	std::ostringstream ss;
 	databaseRow_t row;
 
-	ss << task.taskId;
-	row["taskId"] = ss.str(); // (?)
-	ss.clear();
+	row["taskId"] = boost::lexical_cast<std::string, id_t>(task.taskId);
+
 	row["description"] = task.description;
 	row["longDescription"] = task.longDescription;
+
 	row["dateCreated"] = task.dateCreated.toString();
 	row["dateLastModified"] = task.dateLastModified.toString();
 	row["dateStarted"] = task.dateStarted.toString();
 	row["dateDeadline"] = task.dateDeadline.toString();
 	row["dateCompleted"] = task.dateCompleted.toString();
+
 	// row["estDuration"] = task.estDuration;
-	// row["recurrence"] = task.recurrence;
-	ss << task.priority;
-	row["priority"] = ss.str();
-	ss.clear();
-	ss << task.completedPercentage;
-	row["completedPercentage"] = ss.str();
+	// row["recurrence"] = task.recurrence->toString();
+
+	row["priority"] = boost::lexical_cast<std::string, int>(task.priority);
+	row["completedPercentage"] = boost::lexical_cast<std::string, int>(task.completedPercentage);
+
 	return row;
 }
 
@@ -179,12 +166,13 @@ databaseRow_t Task::toDatabaseRow() const {
 }
 
 Task* Task::fromDatabaseRow(databaseRow_t row) {
-	std::istringstream ss;
 	Task* task = new Task();
 	
-	ss.str(row["taskId"]);
-	ss >> task->taskId;
-	ss.clear();
+	try {
+		task->taskId = boost::lexical_cast<id_t, std::string>(row["taskId"]);
+	} catch (boost::bad_lexical_cast &e) {
+		task->taskId = -1;
+	}
 	
 	task->description = row["description"];
 	task->longDescription = row["longDescription"];
@@ -198,17 +186,30 @@ Task* Task::fromDatabaseRow(databaseRow_t row) {
 	// estDuration = Duration(row["estDuration"]);
 	// recurrence = Recurrence(row["recurrence"]);
 	
-	ss.str(row["priority"]);
-	ss >> task->priority;
-	ss.clear();
-	
-	ss.str(row["completedPercentage"]);
-	ss >> task->completedPercentage;
-	ss.clear();
+	try {
+		task->priority = boost::lexical_cast<int, std::string>(row["priority"]);
+	} catch (boost::bad_lexical_cast &e) {
+		task->priority = 0; // TODO: default priority
+	}
+
+	try {
+		task->completedPercentage = boost::lexical_cast<int, std::string>(row["completedPercentage"]);
+	} catch (boost::bad_lexical_cast &e) {
+		task->completedPercentage = 0; // TODO: default completedPercentage
+	}
 	
 	return task;
 }
 
+template<typename T>
+std::list<T> Task::convertSetToList(std::set<T> s) const {
+	std::list<T> list;
+	std::set<T>::const_iterator it;
+	for (it = s.begin(); it != s.end(); it++) {
+		list.push_front(*it);
+	}
+	return list;
+}
 
 
 // ----- class TaskPersistence --------------------
@@ -261,7 +262,7 @@ void TaskPersistence::save() {
 		}
 		ss << "WHERE taskId = " << row["taskId"] << ";";
 		sqlite3_command cmd(*conn, ss.str());
-		ss.clear();
+		ss.str(""); // clear the stream
 		cmd.executenonquery();
 	} else {
 		// it is not in the db -> insert
@@ -276,16 +277,16 @@ void TaskPersistence::save() {
 		}
 		if (col != row.end()) {
 			// the last column without comma
-			sql << col->first << " ";
+			sql << col->first << ' ';
 			values << "'" << col->second << "'";
 		}
 		sql << ") VALUES (" << values.str() << ");";
 		sqlite3_command cmd(*conn, sql.str());
-		sql.clear();
-		values.clear();
+		sql.str(""); // clear the stream
+		values.str(""); // clear the stream
 		cmd.executenonquery();
 		
-		// the database automatically created a new taskID
+		// the database automatically created a new taskId
 		// set it to the task object
 		task->setTaskId(sqlite3_last_insert_rowid(conn->db()));
 		
@@ -323,7 +324,7 @@ Task* TaskPersistence::load(id_t taskId) {
 	cmd.bind(1, taskId);
 	sqlite3_cursor cursor = cmd.executecursor();
 	if (!cursor.step()) {
-		// TODO: throw, if there is not record  with this tagID
+		// TODO: throw, if there is not record  with this tagId
 		return 0;
 	}
 	databaseRow_t row;
@@ -370,15 +371,15 @@ void TaskPersistence::erase() {
 	if(!task) { return; } // throw
 	if(task->getTaskId() < 0) { return; } // throw
 	
-	sqlite3_command cmd(*conn, "DELETE FROM Tagged WHERE taskID = (?);");
+	sqlite3_command cmd(*conn, "DELETE FROM Tagged WHERE taskId = (?);");
 	cmd.bind(1, task->getTaskId());
 	cmd.executenonquery();
 	
-	cmd.prepare("DELETE FROM Subtasks WHERE super_taskID = (?);");
+	cmd.prepare("DELETE FROM Subtasks WHERE super_taskId = (?);");
 	cmd.bind(1, task->getTaskId());
 	cmd.executenonquery();
 	
-	cmd.prepare("DELETE FROM Task WHERE taskID = (?);");
+	cmd.prepare("DELETE FROM Task WHERE taskId = (?);");
 	cmd.bind(1, task->getTaskId());
 	cmd.executenonquery();
 	
@@ -416,7 +417,7 @@ void TaskPersistence::addTag(id_t tagId) {
 	// TODO: check if the task and the tag exist in the database
 	// yes -> update
 	// no -> insert
-	sqlite3_command cmd(*conn, "INSERT INTO Tagged (taskID,tagID) "
+	sqlite3_command cmd(*conn, "INSERT INTO Tagged (taskId,tagId) "
 		"VALUES ((?),(?));");
 	cmd.bind(1, task-> getTaskId());
 	cmd.bind(2, tagId);
@@ -426,8 +427,8 @@ void TaskPersistence::addTag(id_t tagId) {
 void TaskPersistence::removeTag(id_t tagId) {
 	// if(!conn || !task) { TODO: throw }
 	// check if the task and the tag exist in the database
-	sqlite3_command cmd(*conn, "DELETE FROM Tagged WHERE (taskID = (?) "
-		"AND tagID = (?));");
+	sqlite3_command cmd(*conn, "DELETE FROM Tagged WHERE (taskId = (?) "
+		"AND tagId = (?));");
 	cmd.bind(1, task-> getTaskId());
 	cmd.bind(2, tagId);
 	cmd.executenonquery();

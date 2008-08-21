@@ -41,12 +41,12 @@ void TagPersistence::save(Tag& tag) {
 	// if(!conn) { TODO: throw ...}
 	int count = 0;
 	if (tag.id >= 0) {
-		// find out if there is already a tag with such a tagID
+		// find out if there is already a tag with such a tagId
 		sqlite3_command cmd(*conn, "SELECT count(*) FROM Tag WHERE tagId = ?;");
 		cmd.bind(1, tag.id);
 		count = cmd.executeint();
 	} else {
-		sqlite3_command cmd(*conn, "SELECT tagID FROM Tag WHERE tagName = ?;");
+		sqlite3_command cmd(*conn, "SELECT tagId FROM Tag WHERE tagName = ?;");
 		cmd.bind(1, tag.name);
 		sqlite3_cursor cursor = cmd.executecursor();
 		if (cursor.step()) {
@@ -90,7 +90,7 @@ Tag& TagPersistence::load(id_t id) {
 		name = cursor.getstring(0);
 	}
 	cursor.close();
-	// TODO: throw, if there is no record with such a tagID
+	// TODO: throw, if there is no record with such a tagId
 	return *(new Tag(id, name));
 }
 

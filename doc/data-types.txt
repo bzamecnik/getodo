@@ -8,21 +8,23 @@
 	- "" // unknown (or use NULL?)
 
 - Duration
-  - <order: number+letter><value>
-  	- number for proper sorting
-	- 7Y 2 // years
-	- 6M 6 // months
-	- 5W 4 // weeks
-	- 4D 14 // days
-	- 3h 12 // hours
-	- 2m 5 // minutes
-	- 1s 60 // seconds (?)
-	- "" // unknown
+  - <type> <value>
+  - sorting: compute an absolute value from each type
+  - example:
+  	- Y 2 // years
+  	- M 6 // months
+  	- W 4 // weeks
+  	- D 14 // days
+  	- h 12 // hours
+  	- m 5 // minutes
+  	- s 60 // seconds (?)
+  	- "" // unknown
 
 - Recurrence
+  - <type> <value> 
 	- "" // once - default
-	- d 2 // every two days
-	- w 2 Mo Fr // every Monday and Friday every odd week
-	- m 4 12 // every 12th day in four months
-	- y 12 1 // 1st December every year
-	- i 2008-01-02 2008-02-14 // all days in interval between two dates
+	- D 2 // every two days
+	- W 2 Mo Fr // every Monday and Friday every odd week
+	- M 4 12 // every 12th day in four months
+	- Y 12 1 // 1st December every year
+	- I 2008-01-02 2008-02-14 // all days in interval between two dates

@@ -54,7 +54,11 @@ sqlite3_connection* TaskManager::getConnection() {
 
 Task* TaskManager::addTask(Task* task) {
 	if(!task) { return 0; } // throw an exception
-	// save it to database and get the new taskID
+
+	// TODO: if the Task has already and id check whether
+	// it is in the tasks map
+
+	// save it to database and get the new taskId
 	TaskPersistence tp(conn, task);
 	tp.save();
 	// insert the task into TaskManager
@@ -137,7 +141,7 @@ Tag& TaskManager::editTag(id_t tagId, const Tag& tag) {
 	// Copy new tag there
 	Tag* tagCopy = new Tag(tag);
 	tags[tagId] = tagCopy;
-	// correct new tag's tagID to be the same as former's one
+	// correct new tag's tagId to be the same as former's one
 	tags[tagId]->id = tagId;
 	// Save it to database
 	TagPersistence p(conn);
@@ -222,7 +226,7 @@ void TaskManager::loadAllFromDatabase() {
 		}
 		Task* task = Task::fromDatabaseRow(row);
 		// what if there's an exception
-		addTask(task);
+		tasks[task->getTaskId()] = task;
 		row.clear();
 	}
 	cursor.close();
@@ -240,7 +244,7 @@ void TaskManager::loadAllFromDatabase() {
 		ss.str(row["tagId"]);
 		id_t tagId;
 		ss >> tagId;
-		ss.clear();
+		ss.str(""); // clear the stream
 		addTag(Tag(tagId, row["tagName"]));
 		row.clear();
 	}
@@ -258,11 +262,11 @@ void TaskManager::loadAllFromDatabase() {
 		ss.str(row["taskId"]);
 		id_t taskId;
 		ss >> taskId;
-		ss.clear();
+		ss.str(""); // clear the stream
 		ss.str(row["tagId"]);
 		id_t tagId;
 		ss >> tagId;
-		ss.clear();
+		ss.str(""); // clear the stream
 		if (hasTask(taskId) && hasTag(tagId)) {
 			// at first check if the referenced task and tag really exist
 			tasks[taskId]->addTag(tagId);
@@ -283,11 +287,11 @@ void TaskManager::loadAllFromDatabase() {
 		ss.str(row["super_taskId"]);
 		id_t super_taskId;
 		ss >> super_taskId;
-		ss.clear();
+		ss.str(""); // clear the stream
 		ss.str(row["sub_taskId"]);
 		id_t sub_taskId;
 		ss >> sub_taskId;
-		ss.clear();
+		ss.str(""); // clear the stream
 		if (hasTask(super_taskId) && hasTask(sub_taskId)) {
 			// at first check if the referenced tasks really exist
 			tasks[super_taskId]->addSubtask(sub_taskId);
@@ -308,7 +312,7 @@ void TaskManager::loadAllFromDatabase() {
 		ss.str(row["filterRuleId"]);
 		id_t filterRuleId;
 		ss >> filterRuleId;
-		ss.clear();
+		ss.str(""); // clear the stream
 		addFilterRule(FilterRule(filterRuleId, row["name"], row["rule"]));
 		row.clear();
 	}
@@ -345,7 +349,7 @@ void TaskManager::createEmptyDatabase() {
 	// TODO: better would be to include this SQL in the compile-time
 	// from an external file
 	sqlite3_command cmd(*conn);
-	// the command has to be split into separate queries
+	// Note: the command has to be split into separate queries
 	cmd.prepare(
 		"CREATE TABLE Task ("
 		"taskId      INTEGER      NOT NULL,"
