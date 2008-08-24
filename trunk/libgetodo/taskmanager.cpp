@@ -36,7 +36,18 @@ TaskManager::TaskManager(sqlite3_connection* c) : conn(c) {}
 
 TaskManager::~TaskManager() {
 	if(conn) { conn->close(); }
-	// is it needed?
+	for(std::map<id_t,Task*>::iterator it = tasks.begin();
+		it != tasks.end(); ++it) {
+		delete it->second;
+	}
+	for(std::map<id_t,Tag*>::iterator it = tags.begin();
+		it != tags.end(); ++it) {
+		delete it->second;
+	}
+	for(std::map<id_t,FilterRule*>::iterator it = filters.begin();
+		it != filters.end(); ++it) {
+		delete it->second;
+	}
 	tasks.clear();
 	tags.clear();
 	filters.clear();
