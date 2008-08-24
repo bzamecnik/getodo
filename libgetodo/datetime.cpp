@@ -8,7 +8,7 @@ namespace getodo {
 
 std::string DateTime::format("%Y-%m-%d %H:%M:%S");
 
-DateTime::DateTime() {}
+DateTime::DateTime() {} //empty
 // or:
 //DateTime::DateTime() : date(boost::posix_time::ptime(boost::date_time::not_a_date_time)) {}
 DateTime::DateTime(const boost::posix_time::ptime& d) : date(d) {}
@@ -53,7 +53,7 @@ std::string DateTime::toString() const {
 std::string Date::format("%Y-%m-%d");
 
 //Date::Date() : date(boost::gregorian::date(boost::date_time::not_a_date_time)) {}
-Date::Date() {}
+Date::Date() {} //empty
 Date::Date(const boost::gregorian::date& d) : date(d) {}
 Date::Date(const Date& d) : date(d.date) {}
 Date::Date(std::string d) {
@@ -116,12 +116,16 @@ Recurrence* Recurrence::fromString(std::string str) {
 
 // ----- class Recurrence --------------------
 
-Recurrence::~Recurrence() {}
+Recurrence::~Recurrence() {} //empty
 
 // ----- class RecurrenceOnce --------------------
 
-RecurrenceOnce::RecurrenceOnce() {}
-RecurrenceOnce::~RecurrenceOnce() {}
+RecurrenceOnce::RecurrenceOnce() {} //empty
+RecurrenceOnce::RecurrenceOnce(const RecurrenceOnce& r) {} //empty
+RecurrenceOnce::~RecurrenceOnce() {} //empty
+RecurrenceOnce* RecurrenceOnce::clone() {
+	return new RecurrenceOnce(*this);
+}
 
 Date RecurrenceOnce::next(Date start) {
 	return Date(); // not_a_date_time
@@ -141,7 +145,14 @@ RecurrenceDaily::RecurrenceDaily(std::string s) {
 	}
 }
 
-RecurrenceDaily::~RecurrenceDaily() {}
+RecurrenceDaily::RecurrenceDaily(const RecurrenceDaily& r)
+:	period(r.period) {}
+
+RecurrenceDaily::~RecurrenceDaily() {} //empty
+
+RecurrenceDaily* RecurrenceDaily::clone() {
+	return new RecurrenceDaily(*this);
+}
 
 Date RecurrenceDaily::next(Date start) {
 	return Date(start.date + boost::gregorian::days(period));
@@ -172,7 +183,16 @@ RecurrenceWeekly::RecurrenceWeekly(std::string s) {
 	}
 }
 
-RecurrenceWeekly::~RecurrenceWeekly() {}
+RecurrenceWeekly::RecurrenceWeekly(const RecurrenceWeekly& r)
+:	period(r.period), 
+	weekdaySelection(r.weekdaySelection), 
+	useWeekdaySelection(r.useWeekdaySelection) {}
+
+RecurrenceWeekly::~RecurrenceWeekly() {} //empty
+
+RecurrenceWeekly* RecurrenceWeekly::clone() {
+	return new RecurrenceWeekly(*this);
+}
 
 Date RecurrenceWeekly::next(Date start) {
 	// TODO
@@ -209,7 +229,16 @@ RecurrenceMonthly::RecurrenceMonthly(std::string s)
 	useDayOfMonth = !ss.fail();
 }
 
-RecurrenceMonthly::~RecurrenceMonthly() {}
+RecurrenceMonthly::RecurrenceMonthly(const RecurrenceMonthly& r)
+:	period(r.period),
+	dayOfMonth(r.dayOfMonth),
+	useDayOfMonth(r.useDayOfMonth) {}
+
+RecurrenceMonthly::~RecurrenceMonthly() {} //empty
+
+RecurrenceMonthly* RecurrenceMonthly::clone() {
+	return new RecurrenceMonthly(*this);
+}
 
 Date RecurrenceMonthly::next(Date start) {
 	// TODO
@@ -239,7 +268,15 @@ RecurrenceYearly::RecurrenceYearly(std::string s)
 	useDayAndMonth = !ss.fail();
 }
 
-RecurrenceYearly::~RecurrenceYearly() {}
+RecurrenceYearly::RecurrenceYearly(const RecurrenceYearly& r)
+:	dayAndMonth(r.dayAndMonth),
+	useDayAndMonth(r.useDayAndMonth) {}
+
+RecurrenceYearly::~RecurrenceYearly() {} //empty
+
+RecurrenceYearly* RecurrenceYearly::clone() {
+	return new RecurrenceYearly(*this);
+}
 
 Date RecurrenceYearly::next(Date start) {
 	using namespace boost::gregorian;
@@ -273,7 +310,14 @@ RecurrenceIntervalDays::RecurrenceIntervalDays(std::string s)
 	ss >> interval;
 }
 
-RecurrenceIntervalDays::~RecurrenceIntervalDays() {}
+RecurrenceIntervalDays::RecurrenceIntervalDays(const RecurrenceIntervalDays& r)
+:	interval(r.interval) {}
+
+RecurrenceIntervalDays::~RecurrenceIntervalDays() {} //empty
+
+RecurrenceIntervalDays* RecurrenceIntervalDays::clone() {
+	return new RecurrenceIntervalDays(*this);
+}
 
 Date RecurrenceIntervalDays::next(Date start) {
 	using namespace boost::gregorian;

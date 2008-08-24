@@ -85,6 +85,7 @@ class Recurrence {
 	//   * every day in an interval between two days
 public:
 	virtual ~Recurrence();
+	virtual Recurrence* clone()=0;
 
 	// Maybe use boost::gregorian::date_iterator inside and return date
 	// or make a custom iterator
@@ -103,7 +104,9 @@ protected:
 class RecurrenceOnce : public Recurrence {
 public:
 	RecurrenceOnce();
+	RecurrenceOnce(const RecurrenceOnce& r);
 	virtual ~RecurrenceOnce();
+	virtual RecurrenceOnce* clone();
 	virtual Date next(Date start);
 	virtual std::string toString() const; // eg. ""
 protected:
@@ -115,7 +118,9 @@ private:
 	int period;
 public:
 	explicit RecurrenceDaily(std::string s);
+	RecurrenceDaily(const RecurrenceDaily& r);
 	virtual ~RecurrenceDaily();
+	virtual RecurrenceDaily* clone();
 	virtual Date next(Date start);
 	virtual std::string toString() const; // eg. "2"
 protected:
@@ -133,7 +138,9 @@ private:
 	bool useWeekdaySelection;
 public:
 	explicit RecurrenceWeekly(std::string s);
+	RecurrenceWeekly(const RecurrenceWeekly& r);
 	virtual ~RecurrenceWeekly();
+	virtual RecurrenceWeekly* clone();
 	virtual Date next(Date start);
 	virtual std::string toString() const; // eg. "1 Mon Tue"
 protected:
@@ -150,7 +157,9 @@ private:
 	bool useDayOfMonth;
 public:
 	explicit RecurrenceMonthly(std::string s);
+	RecurrenceMonthly(const RecurrenceMonthly& r);
 	virtual ~RecurrenceMonthly();
+	virtual RecurrenceMonthly* clone();
 	virtual Date next(Date start);
 	virtual std::string toString() const; // eg. "3 14"
 protected:
@@ -166,7 +175,9 @@ private:
 	bool useDayAndMonth;
 public:
 	explicit RecurrenceYearly(std::string s);
+	RecurrenceYearly(const RecurrenceYearly& r);
 	virtual ~RecurrenceYearly();
+	virtual RecurrenceYearly* clone();
 	virtual Date next(Date start);
 	virtual std::string toString() const; // eg. "25 Dec"
 protected:
@@ -181,7 +192,9 @@ public:
 	// just like RecurrenceOnce::next().
 	// Period will be invalid, eg. of zero length.
 	explicit RecurrenceIntervalDays(std::string s);
+	RecurrenceIntervalDays(const RecurrenceIntervalDays& r);
 	virtual ~RecurrenceIntervalDays();
+	virtual RecurrenceIntervalDays* clone();
 	virtual Date next(Date start);
 	virtual std::string toString() const;
 protected:

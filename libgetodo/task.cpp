@@ -52,7 +52,8 @@ Task::Task(const Task& t) :
 	completedPercentage(t.completedPercentage)
 {
 	if (t.recurrence) {
-		recurrence = t.recurrence;
+		// recurrence must be cloned
+		recurrence = t.recurrence->clone();
 	} else {
 		recurrence = new RecurrenceOnce();
 	}
@@ -62,10 +63,10 @@ Task::~Task() {
 	// is it really needed?
 	tags.clear();
 	subtasks.clear();
-	// TODO: fix this
-	//if (recurrence) {
-	//	delete recurrence;
-	//}
+	if (recurrence) {
+		delete recurrence;
+		recurrence = 0;
+	}
 }
 
 // ----- access methods ----------
@@ -149,6 +150,7 @@ void Task::setRecurrence(Recurrence* r) {
 		r = new RecurrenceOnce();
 	} else {
 		delete recurrence;
+		recurrence = 0;
 	}
 	recurrence = r;
 }
@@ -244,7 +246,7 @@ void TaskPersistence::save() {
 	databaseRow_t row = task->toDatabaseRow();
 	// TODO: delete this when Duration and Recurence will be ready
 	row["estDuration"] = "";
-	row["recurrence"] = "";
+	//row["recurrence"] = "";
 	row["dateLastModified"] = DateTime::now().toString();
 	
 	int count = 0;
