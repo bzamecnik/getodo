@@ -24,7 +24,7 @@
   - <type> <value> 
 	- "" // once - default
 	- D 2 // every two days
-	- W 2 Mo Fr // every Monday and Friday every odd week
+	- W 2 Mon Fri // every Monday and Friday every odd week
 	- M 4 12 // every 12th day in four months
-	- Y 12 1 // 1st December every year
-	- I 2008-01-02 2008-02-14 // all days in interval between two dates
+	- Y 01 Dec // 1st December every year (maybe "Y 12 1" in future) 
+	- I [2008-01-02/2008-02-14] // all days in interval between two dates

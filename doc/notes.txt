@@ -22,13 +22,14 @@
 
 - boost - http://boost.org/
 	- date & time handling (Date Time)!
-	- parsing (Spirit)!, Tokenizer, Format
-	- regex (Regex, Xpresive)
-	- tesing (Test)
-	- Program Options
-	- File System
-	[- Variant (for date, recurrence etc. types)]
-		- better would be class hierarchy
+	- shared_ptr!
+	- tesing (Test)!
+	- [parsing (Spirit)!, Tokenizer, Format]
+	- [regex (Regex, Xpresive)]
+	- [Program Options]
+	- [File System]
+	- [Variant (for date, recurrence etc. types)]
+		* better would be class hierarchy
 - GUI
 	- GTK+ - http://www.gtk.org/
 	- gtkmm (C++ wrapper over GTK+) - http://www.gtkmm.org/
@@ -36,6 +37,8 @@
 - database
 	- sqlite3 - http://sqlite.org/
 	- sqlite3x (C++ wrapper over SQLite)  - http://www.wanderinghorse.net/computing/sqlite/
+	- [hiberlite]
+	- [libgda, libgnomedb]
 
 ==== Building ====
 

@@ -348,6 +348,10 @@ void testTask() {
 		boost::gregorian::day_clock::local_day()
 		+ boost::gregorian::days(15)));
 	cout << "task1 setDateCompleted(now + 15 days): " << task1.getDateCompleted().toString() << endl;
+	
+	// TODO:
+	// Recurrence& getRecurrence() const;
+	// void setRecurrence(Recurrence* r);
 
 	//int getPriority() const;
 	cout << "task1 getPriority(): " << boost::lexical_cast<string,int>(task1.getPriority()) << endl;
@@ -419,19 +423,23 @@ void testTask() {
 	}
 }
 
+void testTaskPersistence() {
+	
+}
+
 int main(int argc, char argv[]) {
-	//testDateTime();
-	//testDate();
-	//testRecurrence();
-	//testRecurrenceOnce();
-	//testRecurrenceDaily();
-	//testRecurrenceWeekly();
-	//testRecurrenceMonthly();
+	testDateTime();
+	testDate();
+	testRecurrence();
+	testRecurrenceOnce();
+	testRecurrenceDaily();
+	testRecurrenceWeekly();
+	testRecurrenceMonthly();
 	testRecurrenceYearly();
 	testRecurrenceIntervalDays();
-	//testTag();
-	//testFilterRule();
-	//testTask();
+	testTag();
+	testFilterRule();
+	testTask();
 
 	return 0;
 }
