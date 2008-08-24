@@ -88,7 +88,7 @@ std::string Date::toString() const { return Date::toString(*this); }
 
 // ----- class Recurrence --------------------
 
-std::string Recurrence::toString(Recurrence &r) {
+std::string Recurrence::toString(const Recurrence& r) {
 	std::ostringstream ss;
 	ss << r.getTypeId() << ' ' << r.toString();
 	return ss.str();
@@ -129,7 +129,7 @@ Date RecurrenceOnce::next(Date start) {
 
 std::string RecurrenceOnce::toString() const { return std::string(); }
 
-std::string RecurrenceOnce::getTypeId() { return std::string(); }
+std::string RecurrenceOnce::getTypeId() const { return std::string(); }
 
 // ----- class RecurrenceDaily --------------------
 
@@ -151,7 +151,7 @@ std::string RecurrenceDaily::toString() const {
 	return boost::lexical_cast<std::string, int>(period);
 }
 
-std::string RecurrenceDaily::getTypeId() { return std::string("D"); }
+std::string RecurrenceDaily::getTypeId() const { return std::string("D"); }
 
 // ----- class RecurrenceWeekly --------------------
 
@@ -192,7 +192,7 @@ std::string RecurrenceWeekly::toString() const {
 	return ss.str();
 }
 
-std::string RecurrenceWeekly::getTypeId() { return std::string("W"); }
+std::string RecurrenceWeekly::getTypeId() const { return std::string("W"); }
 
 // ----- class RecurrenceMonthly --------------------
 
@@ -226,7 +226,7 @@ std::string RecurrenceMonthly::toString() const {
 	return ss.str();
 }
 
-std::string RecurrenceMonthly::getTypeId() { return std::string("M"); }
+std::string RecurrenceMonthly::getTypeId() const { return std::string("M"); }
 
 // ----- class RecurrenceYearly --------------------
 
@@ -262,7 +262,7 @@ std::string RecurrenceYearly::toString() const {
 	return ss.str();
 }
 
-std::string RecurrenceYearly::getTypeId() { return std::string("Y"); }
+std::string RecurrenceYearly::getTypeId() const { return std::string("Y"); }
 
 // ----- class RecurrenceIntervalDays --------------------
 
@@ -296,7 +296,7 @@ std::string RecurrenceIntervalDays::toString() const {
 	return boost::lexical_cast<std::string, boost::gregorian::date_period>(interval);
 }
 
-std::string RecurrenceIntervalDays::getTypeId() { return std::string("I"); }
+std::string RecurrenceIntervalDays::getTypeId() const { return std::string("I"); }
 
 // ----- class Duration --------------------
 

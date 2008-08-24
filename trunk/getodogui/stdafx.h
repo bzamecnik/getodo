@@ -12,5 +12,6 @@
 // placing gtkmm in precompiled header could greatly improve
 // compilation time
 #include <gtkmm.h>
+#include <libglademm/xml.h>
 
 #endif // GETODOGUI_STDAFX_H__

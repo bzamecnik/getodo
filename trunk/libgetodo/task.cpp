@@ -12,7 +12,6 @@
 //
 
 #include "task.h"
-#include <sstream>
 
 using namespace sqlite3x;
 
@@ -34,6 +33,7 @@ Task::Task() :
 	dateStarted = gregorian::date(date_time::not_a_date_time);
 	dateDeadline = gregorian::date(date_time::not_a_date_time);
 	dateCompleted = gregorian::date(date_time::not_a_date_time);
+	recurrence = new RecurrenceOnce();
 }
 
 // copy constructor
@@ -50,12 +50,22 @@ Task::Task(const Task& t) :
 	dateCompleted(t.dateCompleted),
 	priority(t.priority),
 	completedPercentage(t.completedPercentage)
-{}
+{
+	if (t.recurrence) {
+		recurrence = t.recurrence;
+	} else {
+		recurrence = new RecurrenceOnce();
+	}
+}
 
 Task::~Task() {
 	// is it really needed?
 	tags.clear();
 	subtasks.clear();
+	// TODO: fix this
+	//if (recurrence) {
+	//	delete recurrence;
+	//}
 }
 
 // ----- access methods ----------
@@ -127,6 +137,22 @@ void Task::setDateCompleted(const Date& dateCompleted) {
 	this->dateCompleted = dateCompleted;
 }
 
+Recurrence& Task::getRecurrence() const {
+	if (!recurrence) {
+		return *(new RecurrenceOnce());
+	} else {
+		return *recurrence;
+	}
+}
+void Task::setRecurrence(Recurrence* r) {
+	if (!r) {
+		r = new RecurrenceOnce();
+	} else {
+		delete recurrence;
+	}
+	recurrence = r;
+}
+
 int Task::getPriority() const { return priority; }
 void Task::setPriority(int priority) { this->priority = priority; }
 
@@ -138,31 +164,27 @@ void Task::setDone() { setCompletedPercentage(100); } // TODO: ugly constant her
 
 // ----- object-relation representation conversion ----------
 
-databaseRow_t Task::toDatabaseRow(const Task& task) {
+databaseRow_t Task::toDatabaseRow() const {
 	databaseRow_t row;
 
-	row["taskId"] = boost::lexical_cast<std::string, id_t>(task.taskId);
+	row["taskId"] = boost::lexical_cast<std::string, id_t>(taskId);
 
-	row["description"] = task.description;
-	row["longDescription"] = task.longDescription;
+	row["description"] = description;
+	row["longDescription"] = longDescription;
 
-	row["dateCreated"] = task.dateCreated.toString();
-	row["dateLastModified"] = task.dateLastModified.toString();
-	row["dateStarted"] = task.dateStarted.toString();
-	row["dateDeadline"] = task.dateDeadline.toString();
-	row["dateCompleted"] = task.dateCompleted.toString();
+	row["dateCreated"] = dateCreated.toString();
+	row["dateLastModified"] = dateLastModified.toString();
+	row["dateStarted"] = dateStarted.toString();
+	row["dateDeadline"] = dateDeadline.toString();
+	row["dateCompleted"] = dateCompleted.toString();
 
-	// row["estDuration"] = task.estDuration;
-	// row["recurrence"] = task.recurrence->toString();
+	// row["estDuration"] = estDuration;
+	row["recurrence"] = Recurrence::toString(*recurrence);
 
-	row["priority"] = boost::lexical_cast<std::string, int>(task.priority);
-	row["completedPercentage"] = boost::lexical_cast<std::string, int>(task.completedPercentage);
+	row["priority"] = boost::lexical_cast<std::string, int>(priority);
+	row["completedPercentage"] = boost::lexical_cast<std::string, int>(completedPercentage);
 
 	return row;
-}
-
-databaseRow_t Task::toDatabaseRow() const {
-	return toDatabaseRow(*this);
 }
 
 Task* Task::fromDatabaseRow(databaseRow_t row) {
@@ -184,7 +206,7 @@ Task* Task::fromDatabaseRow(databaseRow_t row) {
 	task->dateCompleted = Date(row["dateCompleted"]);
 	
 	// estDuration = Duration(row["estDuration"]);
-	// recurrence = Recurrence(row["recurrence"]);
+	task->recurrence = Recurrence::fromString(row["recurrence"]);
 	
 	try {
 		task->priority = boost::lexical_cast<int, std::string>(row["priority"]);
@@ -200,17 +222,6 @@ Task* Task::fromDatabaseRow(databaseRow_t row) {
 	
 	return task;
 }
-
-template<typename T>
-std::list<T> Task::convertSetToList(std::set<T> s) const {
-	std::list<T> list;
-	std::set<T>::const_iterator it;
-	for (it = s.begin(); it != s.end(); it++) {
-		list.push_front(*it);
-	}
-	return list;
-}
-
 
 // ----- class TaskPersistence --------------------
 
@@ -396,7 +407,7 @@ void TaskPersistence::setTask(Task* task) {
 
 void TaskPersistence::setDescription(const std::string description) {
 	// if(!conn || !task) { TODO: throw }
-	sqlite3_command cmd(*conn, "UPDATE Task SET description = '(?)' "
+	sqlite3_command cmd(*conn, "UPDATE Task SET description = ? "
 		"WHERE taskId = (?);");
 	cmd.bind(1, description);
 	cmd.bind(2, task-> getTaskId());
@@ -405,7 +416,7 @@ void TaskPersistence::setDescription(const std::string description) {
 
 void TaskPersistence::setLongDescription(const std::string longDescription) {
 	// if(!conn || !task) { TODO: throw }
-	sqlite3_command cmd(*conn, "UPDATE Task SET longDescription = '(?)' "
+	sqlite3_command cmd(*conn, "UPDATE Task SET longDescription = ? "
 		"WHERE taskId = (?);");
 	cmd.bind(1, longDescription);
 	cmd.bind(2, task->getTaskId());
@@ -460,7 +471,7 @@ void TaskPersistence::removeSubtask(id_t taskId) {
 void TaskPersistence::setDateCreated(const DateTime& dateCreated) {
 	// if(!conn || !task) { TODO: throw }
 	// check if dateCreated is ok
-	sqlite3_command cmd(*conn, "UPDATE Task SET dateCreated = '?' "
+	sqlite3_command cmd(*conn, "UPDATE Task SET dateCreated = ? "
 		"WHERE taskId = (?);");
 	cmd.bind(1, dateCreated.toString());
 	cmd.bind(2, task-> getTaskId());
@@ -470,7 +481,7 @@ void TaskPersistence::setDateCreated(const DateTime& dateCreated) {
 void TaskPersistence::setDateLastModified(const DateTime& dateLastModified) {
 	// if(!conn || !task) { TODO: throw }
 	// check if dateLastModified is ok
-	sqlite3_command cmd(*conn, "UPDATE Task SET dateLastModified = '?' "
+	sqlite3_command cmd(*conn, "UPDATE Task SET dateLastModified = ? "
 		"WHERE taskId = (?);");
 	cmd.bind(1, dateLastModified.toString());
 	cmd.bind(2, task-> getTaskId());
@@ -479,7 +490,7 @@ void TaskPersistence::setDateLastModified(const DateTime& dateLastModified) {
 void TaskPersistence::setDateStarted(const Date& dateStarted) {
 	// if(!conn || !task) { TODO: throw }
 	// check if dateStarted is ok
-	sqlite3_command cmd(*conn, "UPDATE Task SET dateStarted = '?' "
+	sqlite3_command cmd(*conn, "UPDATE Task SET dateStarted = ? "
 		"WHERE taskId = (?);");
 	cmd.bind(1, dateStarted.toString());
 	cmd.bind(2, task-> getTaskId());
@@ -488,7 +499,7 @@ void TaskPersistence::setDateStarted(const Date& dateStarted) {
 void TaskPersistence::setDateDeadline(const Date& dateDeadline) {
 	// if(!conn || !task) { TODO: throw }
 	// check if dateDeadline is ok
-	sqlite3_command cmd(*conn, "UPDATE Task SET dateDeadline = '?' "
+	sqlite3_command cmd(*conn, "UPDATE Task SET dateDeadline = ? "
 		"WHERE taskId = (?);");
 	cmd.bind(1, dateDeadline.toString());
 	cmd.bind(2, task-> getTaskId());
@@ -497,21 +508,29 @@ void TaskPersistence::setDateDeadline(const Date& dateDeadline) {
 void TaskPersistence::setDateCompleted(const Date& dateCompleted) {
 	// if(!conn || !task) { TODO: throw }
 	// check if dateCompleted is ok
-	sqlite3_command cmd(*conn, "UPDATE Task SET dateCompleted = '?' "
+	sqlite3_command cmd(*conn, "UPDATE Task SET dateCompleted = ? "
 		"WHERE taskId = (?);");
 	cmd.bind(1, dateCompleted.toString());
 	cmd.bind(2, task-> getTaskId());
 	cmd.executenonquery();
 }
- 
+
+void TaskPersistence::setRecurrence(const Recurrence& recurrence) {
+	// if(!conn || !task) { TODO: throw }
+	sqlite3_command cmd(*conn, "UPDATE Task SET recurrence = ? "
+		"WHERE taskId = (?);");
+	cmd.bind(1, Recurrence::toString(recurrence));
+	cmd.bind(2, task->getTaskId());
+	cmd.executenonquery();
+}
+
+
 void TaskPersistence::setPriority(int priority) {
 	// if(!conn || !task) { TODO: throw }
 	// check if priority is ok
-	std::ostringstream ss;
-	ss << priority;
-	sqlite3_command cmd(*conn, "UPDATE Task SET priority = '?' "
+	sqlite3_command cmd(*conn, "UPDATE Task SET priority = ? "
 		"WHERE taskId = (?);");
-	cmd.bind(1, ss.str());
+	cmd.bind(1, priority);
 	cmd.bind(2, task-> getTaskId());
 	cmd.executenonquery();
 }
@@ -519,11 +538,9 @@ void TaskPersistence::setPriority(int priority) {
 void TaskPersistence::setCompletedPercentage(int completedPercentage) {
 	// if(!conn || !task) { TODO: throw }
 	// check if completedPercentage is ok (in interval [0;100])
-	std::ostringstream ss;
-	ss << completedPercentage;
-	sqlite3_command cmd(*conn, "UPDATE Task SET completedPercentage = '?' "
+	sqlite3_command cmd(*conn, "UPDATE Task SET completedPercentage = ? "
 		"WHERE taskId = (?);");
-	cmd.bind(1, ss.str());
+	cmd.bind(1, completedPercentage);
 	cmd.bind(2, task-> getTaskId());
 	cmd.executenonquery();
 }

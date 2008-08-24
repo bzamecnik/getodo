@@ -12,7 +12,6 @@
 //
 
 #include "taskmanager.h"
-#include <sstream>
 
 namespace getodo {
 
@@ -141,7 +140,7 @@ Tag& TaskManager::editTag(id_t tagId, const Tag& tag) {
 	// Copy new tag there
 	Tag* tagCopy = new Tag(tag);
 	tags[tagId] = tagCopy;
-	// correct new tag's tagId to be the same as former's one
+	// correct new tag's tagId to be the same as the former's one
 	tags[tagId]->id = tagId;
 	// Save it to database
 	TagPersistence p(conn);
@@ -155,6 +154,10 @@ void TaskManager::deleteTag(id_t tagId) {
 	p.erase(tagId);
 	// erase from task manager
 	tags.erase(tagId);
+}
+
+std::list<Tag> TaskManager::getTagsList() const {
+	return convertMapToList<id_t, Tag>(tags);
 }
 
 // ----- FilterRule operations -----
@@ -205,6 +208,10 @@ void TaskManager::deleteFilterRule(id_t filterRuleId) {
 	filters.erase(filterRuleId);
 }
 
+std::list<FilterRule> TaskManager::getFilterRulesList() const {
+	return convertMapToList<id_t, FilterRule>(filters);
+}
+
 // ----- Other things -----
 
 void TaskManager::loadAllFromDatabase() {
@@ -214,7 +221,6 @@ void TaskManager::loadAllFromDatabase() {
 	sqlite3_cursor cursor;
 	databaseRow_t row;
 	int columnsCount;
-	std::stringstream ss;
 	
 	// load Tasks
 	cmd.prepare("SELECT * FROM Task;");
@@ -241,11 +247,8 @@ void TaskManager::loadAllFromDatabase() {
 		for (int i = 0; i < columnsCount; i++) {
 			row[cursor.getcolname(i)] = cursor.getstring(i);
 		}
-		ss.str(row["tagId"]);
-		id_t tagId;
-		ss >> tagId;
-		ss.str(""); // clear the stream
-		addTag(Tag(tagId, row["tagName"]));
+		id_t tagId = boost::lexical_cast<id_t, std::string>(row["tagId"]);
+		tags[tagId] = new Tag(tagId, row["tagName"]);
 		row.clear();
 	}
 	cursor.close();
@@ -258,15 +261,8 @@ void TaskManager::loadAllFromDatabase() {
 		for (int i = 0; i < columnsCount; i++) {
 			row[cursor.getcolname(i)] = cursor.getstring(i);
 		}
-		// convert string -> id_t
-		ss.str(row["taskId"]);
-		id_t taskId;
-		ss >> taskId;
-		ss.str(""); // clear the stream
-		ss.str(row["tagId"]);
-		id_t tagId;
-		ss >> tagId;
-		ss.str(""); // clear the stream
+		id_t taskId = boost::lexical_cast<id_t, std::string>(row["taskId"]);
+		id_t tagId = boost::lexical_cast<id_t, std::string>(row["tagId"]);
 		if (hasTask(taskId) && hasTag(tagId)) {
 			// at first check if the referenced task and tag really exist
 			tasks[taskId]->addTag(tagId);
@@ -283,15 +279,8 @@ void TaskManager::loadAllFromDatabase() {
 		for (int i = 0; i < columnsCount; i++) {
 			row[cursor.getcolname(i)] = cursor.getstring(i);
 		}
-		// convert string -> id_t
-		ss.str(row["super_taskId"]);
-		id_t super_taskId;
-		ss >> super_taskId;
-		ss.str(""); // clear the stream
-		ss.str(row["sub_taskId"]);
-		id_t sub_taskId;
-		ss >> sub_taskId;
-		ss.str(""); // clear the stream
+		id_t super_taskId = boost::lexical_cast<id_t, std::string>(row["super_taskId"]);
+		id_t sub_taskId = boost::lexical_cast<id_t, std::string>(row["sub_taskId"]);
 		if (hasTask(super_taskId) && hasTask(sub_taskId)) {
 			// at first check if the referenced tasks really exist
 			tasks[super_taskId]->addSubtask(sub_taskId);
@@ -308,12 +297,8 @@ void TaskManager::loadAllFromDatabase() {
 		for (int i = 0; i < columnsCount; i++) {
 			row[cursor.getcolname(i)] = cursor.getstring(i);
 		}
-		// convert string -> id_t
-		ss.str(row["filterRuleId"]);
-		id_t filterRuleId;
-		ss >> filterRuleId;
-		ss.str(""); // clear the stream
-		addFilterRule(FilterRule(filterRuleId, row["name"], row["rule"]));
+		id_t filterRuleId = boost::lexical_cast<id_t, std::string>(row["filterRuleId"]);
+		filters[filterRuleId] = new FilterRule(filterRuleId, row["name"], row["rule"]);
 		row.clear();
 	}
 	cursor.close();
@@ -372,7 +357,7 @@ void TaskManager::createEmptyDatabase() {
 	cmd.prepare(
 		"CREATE TABLE Tag ("
 		"tagId      INTEGER      NOT NULL,"
-		"tagName      STRING      NOT NULL  UNIQUE,"
+		"tagName      STRING      NOT NULL,"  // +UNIQUE
 		"CONSTRAINT pk_Tag PRIMARY KEY (tagId)"
 		");"
 	);

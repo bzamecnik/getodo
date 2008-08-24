@@ -92,12 +92,12 @@ public:
 	virtual std::string toString()const =0;
 	
 	// Prepend correct recurrence type identifier
-	static std::string toString(Recurrence &r);
+	static std::string toString(const Recurrence& r);
 	// Given a string create proper Recurrence* object using
 	// recurrence type identifier
 	static Recurrence* fromString(std::string str);
 protected:
-	virtual std::string getTypeId()=0;
+	virtual std::string getTypeId()const =0;
 };
 
 class RecurrenceOnce : public Recurrence {
@@ -107,7 +107,7 @@ public:
 	virtual Date next(Date start);
 	virtual std::string toString() const; // eg. ""
 protected:
-	virtual std::string getTypeId();
+	virtual std::string getTypeId() const;
 };
 
 class RecurrenceDaily : public Recurrence {
@@ -119,7 +119,7 @@ public:
 	virtual Date next(Date start);
 	virtual std::string toString() const; // eg. "2"
 protected:
-	virtual std::string getTypeId();
+	virtual std::string getTypeId() const;
 };
 
 class RecurrenceWeekly : public Recurrence {
@@ -137,7 +137,7 @@ public:
 	virtual Date next(Date start);
 	virtual std::string toString() const; // eg. "1 Mon Tue"
 protected:
-	virtual std::string getTypeId();
+	virtual std::string getTypeId() const;
 };
 
 class RecurrenceMonthly : public Recurrence {
@@ -154,7 +154,7 @@ public:
 	virtual Date next(Date start);
 	virtual std::string toString() const; // eg. "3 14"
 protected:
-	virtual std::string getTypeId();
+	virtual std::string getTypeId() const;
 };
 
 class RecurrenceYearly : public Recurrence {
@@ -170,7 +170,7 @@ public:
 	virtual Date next(Date start);
 	virtual std::string toString() const; // eg. "25 Dec"
 protected:
-	virtual std::string getTypeId();
+	virtual std::string getTypeId() const;
 };
 
 class RecurrenceIntervalDays : public Recurrence {
@@ -185,7 +185,7 @@ public:
 	virtual Date next(Date start);
 	virtual std::string toString() const;
 protected:
-	virtual std::string getTypeId();
+	virtual std::string getTypeId() const;
 };
 
 class Duration {

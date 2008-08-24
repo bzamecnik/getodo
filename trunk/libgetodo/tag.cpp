@@ -61,10 +61,14 @@ void TagPersistence::save(Tag& tag) {
 	if (count > 0) {
 		if (tag.id >= 0) {
 			// it is already there -> update
-			sqlite3_command cmd(*conn, "UPDATE Tag SET tagName = ? WHERE tagId = ?;");
-			cmd.bind(1, tag.name);
-			cmd.bind(2, tag.id);
-			cmd.executenonquery();
+			try {
+				sqlite3_command cmd(*conn, "UPDATE Tag SET tagName = ? WHERE tagId = ?;");
+				cmd.bind(1, tag.name);
+				cmd.bind(2, tag.id);
+				cmd.executenonquery();
+			} catch(database_error e) {
+				std::cerr << "TagPersistence::save(" << tag.toString() << "): " << e.what() << std::endl;
+			}
 		}
 	} else {
 		// it is not there -> insert

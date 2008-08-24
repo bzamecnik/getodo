@@ -81,30 +81,53 @@
 		- vizualizace statistiky tagù
 		- filtrování podle tagù (spojeno buï pomocí OR nebo AND)
 
-==== TreeView ====
+==== TreeView pro Tasky ====
 
-	- buòky
-		- speciální typy jsou rùzná Date apod.
-			- použít vlastní CellRenderer
-			- nebo je pøevést na string
-		- plán
-			- 1. fáze - jen zobrazení
-			- 2. fáze - i editace nìkterých typù (napø. názvu)
-	- sloupce (zbytek bude pouze v editaèním panelu)
-		- taskId (int) (opravdu zobrazovat?)
-		- description (string)
-		- data - hlavnì deadline (vlastní CellRenderer)
-		- priority 
-		- completedPercentage
-			- vlastní renderer (nìco jako SpinButton)
-			- nebo pøevést na string
-			- navíc toggle pro Done
-		- Next Action toggle (tag)
-	- výbìr, které sloupce budou zobrazeny a které budou skryté
-	- øazení podle sloupcù (TreeModelSort)
-		- kliknutím na hlavièku
-		- pøíkazem z menu (lze i skryté)
-		- bude tøeba napsat vlastní øadící funkci pro svoje typy
-	- koøenový prvek
-		- tasky tvoøí les, je tøeba je slouèit do stromu (jako potomky koøene)
-		- navíc skrytý koøen (pøes TreeModelFilter)
+- buòky
+	- speciální typy jsou rùzná Date apod.
+		- použít vlastní CellRenderer
+		- nebo je pøevést na string
+	- plán
+		- 1. fáze - jen zobrazení
+		- 2. fáze - i editace nìkterých typù (napø. názvu)
+- sloupce (zbytek bude pouze v editaèním panelu)
+	- taskId (int) (opravdu zobrazovat?)
+	- description (string)
+	- data - hlavnì deadline (vlastní CellRenderer)
+	- priority 
+	- completedPercentage
+		- vlastní renderer (nìco jako SpinButton)
+		- nebo pøevést na string
+		- navíc toggle pro Done
+	- Next Action toggle (tag)
+- výbìr, které sloupce budou zobrazeny a které budou skryté
+- øazení podle sloupcù (TreeModelSort)
+	- kliknutím na hlavièku
+	- pøíkazem z menu (lze i skryté)
+	- bude tøeba napsat vlastní øadící funkci pro svoje typy
+- koøenový prvek
+	- tasky tvoøí les, je tøeba je slouèit do stromu (jako potomky koøene)
+	- navíc skrytý koøen (pøes TreeModelFilter)
+
+- jak napojit TaskManager na TreeView
+	- možná øešení
+		- 1.
+			- možná bude tøeba vytvoøit vlastní TreeModel
+				- bude obsahovat TaskManager
+		- 2.
+			- proxy nad TaskManagerem
+				- bude obsahovat TaskManager a mít jeho rozhraní
+				- pøi volání svých metod bude navíc pøedávat signály modelu
+			- odvozený TreeStore, který bude zpìtnì upravovat TaskManager pøes proxy
+		
+
+==== Aplikace ====
+
+- tøída GeToDoApp
+	- bude obsahovat vše potøebné:
+		- gtkmm::Main
+		- hlavní okno
+		- TaskManager
+		- ...
+	- singleton
+- main() - instance GeToDoApp, run()

@@ -63,6 +63,7 @@ public:
 	// Tag& getTagByName(std::string tagName);
 	Tag& editTag(id_t tagId, const Tag& tag);
 	void deleteTag(id_t tagId); //should throw an exception on failure
+	std::list<Tag> getTagsList() const;
 
 	// ----- FilterRule operations -----
 
@@ -72,6 +73,7 @@ public:
 	FilterRule& getFilterRule(id_t filterRuleId);
 	FilterRule& editFilterRule(id_t filterRuleId, const FilterRule& filter);
 	void deleteFilterRule(id_t filterRuleId); //should throw an exception on failure
+	std::list<FilterRule> getFilterRulesList() const;
 
 	// TODO:
 	// - specify a format for FilterRules
@@ -87,6 +89,16 @@ private:
 	
 	void createEmptyDatabase(); // create an inital database structure
 	bool checkDatabaseStructure(); // true, if all needed tables exist
+
+	template<typename T_key, typename T_value>
+	std::list<T_value> convertMapToList(std::map<T_key, T_value *> m) const {
+		std::list<T_value> list;
+		std::map<T_key, T_value *>::const_iterator it;
+		for (it = m.begin(); it != m.end(); it++) {
+			list.push_front(*(it->second));
+		}
+		return list;
+	}
 };
 
 } // namespace getodo

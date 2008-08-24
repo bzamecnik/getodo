@@ -3,9 +3,9 @@
 - write some testing code to test the libgetodo
 	* Tag, TagPersistence
 	* FilterRule, FilterRulePersistence
-	* Task
-	- TaskPersistence
-	-	TaskManager
+	- Task - test new recurrence methods
+	- TaskPersistence!
+	-	TaskManager!
 	* Date, DateTime
 	* Recurrence, RecurrenceDaily, RecurrenceWeekly, RecurrenceMonthly,
 		RecurrenceYearly, RecurrenceIntervalDays
@@ -15,6 +15,8 @@
 	- in Glade
 	- Glade will generate a XML that will be dynamically loaded into the program
 	- http://www.gtkmm.org/docs/gtkmm-2.4/docs/tutorial/html/sec-libglademm-loading-glade-file.html
+	- Question: how to embed .glade file into the final .EXE file?
+	  - Is it needed?
 
 - TaskManager - filtering
 - TaskPersistence
@@ -23,6 +25,9 @@
 - Recurrence
 	- next() for RecurrenceWeekly, RecurrenceMonthly
 	- use facet for RecurrenceIntervalDays and possibly RecurrenceYearly
+- Task - make simple properties public and remove their getters/setters
+- *Persistence - make a common interface
+- use operator= for copying Tasks and Tags  
 - FilterRule - think of format and function
 - Task - think of priority:
 	- explicitly set

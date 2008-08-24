@@ -15,6 +15,7 @@
 
 #include "common.h"
 #include "tag.h"
+#include <sstream>
 
 namespace getodo {
 
@@ -39,7 +40,7 @@ private:
 	Date dateDeadline; // should be FuzzyDate
 	Date dateCompleted;
 //	Duration& estDuration; // estimated duration
-//	Recurrence* recurrence;
+	Recurrence* recurrence;
 	
 	int priority; // TODO: number or symbol?
 	int completedPercentage;
@@ -86,6 +87,9 @@ public:
 	Date getDateCompleted() const;
 	void setDateCompleted(const Date& dateCompleted);
 
+	Recurrence& getRecurrence() const;
+	void setRecurrence(Recurrence* r);
+
 	int getPriority() const;
 	void setPriority(int priority);
 
@@ -94,12 +98,18 @@ public:
 	void setDone();
 
 	// ----- object-relation representation conversion ----------
-	static databaseRow_t toDatabaseRow(const Task& task);
 	databaseRow_t toDatabaseRow() const;
 	static Task* fromDatabaseRow(databaseRow_t);
 private:
 	template<typename T>
-	std::list<T> convertSetToList(std::set<T> s) const;
+	std::list<T> convertSetToList(std::set<T> s) const {
+		std::list<T> list;
+		std::set<T>::const_iterator it;
+		for (it = s.begin(); it != s.end(); it++) {
+			list.push_front(*it);
+		}
+		return list;
+	}
 };
 
 // ----- class TaskPersistence --------------------
@@ -144,6 +154,8 @@ public:
 	void setDateStarted(const Date& dateStarted);
 	void setDateDeadline(const Date& dateDeadline);
 	void setDateCompleted(const Date& dateCompleted);
+
+	void setRecurrence(const Recurrence& r);
 
 	void setPriority(int priority);
 
