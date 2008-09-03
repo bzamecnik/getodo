@@ -15,23 +15,24 @@
 	- in Glade
 	- Glade will generate a XML that will be dynamically loaded into the program
 	- http://www.gtkmm.org/docs/gtkmm-2.4/docs/tutorial/html/sec-libglademm-loading-glade-file.html
-	- Question: how to embed .glade file into the final .EXE file?
+	- Question: how to embed .glade file into the final .exe file?
 	  - Is it needed?
 
-- TaskManager - filtering
-- TaskPersistence
-	- addTag(), addSubtask() - check if the task and the tag exist in the db
-- Duration, FuzzyDate - think of
 - Recurrence
 	- next() for RecurrenceWeekly, RecurrenceMonthly
 	- use facet for RecurrenceIntervalDays and possibly RecurrenceYearly
 - Task - make simple properties public and remove their getters/setters
 - *Persistence - make a common interface
 - use operator= for copying Tasks and Tags  
+- DateTime, Date
+	- discard static toString() and move the code to the non-static method
+	- output special date values as ""
 - FilterRule - think of format and function
 - Task - think of priority:
 	- explicitly set
 	- computed from other things
+- TaskManager - filtering
+- Duration, FuzzyDate - think of
 - exceptions
 - avoid duplicating code!!!
 - save sqlite table names somewhere as constants

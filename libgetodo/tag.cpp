@@ -37,7 +37,7 @@ TagPersistence::TagPersistence(sqlite3_connection* c) : conn(c) {}
 
 TagPersistence::~TagPersistence() {}
 
-void TagPersistence::save(Tag& tag) {
+void TagPersistence::insert(Tag& tag) {
 	// if(!conn) { TODO: throw ...}
 	int count = 0;
 	if (tag.id >= 0) {
@@ -59,17 +59,7 @@ void TagPersistence::save(Tag& tag) {
 		cursor.close();
 	}
 	if (count > 0) {
-		if (tag.id >= 0) {
-			// it is already there -> update
-			try {
-				sqlite3_command cmd(*conn, "UPDATE Tag SET tagName = ? WHERE tagId = ?;");
-				cmd.bind(1, tag.name);
-				cmd.bind(2, tag.id);
-				cmd.executenonquery();
-			} catch(database_error e) {
-				std::cerr << "TagPersistence::save(" << tag.toString() << "): " << e.what() << std::endl;
-			}
-		}
+		update(tag);
 	} else {
 		// it is not there -> insert
 		// id is defined NOT NULL, inserting NULL by not specifying
@@ -80,6 +70,18 @@ void TagPersistence::save(Tag& tag) {
 		// get the id which database automatically created
 		tag.id = sqlite3_last_insert_rowid(conn->db());
 	}
+}
+
+void TagPersistence::update(Tag& tag) {
+	// if(!conn) { TODO: throw ...}
+	if (tag.id >= 0) {
+		// UPDATE doesn't throw any error when given row doesn't exist
+		sqlite3_command cmd(*conn, "UPDATE Tag SET tagName = ? WHERE tagId = ?;");
+		cmd.bind(1, tag.name);
+		cmd.bind(2, tag.id);
+		cmd.executenonquery();
+	}
+	// else { // throw }
 }
 
 Tag& TagPersistence::load(id_t id) {

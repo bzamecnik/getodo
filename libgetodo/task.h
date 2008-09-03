@@ -34,6 +34,7 @@ private:
 	std::set<id_t> tags;
 	std::set<id_t> subtasks;
 
+	// this might be variant in future, let's have it private
 	DateTime dateCreated;
 	DateTime dateLastModified;
 	Date dateStarted;
@@ -126,6 +127,7 @@ public:
 	~TaskPersistence();
 	
 	// save whole Task to database
+	// TODO: split into insert() and update()
 	void save();
 	// load Task from database
 	Task* load(id_t taskId);
@@ -161,6 +163,9 @@ public:
 
 	void setCompletedPercentage(int completedPercentage);
 	void setDone();
+private:
+	template<typename T>
+	void setColumn(std::string columnName, T value);
 };
 
 } // namespace getodo

@@ -131,10 +131,12 @@ void testTag() {
 	
 		TagPersistence tagp(conn);
 		
-		// save()
-		tagp.save(tag2);
+		// insert()
+		tagp.insert(tag2);
 		cout << "tag2 saved: " << tag2.toString() << endl;
 		
+		// TODO: update()
+
 		// load()
 		Tag tag5 = tagp.load(tag2.id);
 		cout << "tag5 loaded from tag2: " << tag5.toString() << endl;

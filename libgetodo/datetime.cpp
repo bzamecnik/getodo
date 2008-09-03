@@ -36,6 +36,8 @@ DateTime DateTime::now() {
 std::string DateTime::toString(const DateTime& date) {
 	//return boost::posix_time::to_iso_extended_string(date.date);
 
+	// TODO: handle special values (not_a_date_time) -> output ""
+	// TODO: move this to non-static toString()
 	using namespace boost;
 	posix_time::time_facet* time_output = new posix_time::time_facet(DateTime::format.c_str());
 	std::ostringstream ss;

@@ -42,9 +42,10 @@ public:
 	TagPersistence(sqlite3_connection* conn);
 	virtual ~TagPersistence();
 
-	// save Tag to database
-	// - if it has no id (eg. it was newly created), assign some
-	void save(Tag& tag);
+	// save Tag to database and assign an id
+	void insert(Tag& tag);
+	// update existing Tag (tag.id must be > 0)
+	void update(Tag& tag);
 	// load Tag from database
 	Tag& load(id_t id);
 	// delete Tag from database

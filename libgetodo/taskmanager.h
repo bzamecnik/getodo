@@ -27,7 +27,7 @@ using namespace sqlite3x;
 class TaskManager {
 private:
 	std::map<id_t,Task*> tasks;
-	std::map<id_t,Tag*> tags;
+	std::map<id_t,Tag> tags;
 	std::map<id_t,FilterRule*> filters;
 
 	sqlite3_connection* conn;
@@ -56,14 +56,14 @@ public:
 
 	// ----- Tag operations -----
 
-	void addTag(const Tag& tag);
+	void addTag(Tag tag);
 	bool hasTag(id_t tagId);
 	// bool hasTag(std::string tagName); // TODO
-	Tag& getTag(id_t tagId);
+	Tag getTag(id_t tagId);
 	// Tag& getTagByName(std::string tagName);
-	Tag& editTag(id_t tagId, const Tag& tag);
+	void editTag(Tag tag);
 	void deleteTag(id_t tagId); //should throw an exception on failure
-	std::list<Tag> getTagsList() const;
+	//std::list<Tag> getTagsList() const;
 
 	// ----- FilterRule operations -----
 

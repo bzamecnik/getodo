@@ -40,10 +40,10 @@ TaskManager::~TaskManager() {
 		it != tasks.end(); ++it) {
 		delete it->second;
 	}
-	for(std::map<id_t,Tag*>::iterator it = tags.begin();
-		it != tags.end(); ++it) {
-		delete it->second;
-	}
+	//for(std::map<id_t,Tag*>::iterator it = tags.begin();
+	//	it != tags.end(); ++it) {
+	//	delete it->second;
+	//}
 	for(std::map<id_t,FilterRule*>::iterator it = filters.begin();
 		it != filters.end(); ++it) {
 		delete it->second;
@@ -121,42 +121,32 @@ void TaskManager::deleteTask(id_t taskId) {
 
 // ----- Tag operations -----
 
-void TaskManager::addTag(const Tag& tag) {
-	TagPersistence tp(conn);
+void TaskManager::addTag(Tag tag) {
 	// when saving, id is assigned by database
-	Tag* tagCopy = new Tag(tag);
-	tp.save(*tagCopy);
-	tags[tagCopy->id] = tagCopy;
+	TagPersistence tp(conn);
+	tp.insert(tag);
+	tags[tag.id] = tag;
 }
 
 bool TaskManager::hasTag(id_t tagId) {
-	std::map<id_t,Tag*>::iterator it = tags.find(tagId);
+	std::map<id_t,Tag>::iterator it = tags.find(tagId);
 	return (it != tags.end());
 }
 
-Tag& TaskManager::getTag(id_t tagId) {
+Tag TaskManager::getTag(id_t tagId) {
 	if (hasTag(tagId)) {
-		return *(tags[tagId]);
+		return tags[tagId];
 	} else {
-		return *(new Tag()); // throw
+		return Tag(); // or throw
 	}
 }
 
-Tag& TaskManager::editTag(id_t tagId, const Tag& tag) {
-	if (!hasTag(tagId)) { return *(new Tag()); } //throw
-	
-	// Delete original tag from tags
-	delete tags[tagId];
-	tags[tagId] = 0;
-	// Copy new tag there
-	Tag* tagCopy = new Tag(tag);
-	tags[tagId] = tagCopy;
-	// correct new tag's tagId to be the same as the former's one
-	tags[tagId]->id = tagId;
+void TaskManager::editTag(Tag tag) {
+	if (!hasTag(tag.id)) { return; } //throw
 	// Save it to database
 	TagPersistence p(conn);
-	p.save(*tagCopy);
-	return *tagCopy;
+	p.update(tag);
+	tags[tag.id] = tag;
 }
 
 void TaskManager::deleteTag(id_t tagId) {
@@ -167,9 +157,9 @@ void TaskManager::deleteTag(id_t tagId) {
 	tags.erase(tagId);
 }
 
-std::list<Tag> TaskManager::getTagsList() const {
-	return convertMapToList<id_t, Tag>(tags);
-}
+//std::list<Tag> TaskManager::getTagsList() const {
+//	return convertMapToList<id_t, Tag>(tags);
+//}
 
 // ----- FilterRule operations -----
 
@@ -259,7 +249,7 @@ void TaskManager::loadAllFromDatabase() {
 			row[cursor.getcolname(i)] = cursor.getstring(i);
 		}
 		id_t tagId = boost::lexical_cast<id_t, std::string>(row["tagId"]);
-		tags[tagId] = new Tag(tagId, row["tagName"]);
+		tags[tagId] = Tag(tagId, row["tagName"]);
 		row.clear();
 	}
 	cursor.close();
