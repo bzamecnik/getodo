@@ -1,5 +1,5 @@
 - SQLite supports string and some number data types (but not date or enum)
-- I must create a format for custom data types (fuzzy dates, etc.)
+- Here is the format for custom data types:
 
 - Date
 	- 2008-05-02 16:51:00 // date+time

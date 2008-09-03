@@ -42,7 +42,8 @@ Task::Task(const Task& t) :
 	description(t.description),
 	longDescription(t.longDescription),
 	tags(t.tags), // TODO: ok?
-	subtasks(t.subtasks), // ok?
+	// subtasks(t.subtasks), // don't allow to make circles
+	// * OR: copy the whole subtree
 	dateCreated(t.dateCreated),
 	dateLastModified(t.dateLastModified),
 	dateStarted(t.dateStarted),
@@ -384,15 +385,19 @@ void TaskPersistence::erase() {
 	if(!task) { return; } // throw
 	if(task->getTaskId() < 0) { return; } // throw
 	
-	sqlite3_command cmd(*conn, "DELETE FROM Tagged WHERE taskId = (?);");
+	sqlite3_command cmd(*conn, "DELETE FROM Tagged WHERE taskId = ?;");
 	cmd.bind(1, task->getTaskId());
 	cmd.executenonquery();
 	
-	cmd.prepare("DELETE FROM Subtasks WHERE super_taskId = (?);");
+	// TODO: what about subtasks?
+	// * delete them too
+	// * make them level 1 tasks
+
+	cmd.prepare("DELETE FROM Subtasks WHERE super_taskId = ?;");
 	cmd.bind(1, task->getTaskId());
 	cmd.executenonquery();
 	
-	cmd.prepare("DELETE FROM Task WHERE taskId = (?);");
+	cmd.prepare("DELETE FROM Task WHERE taskId = ?;");
 	cmd.bind(1, task->getTaskId());
 	cmd.executenonquery();
 	
@@ -408,40 +413,33 @@ void TaskPersistence::setTask(Task* task) {
 }
 
 void TaskPersistence::setDescription(const std::string description) {
-	// if(!conn || !task) { TODO: throw }
-	sqlite3_command cmd(*conn, "UPDATE Task SET description = ? "
-		"WHERE taskId = (?);");
-	cmd.bind(1, description);
-	cmd.bind(2, task-> getTaskId());
-	cmd.executenonquery();
+	setColumn<std::string>("description", description);
 }
 
 void TaskPersistence::setLongDescription(const std::string longDescription) {
-	// if(!conn || !task) { TODO: throw }
-	sqlite3_command cmd(*conn, "UPDATE Task SET longDescription = ? "
-		"WHERE taskId = (?);");
-	cmd.bind(1, longDescription);
-	cmd.bind(2, task->getTaskId());
-	cmd.executenonquery();
+	setColumn<std::string>("longDescription", longDescription);
 }
 
 void TaskPersistence::addTag(id_t tagId) {
 	// if(!conn || !task) { TODO: throw }
-	// TODO: check if the task and the tag exist in the database
-	// yes -> update
-	// no -> insert
-	sqlite3_command cmd(*conn, "INSERT INTO Tagged (taskId,tagId) "
-		"VALUES ((?),(?));");
-	cmd.bind(1, task-> getTaskId());
+	sqlite3_command cmd(*conn);
+	cmd.prepare("SELECT count(*) FROM Tagged WHERE (taskId = ? AND tagId = ?);");
+	cmd.bind(1, task->getTaskId());
 	cmd.bind(2, tagId);
-	cmd.executenonquery();
+	int count = cmd.executeint();
+	if (count <= 0) {
+		cmd.prepare("INSERT INTO Tagged (taskId,tagId) VALUES (?,?);");
+		cmd.bind(1, task->getTaskId());
+		cmd.bind(2, tagId);
+		cmd.executenonquery();
+	}
 }
 
 void TaskPersistence::removeTag(id_t tagId) {
 	// if(!conn || !task) { TODO: throw }
 	// check if the task and the tag exist in the database
-	sqlite3_command cmd(*conn, "DELETE FROM Tagged WHERE (taskId = (?) "
-		"AND tagId = (?));");
+	sqlite3_command cmd(*conn);
+	cmd.prepare("DELETE FROM Tagged WHERE (taskId = ? AND tagId = ?);");
 	cmd.bind(1, task-> getTaskId());
 	cmd.bind(2, tagId);
 	cmd.executenonquery();
@@ -449,106 +447,78 @@ void TaskPersistence::removeTag(id_t tagId) {
 
 void TaskPersistence::addSubtask(id_t taskId) {
 	// if(!conn || !task) { TODO: throw }
-	// TODO: check if the task and the subtask exist in the database
-	// yes -> update
-	// no -> insert
-	sqlite3_command cmd(*conn, "INSERT INTO Subtasks (sub_taskId,"
-		"super_taskId) VALUES ((?),(?));");
+	sqlite3_command cmd(*conn);
+	cmd.prepare("SELECT count(*) FROM Subtasks WHERE (sub_taskId = ? AND super_taskId = ?);");
 	cmd.bind(1, taskId);
 	cmd.bind(2, task-> getTaskId());
-	cmd.executenonquery();
+	int count = cmd.executeint();
+	if (count <= 0) {
+		cmd.prepare("INSERT INTO Subtasks (sub_taskId, super_taskId) VALUES (?,?);");
+		cmd.bind(1, taskId);
+		cmd.bind(2, task-> getTaskId());
+		cmd.executenonquery();
+	}
 }
 
 void TaskPersistence::removeSubtask(id_t taskId) {
 	// if(!conn || !task) { TODO: throw }
-	// check if the task and the subtask exist in the database
-	sqlite3_command cmd(*conn, "DELETE FROM Subtask WHERE (sub_taskId = "
-		"(?) AND super_taskId = (?));");
+	sqlite3_command cmd(*conn);
+	cmd.prepare("DELETE FROM Subtask WHERE (sub_taskId = ? AND super_taskId = ?);");
 	cmd.bind(1, taskId);
 	cmd.bind(2, task-> getTaskId());
 	cmd.executenonquery();
-
 }
 
 void TaskPersistence::setDateCreated(const DateTime& dateCreated) {
-	// if(!conn || !task) { TODO: throw }
 	// check if dateCreated is ok
-	sqlite3_command cmd(*conn, "UPDATE Task SET dateCreated = ? "
-		"WHERE taskId = (?);");
-	cmd.bind(1, dateCreated.toString());
-	cmd.bind(2, task-> getTaskId());
-	cmd.executenonquery();
+	setColumn<std::string>("dateCreated", dateCreated.toString());
 }
 
 void TaskPersistence::setDateLastModified(const DateTime& dateLastModified) {
-	// if(!conn || !task) { TODO: throw }
 	// check if dateLastModified is ok
-	sqlite3_command cmd(*conn, "UPDATE Task SET dateLastModified = ? "
-		"WHERE taskId = (?);");
-	cmd.bind(1, dateLastModified.toString());
-	cmd.bind(2, task-> getTaskId());
-	cmd.executenonquery();
+	setColumn<std::string>("dateLastModified", dateLastModified.toString());
 }
 void TaskPersistence::setDateStarted(const Date& dateStarted) {
-	// if(!conn || !task) { TODO: throw }
 	// check if dateStarted is ok
-	sqlite3_command cmd(*conn, "UPDATE Task SET dateStarted = ? "
-		"WHERE taskId = (?);");
-	cmd.bind(1, dateStarted.toString());
-	cmd.bind(2, task-> getTaskId());
-	cmd.executenonquery();
+	setColumn<std::string>("dateStarted", dateStarted.toString());
 }
 void TaskPersistence::setDateDeadline(const Date& dateDeadline) {
-	// if(!conn || !task) { TODO: throw }
 	// check if dateDeadline is ok
-	sqlite3_command cmd(*conn, "UPDATE Task SET dateDeadline = ? "
-		"WHERE taskId = (?);");
-	cmd.bind(1, dateDeadline.toString());
-	cmd.bind(2, task-> getTaskId());
-	cmd.executenonquery();
+	setColumn<std::string>("dateDeadline", dateDeadline.toString());
 }
 void TaskPersistence::setDateCompleted(const Date& dateCompleted) {
-	// if(!conn || !task) { TODO: throw }
 	// check if dateCompleted is ok
-	sqlite3_command cmd(*conn, "UPDATE Task SET dateCompleted = ? "
-		"WHERE taskId = (?);");
-	cmd.bind(1, dateCompleted.toString());
-	cmd.bind(2, task-> getTaskId());
-	cmd.executenonquery();
+	setColumn<std::string>("dateCompleted", dateCompleted.toString());
 }
 
 void TaskPersistence::setRecurrence(const Recurrence& recurrence) {
-	// if(!conn || !task) { TODO: throw }
-	sqlite3_command cmd(*conn, "UPDATE Task SET recurrence = ? "
-		"WHERE taskId = (?);");
-	cmd.bind(1, Recurrence::toString(recurrence));
-	cmd.bind(2, task->getTaskId());
-	cmd.executenonquery();
+	setColumn<std::string>("recurrence", Recurrence::toString(recurrence));
 }
 
 
 void TaskPersistence::setPriority(int priority) {
-	// if(!conn || !task) { TODO: throw }
 	// check if priority is ok
-	sqlite3_command cmd(*conn, "UPDATE Task SET priority = ? "
-		"WHERE taskId = (?);");
-	cmd.bind(1, priority);
-	cmd.bind(2, task-> getTaskId());
-	cmd.executenonquery();
+	setColumn<int>("priority", priority);
 }
  
 void TaskPersistence::setCompletedPercentage(int completedPercentage) {
-	// if(!conn || !task) { TODO: throw }
 	// check if completedPercentage is ok (in interval [0;100])
-	sqlite3_command cmd(*conn, "UPDATE Task SET completedPercentage = ? "
-		"WHERE taskId = (?);");
-	cmd.bind(1, completedPercentage);
-	cmd.bind(2, task-> getTaskId());
-	cmd.executenonquery();
+	setColumn<int>("completedPercentage", completedPercentage);
 }
 void TaskPersistence::setDone() {
 	// TODO: put this constant into config
 	setCompletedPercentage(100);
+}
+
+template<typename T>
+void TaskPersistence::setColumn(std::string columnName, T value) {
+	// if(!conn || !task || (taskgetTaskId() >= 0)) { TODO: throw }
+	sqlite3_command cmd(*conn);
+	cmd.prepare("UPDATE Task SET ? = ? WHERE taskId = ?;");
+	cmd.bind(1, columnName);
+	cmd.bind(2, value);
+	cmd.bind(3, task->getTaskId());
+	cmd.executenonquery();
 }
 
 } // namespace getodo
