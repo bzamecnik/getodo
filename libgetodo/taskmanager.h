@@ -54,6 +54,7 @@ public:
     Task* editTask(id_t taskId, const Task& task);
     Task* editTask(Task* task);
     void deleteTask(id_t taskId); //should throw an exception on failure
+	std::list<Tag*> getTagsList();
 
     // ----- Tag operations -----
 
@@ -64,7 +65,7 @@ public:
     // Tag& getTag(std::string tagName); // TODO
     Tag& editTag(id_t tagId, const Tag& tag);
     void deleteTag(id_t tagId); //should throw an exception on failure
-    std::list<Tag*> getTagsList();
+    std::list<Task*> getTasksList();
 
     // ----- FilterRule operations -----
 
@@ -74,7 +75,7 @@ public:
     FilterRule& getFilterRule(id_t filterRuleId);
     FilterRule& editFilterRule(id_t filterRuleId, const FilterRule& filter);
     void deleteFilterRule(id_t filterRuleId); //should throw an exception on failure
-    std::list<FilterRule> getFilterRulesList() const;
+    std::list<FilterRule*> getFilterRulesList();
 
     // TODO:
     // - specify a format for FilterRules
@@ -83,9 +84,17 @@ public:
     taskset_t filterTasks(const FilterRule& filterRule); // TODO
 
 	// ----- signals for models -----
+	sigc::signal1<void, Task&> signal_task_inserted;
+	sigc::signal1<void, Task&> signal_task_updated;
+	sigc::signal1<void, Task&> signal_task_removed;
+
 	sigc::signal1<void, Tag&> signal_tag_inserted;
 	sigc::signal1<void, Tag&> signal_tag_updated;
 	sigc::signal1<void, Tag&> signal_tag_removed;
+
+	sigc::signal1<void, FilterRule&> signal_filter_inserted;
+	sigc::signal1<void, FilterRule&> signal_filter_updated;
+	sigc::signal1<void, FilterRule&> signal_filter_removed;
 private:
     void loadAllFromDatabase(); // to be called by the constructor
     
@@ -97,11 +106,11 @@ private:
     bool checkDatabaseStructure(); // true, if all needed tables exist
 
     template<typename T_key, typename T_value>
-    std::list<T_value> convertMapToList(std::map<T_key, T_value *> m) const {
-        std::list<T_value> list;
-        std::map<T_key, T_value *>::const_iterator it;
+    std::list<T_value*> convertMapToList(std::map<T_key, T_value *> m) {
+        std::list<T_value*> list;
+        std::map<T_key, T_value *>::iterator it;
         for (it = m.begin(); it != m.end(); it++) {
-            list.push_front(*(it->second));
+            list.push_front(it->second);
         }
         return list;
     }

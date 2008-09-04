@@ -218,6 +218,10 @@
 				RelativePath=".\tagmodel.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\taskmodel.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -234,6 +238,10 @@
 			</File>
 			<File
 				RelativePath=".\tagmodel.h"
+				>
+			</File>
+			<File
+				RelativePath=".\taskmodel.h"
 				>
 			</File>
 		</Filter>
