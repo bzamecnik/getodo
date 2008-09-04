@@ -33,7 +33,9 @@ private:
 	// cycles in Subtask relation while loading from database.
 	std::set<id_t> tags;
 	std::set<id_t> subtasks;
+	// id_t parent; // TODO
 
+	// bool done; // TODO
 	// this might be variant in future, let's have it private
 	DateTime dateCreated;
 	DateTime dateLastModified;
@@ -97,6 +99,9 @@ public:
 	int getCompletedPercentage() const;
 	void setCompletedPercentage(int completedPercentage);
 	void setDone();
+	// TODO:
+	//bool isDone();
+	//void setDone(bool done = true);
 
 	// ----- object-relation representation conversion ----------
 	databaseRow_t toDatabaseRow() const;
@@ -165,7 +170,15 @@ public:
 	void setDone();
 private:
 	template<typename T>
-	void setColumn(std::string columnName, T value);
+	void setColumn(std::string columnName, T value) {
+		// if(!conn || !task || (taskgetTaskId() >= 0)) { TODO: throw }
+		sqlite3_command cmd(*conn);
+		cmd.prepare("UPDATE Task SET ? = ? WHERE taskId = ?;");
+		cmd.bind(1, columnName);
+		cmd.bind(2, value);
+		cmd.bind(3, task->getTaskId());
+		cmd.executenonquery();
+	}
 };
 
 } // namespace getodo
