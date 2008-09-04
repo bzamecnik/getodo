@@ -119,6 +119,10 @@ void TaskManager::deleteTask(id_t taskId) {
     tasks.erase(taskId);
 }
 
+std::list<Task*> TaskManager::getTasksList() {
+    return convertMapToList<id_t, Task>(tasks);
+}
+
 // ----- Tag operations -----
 
 void TaskManager::addTag(const Tag& tag) {
@@ -175,13 +179,7 @@ void TaskManager::deleteTag(id_t tagId) {
 }
 
 std::list<Tag*> TaskManager::getTagsList() {
-    //return convertMapToList<id_t, Tag>(tags);
-	std::list<Tag*> list;
-    std::map<id_t, Tag*>::iterator it;
-    for (it = tags.begin(); it != tags.end(); it++) {
-        list.push_front(it->second);
-    }
-    return list;
+    return convertMapToList<id_t, Tag>(tags);
 }
 
 // ----- FilterRule operations -----
@@ -233,7 +231,7 @@ void TaskManager::deleteFilterRule(id_t filterRuleId) {
     filters.erase(filterRuleId);
 }
 
-std::list<FilterRule> TaskManager::getFilterRulesList() const {
+std::list<FilterRule*> TaskManager::getFilterRulesList() {
     return convertMapToList<id_t, FilterRule>(filters);
 }
 

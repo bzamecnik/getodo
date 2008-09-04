@@ -1,4 +1,4 @@
-// $Id: $
+// $Id$
 
 #ifndef TAG_MODEL_H
 #define TAG_MODEL_H
