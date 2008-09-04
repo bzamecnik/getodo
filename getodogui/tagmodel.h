@@ -1,6 +1,9 @@
-#ifndef _TAG_MODEL_H_
-#define _TAG_MODEL_H_
+// $Id: $
 
+#ifndef TAG_MODEL_H
+#define TAG_MODEL_H
+
+#include "getodo.h"
 #include <sigc++/sigc++.h>
 #include <algorithm>
 #include <vector>
@@ -8,46 +11,31 @@
 #include <sstream>
 #include <string>
 
-typedef int id_t;
+namespace getodo {
 
-class Tag
-{
-public:
-	id_t id;
-	std::string name;
-	
-	Tag();
-	Tag(const Tag& t);
-	Tag(std::string name);
-	Tag(id_t tagId, std::string tagName);
-	virtual ~Tag();
-
-	virtual std::string toString() const;
-};
-
-class TagManager : public sigc::trackable
-{
-// A container of Tags that signals the operations with Tags.
-// Use TagManager interface for modyfying the data.
-private:
-	typedef std::map<id_t, Tag*> tags_t;
-	tags_t tags;
-
-public:
-	TagManager();
-	virtual ~TagManager();
-
-	void insertTag(Tag* tag);
-	bool hasTag(id_t tagId);
-	Tag* getTag(id_t tagId);
-	void updateTag(Tag* tag);
-	void removeTag(id_t tagId);
-	std::list<Tag*> getTagsList();
-	
-	sigc::signal1<void, Tag&> signal_tag_inserted;
-	sigc::signal1<void, Tag&> signal_tag_updated;
-	sigc::signal1<void, Tag&> signal_tag_removed;
-};
+//class TagManager : public sigc::trackable
+//{
+//// A container of Tags that signals the operations with Tags.
+//// Use TagManager interface for modyfying the data.
+//private:
+//	typedef std::map<id_t, Tag*> tags_t;
+//	tags_t tags;
+//
+//public:
+//	TagManager();
+//	virtual ~TagManager();
+//
+//	void insertTag(Tag* tag);
+//	bool hasTag(id_t tagId);
+//	Tag* getTag(id_t tagId);
+//	void updateTag(Tag* tag);
+//	void removeTag(id_t tagId);
+//	std::list<Tag*> getTagsList();
+//	
+//	sigc::signal1<void, Tag&> signal_tag_inserted;
+//	sigc::signal1<void, Tag&> signal_tag_updated;
+//	sigc::signal1<void, Tag&> signal_tag_removed;
+//};
 
 class TagNode;
 typedef std::vector<TagNode*> TagNodeVector;
@@ -87,7 +75,7 @@ public:
     struct InvalidNode { }; // an exception
     struct InvalidPath { }; // an exception
 
-	TagModel(TagManager& manager);
+	TagModel(TaskManager& manager);
     virtual ~TagModel();
 
 	TagNodeVector& get_tags() const;
@@ -103,7 +91,7 @@ public:
     sigc::signal2<void, TagNode&, Path&> signal_node_updated;
     sigc::signal2<void, TagNode&, Path&> signal_node_removed;
 private:
-	TagManager& manager;
+	TaskManager& manager;
 	TagNodeVector tagNodes; // children of root
 	TagNodeMap tagNodeMap;
 
@@ -131,11 +119,11 @@ public:
 
 	~TagTreeModel();
 
-	static Glib::RefPtr<TagTreeModel> create(TagManager& manager);
+	static Glib::RefPtr<TagTreeModel> create(TaskManager& manager);
 
 	void clear();
 protected:
-	TagTreeModel(TagManager& manager);
+	TagTreeModel(TaskManager& manager);
 
     virtual void set_value_impl(const iterator& row, int column, const Glib::ValueBase& value);
     //virtual void get_value_impl(const iterator& row, int column, Glib::ValueBase& value) const;
@@ -189,4 +177,6 @@ public:
     static void class_init_function(void* g_class, void* class_data);
 }; // class TagTreeModel_Class
 
-#endif // _TAG_MODEL_H_
+} // namespace getodo
+
+#endif // TAG_MODEL_H

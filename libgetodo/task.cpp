@@ -510,15 +510,4 @@ void TaskPersistence::setDone() {
 	setCompletedPercentage(100);
 }
 
-template<typename T>
-void TaskPersistence::setColumn(std::string columnName, T value) {
-	// if(!conn || !task || (taskgetTaskId() >= 0)) { TODO: throw }
-	sqlite3_command cmd(*conn);
-	cmd.prepare("UPDATE Task SET ? = ? WHERE taskId = ?;");
-	cmd.bind(1, columnName);
-	cmd.bind(2, value);
-	cmd.bind(3, task->getTaskId());
-	cmd.executenonquery();
-}
-
 } // namespace getodo

@@ -10,7 +10,8 @@
 	* Recurrence, RecurrenceDaily, RecurrenceWeekly, RecurrenceMonthly,
 		RecurrenceYearly, RecurrenceIntervalDays
 	- [Duration, ...]		
-- think of an API between lib and GUI
+- write custom TreeModel for Task and FilerRule 
+*- think of an API between lib and GUI
 - design GUI
 	- in Glade
 	- Glade will generate a XML that will be dynamically loaded into the program
@@ -18,6 +19,7 @@
 	- Question: how to embed .glade file into the final .exe file?
 	  - Is it needed?
 
+- Task - add bool done field (to SQL, field, access methods, serialization)
 - Recurrence
 	- next() for RecurrenceWeekly, RecurrenceMonthly
 	- use facet for RecurrenceIntervalDays and possibly RecurrenceYearly

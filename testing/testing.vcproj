@@ -17,6 +17,7 @@
 			Name="Debug|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
+			InheritedPropertySheets="$(SolutionDir)gtkmm-2.4d.vsprops"
 			ConfigurationType="1"
 			>
 			<Tool
@@ -85,6 +86,7 @@
 			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
+			InheritedPropertySheets="$(SolutionDir)gtkmm-2.4.vsprops"
 			ConfigurationType="1"
 			>
 			<Tool

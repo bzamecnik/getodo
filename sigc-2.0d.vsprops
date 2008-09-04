@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="sigc++ 2.0 Debug"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		AdditionalOptions="/vd2"
+		AdditionalIncludeDirectories="&quot;$(GTKMM_BASEPATH)\include\sigc++-2.0&quot;;&quot;$(GTKMM_BASEPATH)\lib\sigc++-2.0\include&quot;"
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		AdditionalDependencies="sigc-2.0d.lib"
+		AdditionalLibraryDirectories="$(GTKMM_BASEPATH)\libb"
+	/>
+</VisualStudioPropertySheet>

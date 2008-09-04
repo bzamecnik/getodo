@@ -20,7 +20,7 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
-			InheritedPropertySheets=".\gtkmm-2.4d.vsprops"
+			InheritedPropertySheets="$(SolutionDir)gtkmm-2.4d.vsprops"
 			CharacterSet="1"
 			>
 			<Tool
@@ -68,6 +68,7 @@
 				AdditionalLibraryDirectories="&quot;$(SolutionDir)&quot;\release;&quot;C:\Program Files\SQLite&quot;;&quot;C:\program Files\boost\boost_1_34_1\lib&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="1"
+				EntryPointSymbol=""
 				TargetMachine="1"
 			/>
 			<Tool
@@ -100,7 +101,7 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
-			InheritedPropertySheets=".\gtkmm-2.4.vsprops"
+			InheritedPropertySheets="$(SolutionDir)gtkmm-2.4.vsprops"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -213,6 +214,10 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath=".\tagmodel.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -225,6 +230,10 @@
 			</File>
 			<File
 				RelativePath=".\stdafx.h"
+				>
+			</File>
+			<File
+				RelativePath=".\tagmodel.h"
 				>
 			</File>
 		</Filter>

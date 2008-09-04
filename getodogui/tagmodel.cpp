@@ -1,19 +1,9 @@
+// $Id: $
+
 #include "stdafx.h"
-#include "TagModel.h"
+#include "tagmodel.h"
 
-// ----- class Tag --------------------
-
-Tag::Tag() : id(-1) {}
-Tag::Tag(const Tag& t) : id(t.id), name(t.name) {}
-Tag::Tag(std::string tagName) : id(-1), name(tagName) {}
-Tag::Tag(id_t tagId, std::string tagName) : id(tagId), name(tagName) {}
-Tag::~Tag() {}
-
-std::string Tag::toString() const {
-	std::ostringstream ss;
-	ss << "Tag [" << id << "]: " << name;
-	return ss.str();
-}
+namespace getodo {
 
 // ----- class TagNode --------------------
 
@@ -25,68 +15,68 @@ TagNode::~TagNode() {
 	}
 }
 
-// ----- class TagManager --------------------
-
-TagManager::TagManager() {}
-TagManager::~TagManager() {
-	for(tags_t::iterator it = tags.begin(); it != tags.end(); ++it) {
-		if(it->second) {
-			delete it->second;
-			it->second = 0;
-		}
-	}
-}
-void TagManager::insertTag(Tag* tag) {
-	using namespace std;
-	if (tag) {
-		pair<tags_t::iterator, bool> result = tags.insert(make_pair(tag->id, tag));
-		if (result.second) {
-			signal_tag_inserted(*tag);
-		}
-	}
-}
-bool TagManager::hasTag(id_t tagId) {
-	return tags.find(tagId) != tags.end();
-}
-Tag* TagManager::getTag(id_t tagId) {
-	tags_t::iterator foundTag = tags.find(tagId);
-	if (foundTag != tags.end()) {
-		return foundTag->second;
-	} else {
-		return 0;
-	}
-}
-void TagManager::updateTag(Tag* tag) {
-	if (!tag) { return; }
-	tags_t::iterator updatedTag = tags.find(tag->id);
-	if (updatedTag != tags.end()) {
-		tags[tag->id]->name = tag->name;
-		signal_tag_updated(*tag);
-	} else {
-		insertTag(tag);
-	}
-	
-}
-void TagManager::removeTag(id_t tagId) {
-	tags_t::iterator tagToRemove = tags.find(tagId);
-	if(tagToRemove != tags.end()) {
-		signal_tag_removed(*(tagToRemove->second));
-		delete tagToRemove->second;
-		tags.erase(tagToRemove);
-	}
-}
-
-std::list<Tag*> TagManager::getTagsList() {
-	std::list<Tag*> tagList;
-	for (tags_t::iterator it = tags.begin(); it != tags.end(); ++it) {
-		tagList.push_back(it->second);
-	}
-	return tagList;
-}
+//// ----- class TagManager --------------------
+//
+//TagManager::TagManager() {}
+//TagManager::~TagManager() {
+//	for(tags_t::iterator it = tags.begin(); it != tags.end(); ++it) {
+//		if(it->second) {
+//			delete it->second;
+//			it->second = 0;
+//		}
+//	}
+//}
+//void TagManager::insertTag(Tag* tag) {
+//	using namespace std;
+//	if (tag) {
+//		pair<tags_t::iterator, bool> result = tags.insert(make_pair(tag->id, tag));
+//		if (result.second) {
+//			signal_tag_inserted(*tag);
+//		}
+//	}
+//}
+//bool TagManager::hasTag(id_t tagId) {
+//	return tags.find(tagId) != tags.end();
+//}
+//Tag* TagManager::getTag(id_t tagId) {
+//	tags_t::iterator foundTag = tags.find(tagId);
+//	if (foundTag != tags.end()) {
+//		return foundTag->second;
+//	} else {
+//		return 0;
+//	}
+//}
+//void TagManager::updateTag(Tag* tag) {
+//	if (!tag) { return; }
+//	tags_t::iterator updatedTag = tags.find(tag->id);
+//	if (updatedTag != tags.end()) {
+//		tags[tag->id]->name = tag->name;
+//		signal_tag_updated(*tag);
+//	} else {
+//		insertTag(tag);
+//	}
+//	
+//}
+//void TagManager::removeTag(id_t tagId) {
+//	tags_t::iterator tagToRemove = tags.find(tagId);
+//	if(tagToRemove != tags.end()) {
+//		signal_tag_removed(*(tagToRemove->second));
+//		delete tagToRemove->second;
+//		tags.erase(tagToRemove);
+//	}
+//}
+//
+//std::list<Tag*> TagManager::getTagsList() {
+//	std::list<Tag*> tagList;
+//	for (tags_t::iterator it = tags.begin(); it != tags.end(); ++it) {
+//		tagList.push_back(it->second);
+//	}
+//	return tagList;
+//}
 
 // ----- class TagModel --------------------
 
-TagModel::TagModel(TagManager& _manager)
+TagModel::TagModel(TaskManager& _manager)
 : manager(_manager)
 {
 	manager.signal_tag_inserted.connect(sigc::mem_fun(*this, &TagModel::on_tag_inserted));
@@ -179,11 +169,13 @@ void TagModel::remove(Tag& tag) {
 void TagModel::insert(Tag& tag) {
 	TagNode* newNode = new TagNode(tag);
 	tagNodes.push_back(newNode);
-	tagNodeMap[tag.id] = newNode;
-	Path newPath(1);
-	newPath[0] = (int)std::distance(tagNodes.begin(),
-		std::find(tagNodes.begin(), tagNodes.end(), newNode));
-	signal_node_inserted(*newNode, newPath);
+	std::pair<TagNodeMap::iterator,bool> result = tagNodeMap.insert(std::make_pair(tag.id, newNode));
+	if (result.second) {
+		Path newPath(1);
+		newPath[0] = (int)std::distance(tagNodes.begin(),
+			std::find(tagNodes.begin(), tagNodes.end(), newNode));
+		signal_node_inserted(*newNode, newPath);
+	}
 }
 
 void TagModel::on_tag_inserted(Tag& tag) {
@@ -226,7 +218,7 @@ void TagModel::on_tag_removed(Tag& tag) {
 
 TagTreeModel_Class TagTreeModel::tagtreemodel_class_;
 
-TagTreeModel::TagTreeModel(TagManager& manager)
+TagTreeModel::TagTreeModel(TaskManager& manager)
 : Glib::ObjectBase("GeToDo_TagTreeModel"), 
   Glib::Object(Glib::ConstructParams(tagtreemodel_class_.init(), (char*) 0)),
   TreeModel(),
@@ -240,7 +232,7 @@ TagTreeModel::TagTreeModel(TagManager& manager)
 TagTreeModel::~TagTreeModel() {
 }
 
-Glib::RefPtr<TagTreeModel> TagTreeModel::create(TagManager& manager)
+Glib::RefPtr<TagTreeModel> TagTreeModel::create(TaskManager& manager)
 {
 	return Glib::RefPtr<TagTreeModel>(new TagTreeModel(manager));
 }
@@ -250,7 +242,7 @@ void TagTreeModel::set_value_impl(const iterator& row, int column, const Glib::V
 }
 
 Gtk::TreeModelFlags TagTreeModel::get_flags_vfunc() const {
-	return Gtk::TreeModelFlags();
+	return Gtk::TreeModelFlags() & Gtk::TREE_MODEL_LIST_ONLY;
 }
 
 int TagTreeModel::get_n_columns_vfunc() const {
@@ -535,3 +527,5 @@ const Glib::Class& TagTreeModel_Class::init()
 }
 
 void TagTreeModel_Class::class_init_function(void* g_class, void* class_data) {}
+
+} // namespace getodo

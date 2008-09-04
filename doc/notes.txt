@@ -12,6 +12,7 @@
 	- operations with data
 - getodo (GUI, executable)
 	- user interface
+	-	custom tree models
 - testing (console)
 	- testing module
 - sqlite3x (static library)
