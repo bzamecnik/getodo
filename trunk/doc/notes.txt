@@ -116,3 +116,5 @@ standard paths. Autotools on Windows need some help (config-mingw-win32.sh).
 ==== Installer ====
 
 - NSIS (Nullsoft Scriptable Install System) - http://nsis.sourceforge.net/
+
+==== Code ====

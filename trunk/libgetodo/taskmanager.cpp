@@ -251,7 +251,11 @@ void TaskManager::loadAllFromDatabase() {
     columnsCount = cursor.colcount();
     while (cursor.step()) {
         for (int i = 0; i < columnsCount; i++) {
-            row[cursor.getcolname(i)] = cursor.getstring(i);
+            std::string columnData;
+			if (!cursor.isnull(i)) {
+				columnData = cursor.getstring(i);
+			}
+			row[cursor.getcolname(i)] = columnData;
         }
         Task* task = Task::fromDatabaseRow(row);
         // what if there's an exception
@@ -268,7 +272,11 @@ void TaskManager::loadAllFromDatabase() {
         // Remark: Don't assume any order of columns to make things
         // more robust with future changes in mind.
         for (int i = 0; i < columnsCount; i++) {
-            row[cursor.getcolname(i)] = cursor.getstring(i);
+            std::string columnData;
+			if (!cursor.isnull(i)) {
+				columnData = cursor.getstring(i);
+			}
+			row[cursor.getcolname(i)] = columnData;
         }
         id_t tagId = boost::lexical_cast<id_t, std::string>(row["tagId"]);
         tags[tagId] = new Tag(tagId, row["tagName"]);
@@ -282,7 +290,11 @@ void TaskManager::loadAllFromDatabase() {
     columnsCount = cursor.colcount();
     while (cursor.step()) {
         for (int i = 0; i < columnsCount; i++) {
-            row[cursor.getcolname(i)] = cursor.getstring(i);
+            std::string columnData;
+			if (!cursor.isnull(i)) {
+				columnData = cursor.getstring(i);
+			}
+			row[cursor.getcolname(i)] = columnData;
         }
         id_t taskId = boost::lexical_cast<id_t, std::string>(row["taskId"]);
         id_t tagId = boost::lexical_cast<id_t, std::string>(row["tagId"]);
@@ -300,7 +312,11 @@ void TaskManager::loadAllFromDatabase() {
     columnsCount = cursor.colcount();
     while (cursor.step()) {
         for (int i = 0; i < columnsCount; i++) {
-            row[cursor.getcolname(i)] = cursor.getstring(i);
+            std::string columnData;
+			if (!cursor.isnull(i)) {
+				columnData = cursor.getstring(i);
+			}
+			row[cursor.getcolname(i)] = columnData;
         }
         id_t super_taskId = boost::lexical_cast<id_t, std::string>(row["super_taskId"]);
         id_t sub_taskId = boost::lexical_cast<id_t, std::string>(row["sub_taskId"]);
@@ -318,7 +334,11 @@ void TaskManager::loadAllFromDatabase() {
     columnsCount = cursor.colcount();
     while (cursor.step()) {
         for (int i = 0; i < columnsCount; i++) {
-            row[cursor.getcolname(i)] = cursor.getstring(i);
+            std::string columnData;
+			if (!cursor.isnull(i)) {
+				columnData = cursor.getstring(i);
+			}
+			row[cursor.getcolname(i)] = columnData;
         }
         id_t filterRuleId = boost::lexical_cast<id_t, std::string>(row["filterRuleId"]);
         filters[filterRuleId] = new FilterRule(filterRuleId, row["name"], row["rule"]);
@@ -342,11 +362,13 @@ bool TaskManager::checkDatabaseStructure() {
     sqlite3_cursor cursor = cmd.executecursor();
     std::set<std::string>::iterator tableIt;
     while (cursor.step()) {
-        std::string table = cursor.getstring(0);
-        tableIt = tablesNeeded.find(table);
-        if (tableIt != tablesNeeded.end()) {
-            tablesNeeded.erase(tableIt);
-        }
+		if (!cursor.isnull(0)) { // this check may not be needed here
+			std::string table = cursor.getstring(0);
+			tableIt = tablesNeeded.find(table);
+			if (tableIt != tablesNeeded.end()) {
+				tablesNeeded.erase(tableIt);
+			}
+		}
     }
     cursor.close();
     return tablesNeeded.empty();

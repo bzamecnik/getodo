@@ -12,20 +12,22 @@
 	- [Duration, ...]		
 - write custom TreeModel for Task and FilerRule 
 *- think of an API between lib and GUI
-- design GUI
-	- in Glade
-	- Glade will generate a XML that will be dynamically loaded into the program
-	- http://www.gtkmm.org/docs/gtkmm-2.4/docs/tutorial/html/sec-libglademm-loading-glade-file.html
+- complete design GUI in Glade
+	- editing panel (remake it), menu, toolbar...
 	- Question: how to embed .glade file into the final .exe file?
 	  - Is it needed?
 
+- delete operator - don't check if the deleted pointer isn't NULL, it's redundant
 - Task - add bool done field (to SQL, field, access methods, serialization)
 - Recurrence
 	- next() for RecurrenceWeekly, RecurrenceMonthly
 	- use facet for RecurrenceIntervalDays and possibly RecurrenceYearly
-- Task - make simple properties public and remove their getters/setters
+- Task - make simple properties public and remove their getters/setters (really?)
 - *Persistence - make a common interface
-- use operator= for copying Tasks and Tags  
+- use operator= for copying Tasks and Tags
+- think whether really use pointers to Task, Tag, ...
+- think of a common interface to persistent objects (Task, Tag, FilterRule)
+- user operator<< and operator>> for I/O of objects like DateTime, Tag, ...  
 - DateTime, Date
 	- discard static toString() and move the code to the non-static method
 	- output special date values as ""
@@ -33,9 +35,9 @@
 - Task - think of priority:
 	- explicitly set
 	- computed from other things
-- TaskManager - filtering
+- TaskManager - write filtering code
 - Duration, FuzzyDate - think of
-- exceptions
+- use exceptions!
 - avoid duplicating code!!!
 - save sqlite table names somewhere as constants
 - database triggers for checking date format validity
