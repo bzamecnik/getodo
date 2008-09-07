@@ -93,7 +93,9 @@ Tag& TagPersistence::load(id_t id) {
 	sqlite3_cursor cursor = cmd.executecursor();
 	std::string name;
 	if (cursor.step()) {
-		name = cursor.getstring(0);
+		if (!cursor.isnull(0)) {
+			name = cursor.getstring(0);
+		}
 	}
 	cursor.close();
 	// TODO: throw, if there is no record with such a tagId

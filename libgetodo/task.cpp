@@ -344,7 +344,11 @@ Task* TaskPersistence::load(id_t taskId) {
 	databaseRow_t row;
 	int columnsCount = cursor.colcount();
 	for (int i = 0; i < columnsCount; i++) {
-		row[cursor.getcolname(i)] = cursor.getstring(i);
+		std::string columnData;
+		if (!cursor.isnull(i)) {
+			columnData = cursor.getstring(i);
+		}
+		row[cursor.getcolname(i)] = columnData;
 	}
 	cursor.close();
 	task = Task::fromDatabaseRow(row);
