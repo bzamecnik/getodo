@@ -118,3 +118,9 @@ standard paths. Autotools on Windows need some help (config-mingw-win32.sh).
 - NSIS (Nullsoft Scriptable Install System) - http://nsis.sourceforge.net/
 
 ==== Code ====
+
+==== To Read ====
+
+- C++ FAQ - Serialization
+- s11n.net - safely destroying objects
+- debuging in MSVS - http://msdn.microsoft.com/en-us/library/sc65sadd(VS.80).aspx

@@ -5,6 +5,8 @@ using namespace getodo;
 // TIP: use Boost.Test http://www.boost.org/doc/libs/1_35_0/libs/test/doc/index.html
 // TODO: avoid duplicating code!
 
+// ----- tests --------------------
+
 void testDateTime() {
 	using namespace std;
 	
@@ -351,9 +353,14 @@ void testTask() {
 		+ boost::gregorian::days(15)));
 	cout << "task1 setDateCompleted(now + 15 days): " << task1.getDateCompleted().toString() << endl;
 	
-	// TODO:
 	// Recurrence& getRecurrence() const;
+	cout << "task1 getRecurrence(): \"" << task1.getRecurrence().toString() << "\"" << endl;
+	
 	// void setRecurrence(Recurrence* r);
+	Recurrence* recurrenceWeekly = new RecurrenceWeekly("  2 Tue		Sat Fri  Fri ");
+	task1.setRecurrence(recurrenceWeekly);
+	cout << "task1 setRecurrence(\"" << recurrenceWeekly->toString() << "\")" << endl;
+	cout << "task1 getRecurrence(): \"" << task1.getRecurrence().toString() << "\"" << endl;
 
 	//int getPriority() const;
 	cout << "task1 getPriority(): " << boost::lexical_cast<string,int>(task1.getPriority()) << endl;
@@ -425,23 +432,199 @@ void testTask() {
 	}
 }
 
+
+void printTask(Task& task, std::ostream& os) {
+	using namespace std;
+
+	os << "Task [" << endl;
+	databaseRow_t row = task.toDatabaseRow();
+	for (databaseRow_t::iterator it = row.begin(); it != row.end(); ++it) {
+		os << "  " << it->first << " => " << it->second << endl;
+	}
+
+	os << "  tags [";
+	list<id_t> tags = task.getTagsList();
+	join(std::cout, tags.begin(), tags.end(), ", ");
+	os << "]" << endl;
+
+	os << "  subtasks [";
+	list<id_t> subtasks = task.getSubtasksList();
+	join(std::cout, subtasks.begin(), subtasks.end(), ", ");
+	os << "]" << endl;
+
+	os << "]" << endl;
+}
+
 void testTaskPersistence() {
+	using namespace std;
+	using namespace sqlite3x;
+
+	cout << "----- TaskPersistence -----" << endl;
+
+	try {
+		TaskManager manager("test1.db");
+
+		cout << "creating TaskManager" << endl;
+		sqlite3_connection *conn = manager.getConnection();
+
+		cout << "creating TaskPersistence persistence1(conn)" << endl;
+		//TaskPersistence(sqlite3x::sqlite3_connection* conn);
+		TaskPersistence persistence1(conn);
+
+		//TaskPersistence(sqlite3x::sqlite3_connection* conn, Task* task);
+		//cout << "TaskPersistence taskp2(conn, task2) created" << endl;
+		
+		Task* task1 = new Task();
+		task1->setTaskId(42);
+		task1->setDescription("A title");
+		task1->setLongDescription("Task details.");
+		task1->addTag(17);
+		task1->addTag(19);
+		task1->addSubtask(117);
+		task1->addSubtask(68);
+		//// not needed, persistence will set this itself
+		//task1->setDateCreated(DateTime(
+		//	boost::posix_time::second_clock::local_time()
+		//	+ boost::posix_time::minutes(5)));
+		//task1->setDateLastModified(DateTime(
+		//	boost::posix_time::second_clock::local_time()
+		//	+ boost::posix_time::minutes(10)));
+		task1->setDateStarted(Date(
+			boost::gregorian::day_clock::local_day()
+			+ boost::gregorian::days(5)));
+		task1->setDateDeadline(Date(
+			boost::gregorian::day_clock::local_day()
+			+ boost::gregorian::days(10)));
+		task1->setDateCompleted(Date(
+			boost::gregorian::day_clock::local_day()
+			+ boost::gregorian::days(15)));
+		task1->setRecurrence(new RecurrenceWeekly("  2 Tue		Sat Fri  Fri "));
+		task1->setPriority(7);
+		task1->setCompletedPercentage(51);
+
+		cout << "task1:" << endl;
+		printTask(*task1, std::cout);
+		
+		//void setTask(Task* task);
+		cout << "persistence1 setTask(task1)" << endl;
+		persistence1.setTask(task1);
+
+		//Task* getTask() const;
+		cout << "persistence1 getTask(task1)" << endl;
+		printTask(*(persistence1.getTask()), std::cout);
+		
+		//void save();
+		cout << "persistence1 save()" << endl;
+		persistence1.save();
+
+		int task1Id = task1->getTaskId();
+
+		//Task* load(id_t taskId);
+		Task* task2 = persistence1.load(task1Id);
+		cout << "persistence1 load(" << task1Id << ") -> task2" << endl;
+		if (task2) {
+			cout << "task2:" << endl;
+			printTask(*task2, std::cout);
+		}
+
+		cout << "Setting individal properies:" << endl;
+
+		//void setDescription(const std::string description);
+		persistence1.setDescription("another description");
+		cout << "persistence1.setDescription(\"another description\")" << endl;
+
+		//void setLongDescription(const std::string longDescription);
+		persistence1.setLongDescription("Another long description.");
+		cout << "persistence1.setLongDescription(\"Another long description.\")" << endl;
+
+		//void addTag(id_t tagId);
+		persistence1.addTag(1234);
+		cout << "persistence1.addTag(1234)" << endl;
+
+		//void removeTag(id_t tagId);
+		persistence1.removeTag(17);
+		cout << "persistence1.removeTag(17)" << endl;
+
+		//void addSubtask(id_t taskId);
+		persistence1.addSubtask(5678);
+		cout << "persistence1.addSubtask(5678)" << endl;
+
+		//void removeSubtask(id_t taskId);
+		persistence1.removeSubtask(117);
+		cout << "persistence1.removeSubtask(117)" << endl;
+
+		////void setDateCreated(const DateTime& dateCreated);
+		////void setDateLastModified(const DateTime& dateLastModified);
+
+		//void setDateStarted(const Date& dateStarted);
+		persistence1.setDateStarted(Date(
+			boost::gregorian::day_clock::local_day()
+			+ boost::gregorian::days(20)));
+		cout << "persistence1.setDateStarted(new + 20 days)" << endl;
+
+		//void setDateDeadline(const Date& dateDeadline);
+		persistence1.setDateDeadline(Date(
+			boost::gregorian::day_clock::local_day()
+			+ boost::gregorian::days(25)));
+		cout << "persistence1.setDateDeadline(new + 25 days)" << endl;
+
+		//void setDateCompleted(const Date& dateCompleted);
+		persistence1.setDateCompleted(Date(
+			boost::gregorian::day_clock::local_day()
+			+ boost::gregorian::days(30)));
+		cout << "persistence1.setDateCompleted(new + 30 days)" << endl;
+
+		//void setRecurrence(const Recurrence& r);
+		persistence1.setRecurrence(*(new RecurrenceDaily("3")));
+		cout << "persistence1.setRecurrence(new RecurrenceDaily(\"3\"))" << endl;
+
+		//void setPriority(int priority);
+		persistence1.setPriority(7);
+		cout << "persistence1.setPriority(7)" << endl;
+
+		//void setCompletedPercentage(int completedPercentage);
+		persistence1.setCompletedPercentage(75);
+		cout << "persistence1.setCompletedPercentage(75)" << endl;
+
+		delete task1;
+		task1 = 0;
+		cout << "persistence1.load(" << task1Id << ") -> task1" << endl;
+		task1 = persistence1.load(task1Id);
+		if (task1) {
+			cout << "task1:" << endl;
+			printTask(*task1, std::cout);
+		}
+
+		////void setDone();
+
+		//void erase();
+		cout << "persistence1.erase()" << endl;
+		persistence1.erase();
+		Task* task3 = persistence1.load(task1Id);
+		cout << "persistence1.load(" << task1Id << "): "  << task3 << endl;
+	} catch (database_error& e) {
+		cout << e.what() << endl;
+	}
+}
+
+void testTaskManager() {
 	
 }
 
 int main(int argc, char argv[]) {
-	testDateTime();
-	testDate();
-	testRecurrence();
-	testRecurrenceOnce();
-	testRecurrenceDaily();
-	testRecurrenceWeekly();
-	testRecurrenceMonthly();
-	testRecurrenceYearly();
-	testRecurrenceIntervalDays();
-	testTag();
-	testFilterRule();
-	testTask();
-
+	//testDateTime();
+	//testDate();
+	//testRecurrence();
+	//testRecurrenceOnce();
+	//testRecurrenceDaily();
+	//testRecurrenceWeekly();
+	//testRecurrenceMonthly();
+	//testRecurrenceYearly();
+	//testRecurrenceIntervalDays();
+	//testTag();
+	//testFilterRule();
+	//testTask();
+	testTaskPersistence();
+	//testTaskManager();
 	return 0;
 }

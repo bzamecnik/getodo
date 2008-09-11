@@ -65,7 +65,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="kernel32.lib sqlite3.lib sqlite3x.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;$(SolutionDir)&quot;\release;&quot;C:\Program Files\SQLite&quot;;&quot;C:\program Files\boost\boost_1_34_1\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(SolutionDir)&quot;\debug;&quot;C:\Program Files\SQLite&quot;;&quot;C:\program Files\boost\boost_1_34_1\lib&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				EntryPointSymbol=""
