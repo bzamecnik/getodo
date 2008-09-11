@@ -36,7 +36,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="0"
+				Optimization="2"
 				AdditionalIncludeDirectories="&quot;C:\program Files\SQLite&quot;"
 				RuntimeLibrary="1"
 				DebugInformationFormat="3"

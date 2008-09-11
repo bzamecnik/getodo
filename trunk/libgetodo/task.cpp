@@ -247,7 +247,6 @@ void TaskPersistence::save() {
 	databaseRow_t row = task->toDatabaseRow();
 	// TODO: delete this when Duration and Recurence will be ready
 	row["estDuration"] = "";
-	//row["recurrence"] = "";
 	row["dateLastModified"] = DateTime::now().toString();
 	
 	int count = 0;
@@ -265,7 +264,7 @@ void TaskPersistence::save() {
 		std::ostringstream ss;
 		ss << "UPDATE Task SET ";
 		databaseRow_t::const_iterator col = row.begin();
-		for (; col != (row.end()--); col++) {
+		for (; col != (--row.end()); col++) {
 			// don't overwrite the taskId
 			if (col->first == "taskId") { continue; }
 			ss << col->first << " = '" << col->second << "', ";
@@ -280,12 +279,14 @@ void TaskPersistence::save() {
 		cmd.executenonquery();
 	} else {
 		// it is not in the db -> insert
-		
+		row["dateCreated"] = row["dateLastModified"];
+		row.erase("taskId"); // don't set id directly, db will set it
+
 		std::ostringstream sql;
 		std::ostringstream values;
 		sql << "INSERT INTO Task (";
 		databaseRow_t::const_iterator col = row.begin();
-		for (; col != (row.end()--); col++) {
+		for (; col != (--(row.end())); col++) {
 			sql << col->first << ", ";
 			values << "'" << col->second << "',";
 		}
@@ -306,9 +307,9 @@ void TaskPersistence::save() {
 		
 		// set it to the newly created database row too
 		// this row is identified by a special ROWID column
-		cmd.prepare("INSERT INTO Task (taskId) VALUES (?) "
-			"WHERE ROWID = ?");
+		cmd.prepare("UPDATE Task SET taskId = ? WHERE ROWID = ?");
 		cmd.bind(1, task->getTaskId());
+		cmd.bind(2, task->getTaskId());
 		cmd.executenonquery();
 	}
 	
@@ -397,7 +398,7 @@ void TaskPersistence::erase() {
 	// * delete them too
 	// * make them level 1 tasks
 
-	cmd.prepare("DELETE FROM Subtasks WHERE super_taskId = ?;");
+	cmd.prepare("DELETE FROM Subtask WHERE super_taskId = ?;");
 	cmd.bind(1, task->getTaskId());
 	cmd.executenonquery();
 	
@@ -452,12 +453,12 @@ void TaskPersistence::removeTag(id_t tagId) {
 void TaskPersistence::addSubtask(id_t taskId) {
 	// if(!conn || !task) { TODO: throw }
 	sqlite3_command cmd(*conn);
-	cmd.prepare("SELECT count(*) FROM Subtasks WHERE (sub_taskId = ? AND super_taskId = ?);");
+	cmd.prepare("SELECT count(*) FROM Subtask WHERE (sub_taskId = ? AND super_taskId = ?);");
 	cmd.bind(1, taskId);
 	cmd.bind(2, task-> getTaskId());
 	int count = cmd.executeint();
 	if (count <= 0) {
-		cmd.prepare("INSERT INTO Subtasks (sub_taskId, super_taskId) VALUES (?,?);");
+		cmd.prepare("INSERT INTO Subtask (sub_taskId, super_taskId) VALUES (?,?);");
 		cmd.bind(1, taskId);
 		cmd.bind(2, task-> getTaskId());
 		cmd.executenonquery();

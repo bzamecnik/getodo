@@ -1,48 +1,63 @@
 ===== GeToDo TODO =====
 
 - write some testing code to test the libgetodo
+	-	TaskManager!
+	* TaskPersistence
 	* Tag, TagPersistence
 	* FilterRule, FilterRulePersistence
-	- Task - test new recurrence methods
-	- TaskPersistence!
-	-	TaskManager!
+	* Task, TaskPersistence
 	* Date, DateTime
 	* Recurrence, RecurrenceDaily, RecurrenceWeekly, RecurrenceMonthly,
 		RecurrenceYearly, RecurrenceIntervalDays
 	- [Duration, ...]		
-- write custom TreeModel for Task and FilerRule 
-*- think of an API between lib and GUI
-- complete design GUI in Glade
+- complete designing GUI in Glade
 	- editing panel (remake it), menu, toolbar...
 	- Question: how to embed .glade file into the final .exe file?
 	  - Is it needed?
-
-- delete operator - don't check if the deleted pointer isn't NULL, it's redundant
-- Task - add bool done field (to SQL, field, access methods, serialization)
+- Task (database)
+	- add bool done field (to SQL, field, access methods, serialization)
+	- rename: description -> title, longDescription -> description
 - Recurrence
 	- next() for RecurrenceWeekly, RecurrenceMonthly
 	- use facet for RecurrenceIntervalDays and possibly RecurrenceYearly
-- Task - make simple properties public and remove their getters/setters (really?)
-- *Persistence - make a common interface
 - use operator= for copying Tasks and Tags
-- think whether really use pointers to Task, Tag, ...
-- think of a common interface to persistent objects (Task, Tag, FilterRule)
 - user operator<< and operator>> for I/O of objects like DateTime, Tag, ...  
+- write custom TreeModel for FilerRule
 - DateTime, Date
 	- discard static toString() and move the code to the non-static method
 	- output special date values as ""
-- FilterRule - think of format and function
-- Task - think of priority:
-	- explicitly set
-	- computed from other things
+- delete operator
+	- don't check if the deleted pointer isn't NULL, it's redundant
+	- exception: don't delete what was never allocated (and had been initialized to NULL) 
 - TaskManager - write filtering code
-- Duration, FuzzyDate - think of
 - use exceptions!
 - avoid duplicating code!!!
 - save sqlite table names somewhere as constants
 - database triggers for checking date format validity
 
-== Done - kept for reference ==
+==== Think of ====
+
+- Task - think of priority:
+	- explicitly set
+	- computed from other things
+- Duration, FuzzyDate
+- FilterRule - think of format and function
+- think of a common interface to persistent objects (Task, Tag, FilterRule)
+- think whether really use pointers to Task, Tag, ...
+- *Persistence - make a common interface
+- Task - make simple properties public and remove their getters/setters (really?)
+
+==== BUGS ====
+
+- strange crashes in testing module
+	- unhandled exceptions when writing somewhere usually in destructors of
+		a basic_stringstream or so
+	- from revision 44 on
+	- sometime works OK when sqlite3x optimization is /O2 (Maximize Speed)
+		- when optimiztion is disabled it crashes
+	- happens in conjuction of DateTime (stringstream operations) and sqlite3x 
+
+==== Done - kept for reference ====
 
 * use boost::lexical_cast instead of stringstream for simple type conversions
 * run autoreconf --install (only once)

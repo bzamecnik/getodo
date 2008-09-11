@@ -12,6 +12,6 @@
 	<Tool
 		Name="VCLinkerTool"
 		AdditionalDependencies="sigc-2.0d.lib"
-		AdditionalLibraryDirectories="$(GTKMM_BASEPATH)\libb"
+		AdditionalLibraryDirectories="$(GTKMM_BASEPATH)\lib"
 	/>
 </VisualStudioPropertySheet>

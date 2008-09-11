@@ -23,6 +23,33 @@ namespace getodo {
 typedef int id_t;
 typedef std::map<std::string,std::string> databaseRow_t;
 
+// ----- utils --------------------
+
+// Join items with "join_with"
+// eg:
+// int list_init[4] = {42,17,68,89};
+// join(std::cout,&list_init[0],&list_init[4], ", ");
+//
+// std::list<int> alist(&list_init[0],&list_init[4]);
+// join(std::cout,alist.begin(), alist.end(), ", ");
+// Thanks to Thomas Guest:
+// http://wordaligned.org/articles/joined-output-and-the-fencepost-problem
+template <class Iterator>
+void join(std::ostream & output,
+      Iterator first,
+      Iterator last,
+      char const * join_with)
+{
+    if (first != last) {
+        Iterator curr = first++;
+        while (first != last) {
+            output << *curr << join_with;
+            curr = first++;
+        }
+        output << *curr;
+    }
+}
+
 }
 
 #endif // LIBGETODO_COMMON_H
