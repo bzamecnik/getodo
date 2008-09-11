@@ -21,30 +21,36 @@ using namespace sqlite3x;
 
 // ----- Constructors & destructor -----
 
-TaskManager::TaskManager(std::string dbname) {
-    //try {
-    conn = new sqlite3_connection(dbname);
-    //} catch(...) { return; }
-    if (checkDatabaseStructure()) {
-    loadAllFromDatabase();
-    } else {
-    createEmptyDatabase();
-    }
+TaskManager::TaskManager(std::string dbname)
+: conn(0) {
+	try {
+		conn = new sqlite3_connection(dbname);
+	} catch(database_error) {
+		conn = 0;
+		return;
+	}
+	if (checkDatabaseStructure()) {
+		 loadAllFromDatabase();
+	} else {
+		createEmptyDatabase();
+	}
 }
 
 TaskManager::TaskManager(sqlite3_connection* c) : conn(c) {}
 
 TaskManager::~TaskManager() {
-    if(conn) { conn->close(); }
-    for(std::map<id_t,Task*>::iterator it = tasks.begin();
+    if(conn) {
+		conn->close();
+	}
+    for (std::map<id_t,Task*>::iterator it = tasks.begin();
         it != tasks.end(); ++it) {
         delete it->second;
     }
-    for(std::map<id_t,Tag*>::iterator it = tags.begin();
+    for (std::map<id_t,Tag*>::iterator it = tags.begin();
         it != tags.end(); ++it) {
         delete it->second;
     }
-    for(std::map<id_t,FilterRule*>::iterator it = filters.begin();
+    for (std::map<id_t,FilterRule*>::iterator it = filters.begin();
         it != filters.end(); ++it) {
         delete it->second;
     }
@@ -85,7 +91,7 @@ Task* TaskManager::getTask(id_t taskId) {
     // TODO: how to find out the type of task automatically?
     // ie. without copying the type from the header file.
     std::map<id_t,Task*>::iterator it = tasks.find(taskId);
-    if(it != tasks.end()) {
+    if (it != tasks.end()) {
         return it->second;
     } else {
         return 0;
@@ -94,6 +100,12 @@ Task* TaskManager::getTask(id_t taskId) {
 
 TaskPersistence& TaskManager::getPersistentTask(id_t taskId) {
     return *(new TaskPersistence(conn, getTask(taskId)));
+}
+
+Task* TaskManager::editTask(id_t taskId, const Task& task) {
+    Task * t = new Task(task); // copy
+    t->setTaskId(taskId);
+    return editTask(t);
 }
 
 Task* TaskManager::editTask(Task* task) {
@@ -105,12 +117,6 @@ Task* TaskManager::editTask(Task* task) {
     TaskPersistence tp(conn, t);
     tp.save();
     return task;
-}
-
-Task* TaskManager::editTask(id_t taskId, const Task& task) {
-    Task * t = new Task(task); // copy
-    t->setTaskId(taskId);
-    return editTask(t);
 }
 
 void TaskManager::deleteTask(id_t taskId) {
@@ -139,20 +145,36 @@ bool TaskManager::hasTag(id_t tagId) {
     return (it != tags.end());
 }
 
+bool TaskManager::hasTag(std::string tagName) {
+	std::map<id_t, Tag*>::iterator it;
+	for (it = tags.begin(); it != tags.end(); ++it) {
+		if (it->second && (it->second->name == tagName)) { return true; }
+	}
+	return false;
+}
+
 Tag& TaskManager::getTag(id_t tagId) {
     std::map<id_t,Tag*>::iterator foundTag = tags.find(tagId);
 	if (foundTag != tags.end()) {
 		return *(foundTag->second);
     } else {
-		return *(new Tag()); // throw
+		return *(new Tag()); // or throw
     }
+}
+
+Tag& TaskManager::getTag(std::string tagName) {
+	std::map<id_t, Tag*>::iterator it;
+	for (it = tags.begin(); it != tags.end(); ++it) {
+		if (it->second && (it->second->name == tagName)) { return *(it->second); }
+	}
+	return *(new Tag()); // or throw
 }
 
 Tag& TaskManager::editTag(id_t tagId, const Tag& tag) {
     if (!hasTag(tagId)) { return *(new Tag()); } //throw
    
     // Delete original tag from tags
-    delete tags[tagId]; // TODO: check if tagId exist in tags
+    delete tags[tagId];
     tags[tagId] = 0;
     // Copy new tag there
     Tag* tagCopy = new Tag(tag);
@@ -195,6 +217,14 @@ void TaskManager::addFilterRule(FilterRule& rule) {
 bool TaskManager::hasFilterRule(id_t filterRuleId) {
     std::map<id_t,FilterRule*>::iterator it = filters.find(filterRuleId);
     return (it != filters.end());
+}
+
+bool TaskManager::hasFilterRule(std::string filterRuleName) {
+	std::map<id_t, FilterRule*>::iterator it;
+	for (it = filters.begin(); it != filters.end(); ++it) {
+		if (it->second && (it->second->name == filterRuleName)) { return true; }
+	}
+	return false;
 }
 
 FilterRule& TaskManager::getFilterRule(id_t filterRuleId) {
@@ -352,7 +382,7 @@ bool TaskManager::checkDatabaseStructure() {
     if (!conn) { return false; } // throw
     // TODO
     // * this code could be optimized, using a set may be overkill
-    // * tables names shouldn't be hard-coded
+    // * table names shouldn't be hard-coded
        
     std::string tables[] = {"Task","Tag","Subtask","Tagged","FilterRule"};
     std::set<std::string> tablesNeeded(&tables[0],&tables[5]);

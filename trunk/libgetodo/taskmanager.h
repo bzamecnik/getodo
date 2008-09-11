@@ -40,10 +40,12 @@ public:
 
     // tip: a function for switching database connection
     // eg. when Save As is invoked (from one file to another, or from memory to file)
+	// Maybe it will be needed to deep copy the whole database...
     
     // ----- SQLite connection -----
     
     sqlite3_connection* getConnection(); // really publish?
+	//void setConnection(sqlite3_connection* conn);
     
     // ----- Task operations -----
 
@@ -60,9 +62,9 @@ public:
 
     void addTag(const Tag& tag);
     bool hasTag(id_t tagId);
-    // bool hasTag(std::string tagName); // TODO
+    bool hasTag(std::string tagName);
     Tag& getTag(id_t tagId);
-    // Tag& getTag(std::string tagName); // TODO
+    Tag& getTag(std::string tagName);
     Tag& editTag(id_t tagId, const Tag& tag);
     void deleteTag(id_t tagId); //should throw an exception on failure
     std::list<Task*> getTasksList();
@@ -71,7 +73,7 @@ public:
 
     void addFilterRule(FilterRule& filter);
     bool hasFilterRule(id_t filterRuleId);
-    // bool hasFilterRule(std::string filterRuleName); // TODO
+    bool hasFilterRule(std::string filterRuleName);
     FilterRule& getFilterRule(id_t filterRuleId);
     FilterRule& editFilterRule(id_t filterRuleId, const FilterRule& filter);
     void deleteFilterRule(id_t filterRuleId); //should throw an exception on failure

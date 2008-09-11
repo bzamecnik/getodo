@@ -17,26 +17,38 @@
 - Task (database)
 	- add bool done field (to SQL, field, access methods, serialization)
 	- rename: description -> title, longDescription -> description
+- TaskPersistence - split save() into insert() and update()
 - Recurrence
 	- next() for RecurrenceWeekly, RecurrenceMonthly
 	- use facet for RecurrenceIntervalDays and possibly RecurrenceYearly
 - use operator= for copying Tasks and Tags
-- user operator<< and operator>> for I/O of objects like DateTime, Tag, ...  
+- use operator<< and operator>> for I/O of objects like DateTime, Tag, ...  
 - write custom TreeModel for FilerRule
 - DateTime, Date
-	- discard static toString() and move the code to the non-static method
+	- discard static toString() and move the code into the non-static toString()
 	- output special date values as ""
 - delete operator
 	- don't check if the deleted pointer isn't NULL, it's redundant
 	- exception: don't delete what was never allocated (and had been initialized to NULL) 
-- TaskManager - write filtering code
+- TaskManager
+	- write filtering code
+	- add some new methods (see source code comments)
+	- getPersistentTask() should not return TaskPersistence by reference but by value
+	- public methods shouldn't return pointers!
 - use exceptions!
 - avoid duplicating code!!!
 - save sqlite table names somewhere as constants
-- database triggers for checking date format validity
+- documenation
+	- we need: user docs, programmer's guide
+	- use Doxygen and write better doxygen comments
+	- write a README and INSTALL
+	- write a paper on overall architecture and design notes
+	- write file description into each file's header
 
 ==== Think of ====
 
+- TaskPersistence/TaskManager how to use individual property setters?
+	- should persistence set* also call set* in its managed task?
 - Task - think of priority:
 	- explicitly set
 	- computed from other things
@@ -46,6 +58,7 @@
 - think whether really use pointers to Task, Tag, ...
 - *Persistence - make a common interface
 - Task - make simple properties public and remove their getters/setters (really?)
+- database triggers for checking date format validity
 
 ==== BUGS ====
 

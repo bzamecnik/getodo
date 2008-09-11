@@ -60,10 +60,10 @@ public:
 	void setTaskId(id_t taskId);
 
 	std::string getDescription() const;
-	void setDescription(const std::string description);
+	void setDescription(const std::string& description);
 
 	std::string getLongDescription() const;
-	void setLongDescription(const std::string longDescription);
+	void setLongDescription(const std::string& longDescription);
 
 	void addTag(id_t tagId); //should throw an exception on failure (?)
 	bool hasTag(id_t tagId) const;
@@ -98,7 +98,7 @@ public:
 
 	int getCompletedPercentage() const;
 	void setCompletedPercentage(int completedPercentage);
-	void setDone();
+	//void setDone();
 	// TODO:
 	//bool isDone();
 	//void setDone(bool done = true);
@@ -147,8 +147,8 @@ public:
 	// - will make SQL query to reflect changes into database
 	// Reason: We don't want to always save whole object, while making small changes.
 
-	void setDescription(const std::string description);
-	void setLongDescription(const std::string longDescription);
+	void setDescription(const std::string& description);
+	void setLongDescription(const std::string& longDescription);
 
 	void addTag(id_t tagId);
 	void removeTag(id_t tagId);
@@ -167,12 +167,14 @@ public:
 	void setPriority(int priority);
 
 	void setCompletedPercentage(int completedPercentage);
-	void setDone();
+	//void setDone();
 private:
 	// update a single column and also last modified date
 	template<typename T>
 	void setColumn(std::string columnName, T value) {
-		// if(!conn || !task || (taskgetTaskId() >= 0)) { TODO: throw }
+		if(!conn || !task || (task->getTaskId() >= 0)) {
+			return; //TODO: throw
+		}
 		sqlite3_command cmd(*conn);
 		std::ostringstream ss;
 		ss << "UPDATE Task SET " << columnName << " = ?, "

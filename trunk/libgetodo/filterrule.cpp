@@ -86,6 +86,7 @@ void FilterRulePersistence::save(FilterRule& filter) {
 void FilterRulePersistence::load(FilterRule& filter, id_t id) {
 	// if(!conn) { TODO: throw ...}
 
+	filter = FilterRule(); // clean
 	sqlite3_command cmd(*conn, "SELECT name,rule FROM FilterRule WHERE filterRuleId = ?;");
 	cmd.bind(1, id);
 	sqlite3_cursor cursor = cmd.executecursor();
