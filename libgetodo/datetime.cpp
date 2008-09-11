@@ -125,7 +125,7 @@ Recurrence::~Recurrence() {} //empty
 RecurrenceOnce::RecurrenceOnce() {} //empty
 RecurrenceOnce::RecurrenceOnce(const RecurrenceOnce& r) {} //empty
 RecurrenceOnce::~RecurrenceOnce() {} //empty
-RecurrenceOnce* RecurrenceOnce::clone() {
+RecurrenceOnce* RecurrenceOnce::clone() const {
 	return new RecurrenceOnce(*this);
 }
 
@@ -152,7 +152,7 @@ RecurrenceDaily::RecurrenceDaily(const RecurrenceDaily& r)
 
 RecurrenceDaily::~RecurrenceDaily() {} //empty
 
-RecurrenceDaily* RecurrenceDaily::clone() {
+RecurrenceDaily* RecurrenceDaily::clone() const {
 	return new RecurrenceDaily(*this);
 }
 
@@ -192,7 +192,7 @@ RecurrenceWeekly::RecurrenceWeekly(const RecurrenceWeekly& r)
 
 RecurrenceWeekly::~RecurrenceWeekly() {} //empty
 
-RecurrenceWeekly* RecurrenceWeekly::clone() {
+RecurrenceWeekly* RecurrenceWeekly::clone() const {
 	return new RecurrenceWeekly(*this);
 }
 
@@ -206,11 +206,7 @@ std::string RecurrenceWeekly::toString() const {
 	//period
 	ss << boost::lexical_cast<std::string, int>(period) << ' ';
 	// weekday selection
-	for (weekdaySet_t::const_iterator it = weekdaySelection.begin();
-		it != weekdaySelection.end(); ++it) {
-		ss << *it << ' ';
-	}
-	// TODO: don't output spaces at the end
+	join(ss, weekdaySelection.begin(), weekdaySelection.end(), " ");
 	return ss.str();
 }
 
@@ -238,7 +234,7 @@ RecurrenceMonthly::RecurrenceMonthly(const RecurrenceMonthly& r)
 
 RecurrenceMonthly::~RecurrenceMonthly() {} //empty
 
-RecurrenceMonthly* RecurrenceMonthly::clone() {
+RecurrenceMonthly* RecurrenceMonthly::clone() const {
 	return new RecurrenceMonthly(*this);
 }
 
@@ -276,7 +272,7 @@ RecurrenceYearly::RecurrenceYearly(const RecurrenceYearly& r)
 
 RecurrenceYearly::~RecurrenceYearly() {} //empty
 
-RecurrenceYearly* RecurrenceYearly::clone() {
+RecurrenceYearly* RecurrenceYearly::clone() const {
 	return new RecurrenceYearly(*this);
 }
 
@@ -317,7 +313,7 @@ RecurrenceIntervalDays::RecurrenceIntervalDays(const RecurrenceIntervalDays& r)
 
 RecurrenceIntervalDays::~RecurrenceIntervalDays() {} //empty
 
-RecurrenceIntervalDays* RecurrenceIntervalDays::clone() {
+RecurrenceIntervalDays* RecurrenceIntervalDays::clone() const {
 	return new RecurrenceIntervalDays(*this);
 }
 

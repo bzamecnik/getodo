@@ -3,7 +3,10 @@
 using namespace getodo;
 
 // TIP: use Boost.Test http://www.boost.org/doc/libs/1_35_0/libs/test/doc/index.html
-// TODO: avoid duplicating code!
+
+// TODO:
+// * Avoid duplicating code!
+// * Split into several files.
 
 // ----- tests --------------------
 
@@ -42,8 +45,8 @@ void testRecurrence() {
 	cout << "r1 Recurrence::fromString(\"\")" << endl;
 	cout << typeid(*r1).name() << " r1: " << r1->toString() << endl;
 
-	Recurrence* r2 = Recurrence::fromString("w   2 Tue		Sat Fri  Fri ");
-	cout << "r2 Recurrence::fromString(\"  2 Tue		Sat Fri  Fri \")" << endl;
+	Recurrence* r2 = Recurrence::fromString("W   2 Tue		Sat Fri  Fri ");
+	cout << "r2 Recurrence::fromString(\"W  2 Tue		Sat Fri  Fri \")" << endl;
 	cout << typeid(*r2).name() << " r2: " << r2->toString() << endl;
 
 
@@ -106,7 +109,7 @@ void testRecurrenceYearly() {
 
 void testRecurrenceIntervalDays() {
 	using namespace std;
-	string params[2] = {"", "[2008-Aug-18/2008-Sep-04]"};
+	string params[2] = {"", "[2008-Aug-18/2008-Oct-04]"};
 	vector<string> parameters = vector<string>(&params[0], &params[2]);
 	testRecurrenceType<RecurrenceIntervalDays>(parameters);
 }
@@ -256,11 +259,9 @@ void testTask() {
 	
 	//std::list<id_t> getTagsList() const;
 	{
-		cout << "task1 getTagsList(): [";
 		list<id_t> tags = task1.getTagsList();
-		for(list<id_t>::iterator it = tags.begin(); it != tags.end(); ++it) {
-			cout << *it << ", ";
-		}
+		cout << "task1 getTagsList(): [";
+		join(std::cout, tags.begin(), tags.end(), ", ");
 		cout << "]" << endl;
 	}
 	cout << "task1 addTag 19, 20, 20, 21" << endl;
@@ -269,11 +270,9 @@ void testTask() {
 	task1.addTag(20);
 	task1.addTag(21);
 	{
-		cout << "task1 getTagsList(): [";
 		list<id_t> tags = task1.getTagsList();
-		for(list<id_t>::iterator it = tags.begin(); it != tags.end(); ++it) {
-			cout << *it << ", ";
-		}
+		cout << "task1 getTagsList(): [";
+		join(std::cout, tags.begin(), tags.end(), ", ");
 		cout << "]" << endl;
 	}
 
@@ -292,11 +291,9 @@ void testTask() {
 	
 	//std::list<id_t> getSubtasksList() const;
 	{
-		cout << "task1 getSubtasksList(): [";
 		list<id_t> subtasks = task1.getSubtasksList();
-		for(list<id_t>::iterator it = subtasks.begin(); it != subtasks.end(); ++it) {
-			cout << *it << ", ";
-		}
+		cout << "task1 getSubtasksList(): [";
+		join(std::cout, subtasks.begin(), subtasks.end(), ", ");
 		cout << "]" << endl;
 	}
 	cout << "task1 addSubtask 119, 120, 120, 121" << endl;
@@ -305,11 +302,9 @@ void testTask() {
 	task1.addSubtask(120);
 	task1.addSubtask(121);
 	{
-		cout << "task1 getSubtasksList(): [";
 		list<id_t> subtasks = task1.getSubtasksList();
-		for(list<id_t>::iterator it = subtasks.begin(); it != subtasks.end(); ++it) {
-			cout << *it << ", ";
-		}
+		cout << "task1 getSubtasksList(): [";
+		join(std::cout, subtasks.begin(), subtasks.end(), ", ");
 		cout << "]" << endl;
 	}
 
@@ -374,8 +369,8 @@ void testTask() {
 	task1.setCompletedPercentage(51);
 	cout << "task1 setCompletedPercentage(51): " << boost::lexical_cast<string,int>(task1.getCompletedPercentage()) << endl;
 	//void setDone();
-	task1.setDone();
-	cout << "task1 setDone(): " << boost::lexical_cast<string,int>(task1.getCompletedPercentage()) << endl;
+	//task1.setDone();
+	//cout << "task1 setDone(): " << boost::lexical_cast<string,int>(task1.getCompletedPercentage()) << endl;
 
 	// copy constructor
 	Task task2(task1);
@@ -385,19 +380,15 @@ void testTask() {
 	cout << "task2 getDescription(): " << task2.getDescription() << endl;
 	cout << "task2 getLongDescription(): " << task2.getLongDescription() << endl;
 	{
-		cout << "task2 getTagsList(): [";
 		list<id_t> tags = task2.getTagsList();
-		for(list<id_t>::iterator it = tags.begin(); it != tags.end(); ++it) {
-			cout << *it << ", ";
-		}
+		cout << "task2 getTagsList(): [";
+		join(std::cout, tags.begin(), tags.end(), ", ");
 		cout << "]" << endl;
 	}
 	{
-		cout << "task2 getSubtasksList(): [";
 		list<id_t> subtasks = task2.getSubtasksList();
-		for(list<id_t>::iterator it = subtasks.begin(); it != subtasks.end(); ++it) {
-			cout << *it << ", ";
-		}
+		cout << "task2 getSubtasksList(): [";
+		join(std::cout, subtasks.begin(), subtasks.end(), ", ");
 		cout << "]" << endl;
 	}
 	cout << "task2 getDateCreated(): " << task2.getDateCreated().toString() << endl;
@@ -455,6 +446,40 @@ void printTask(Task& task, std::ostream& os) {
 	os << "]" << endl;
 }
 
+Task* makeTestingTask() {
+	Task* task = new Task();
+	if (!task) {
+		return 0;
+	}
+	task->setTaskId(42);
+	task->setDescription("A title");
+	task->setLongDescription("Task details.");
+	task->addTag(17);
+	task->addTag(19);
+	task->addSubtask(117);
+	task->addSubtask(68);
+	//// not needed, persistence will set this itself
+	//task->setDateCreated(DateTime(
+	//	boost::posix_time::second_clock::local_time()
+	//	+ boost::posix_time::minutes(5)));
+	//task->setDateLastModified(DateTime(
+	//	boost::posix_time::second_clock::local_time()
+	//	+ boost::posix_time::minutes(10)));
+	task->setDateStarted(Date(
+		boost::gregorian::day_clock::local_day()
+		+ boost::gregorian::days(5)));
+	task->setDateDeadline(Date(
+		boost::gregorian::day_clock::local_day()
+		+ boost::gregorian::days(10)));
+	task->setDateCompleted(Date(
+		boost::gregorian::day_clock::local_day()
+		+ boost::gregorian::days(15)));
+	task->setRecurrence(new RecurrenceWeekly("  2 Tue		Sat Fri  Fri "));
+	task->setPriority(7);
+	task->setCompletedPercentage(51);
+	return task;
+}
+
 void testTaskPersistence() {
 	using namespace std;
 	using namespace sqlite3x;
@@ -462,7 +487,7 @@ void testTaskPersistence() {
 	cout << "----- TaskPersistence -----" << endl;
 
 	try {
-		TaskManager manager("test1.db");
+		TaskManager manager("test-task-persistence.db");
 
 		cout << "creating TaskManager" << endl;
 		sqlite3_connection *conn = manager.getConnection();
@@ -474,33 +499,7 @@ void testTaskPersistence() {
 		//TaskPersistence(sqlite3x::sqlite3_connection* conn, Task* task);
 		//cout << "TaskPersistence taskp2(conn, task2) created" << endl;
 		
-		Task* task1 = new Task();
-		task1->setTaskId(42);
-		task1->setDescription("A title");
-		task1->setLongDescription("Task details.");
-		task1->addTag(17);
-		task1->addTag(19);
-		task1->addSubtask(117);
-		task1->addSubtask(68);
-		//// not needed, persistence will set this itself
-		//task1->setDateCreated(DateTime(
-		//	boost::posix_time::second_clock::local_time()
-		//	+ boost::posix_time::minutes(5)));
-		//task1->setDateLastModified(DateTime(
-		//	boost::posix_time::second_clock::local_time()
-		//	+ boost::posix_time::minutes(10)));
-		task1->setDateStarted(Date(
-			boost::gregorian::day_clock::local_day()
-			+ boost::gregorian::days(5)));
-		task1->setDateDeadline(Date(
-			boost::gregorian::day_clock::local_day()
-			+ boost::gregorian::days(10)));
-		task1->setDateCompleted(Date(
-			boost::gregorian::day_clock::local_day()
-			+ boost::gregorian::days(15)));
-		task1->setRecurrence(new RecurrenceWeekly("  2 Tue		Sat Fri  Fri "));
-		task1->setPriority(7);
-		task1->setCompletedPercentage(51);
+		Task* task1 = makeTestingTask();
 
 		cout << "task1:" << endl;
 		printTask(*task1, std::cout);
@@ -586,16 +585,8 @@ void testTaskPersistence() {
 		persistence1.setCompletedPercentage(75);
 		cout << "persistence1.setCompletedPercentage(75)" << endl;
 
-		delete task1;
-		task1 = 0;
-		cout << "persistence1.load(" << task1Id << ") -> task1" << endl;
-		task1 = persistence1.load(task1Id);
-		if (task1) {
-			cout << "task1:" << endl;
-			printTask(*task1, std::cout);
-		}
-
-		////void setDone();
+		cout << "task2 (with properties updated):" << endl;
+		printTask(*task2, std::cout);
 
 		//void erase();
 		cout << "persistence1.erase()" << endl;
@@ -608,7 +599,79 @@ void testTaskPersistence() {
 }
 
 void testTaskManager() {
-	
+	using namespace std;
+	using namespace sqlite3x;
+
+	cout << "----- TaskManager -----" << endl;
+
+	try {
+		//TaskManager(std::string dbname);
+		cout << "creating TaskManager manager1" << endl;
+		TaskManager manager1("test-task-manager.db");
+
+		//TaskManager(sqlite3_connection* conn);
+
+		// ----- Task operations -----
+
+		cout << "creating Task task1" << endl;
+		Task* task1 = makeTestingTask();
+
+		//Task* addTask(Task* task);
+		cout << "manager1.addTask(task1);" << endl;
+		manager1.addTask(task1);
+		
+		//bool hasTask(id_t taskId);
+		cout << "manager1.hasTask(task1->getTaskId()): ";
+		cout << std::boolalpha << manager1.hasTask(task1->getTaskId()) << endl;
+		
+		//Task* getTask(id_t taskId);
+		cout << "manager1.getTask(task1->getTaskId()):" << endl;
+		Task* task2 = manager1.getTask(task1->getTaskId());
+		if (task2) {
+			printTask(*task2, cout);
+		}
+
+		//TaskPersistence& getPersistentTask(id_t taskId);
+		cout << "manager1.getPersistentTask(task1->getTaskId())" << endl;
+		TaskPersistence& tp1 = manager1.getPersistentTask(task1->getTaskId());
+
+		//Task* editTask(id_t taskId, const Task& task);
+		/*task2->setDescription("edited description");
+		cout << "task1 edited" << endl;
+		manager1.editTask(task1->getTaskId(), *task1);
+		cout << "manager1.editTask(task1)" << endl;
+		task2 = manager1.getTask(task1->getTaskId());
+		if (task2) {
+			printTask(*task2, cout);
+		}*/
+
+		//Task* editTask(Task* task);
+		//void deleteTask(id_t taskId); //should throw an exception on failure
+		//std::list<Tag*> getTagsList();
+
+		// ----- Tag operations -----
+
+		//void addTag(const Tag& tag);
+		//bool hasTag(id_t tagId);
+		//bool hasTag(std::string tagName);
+		//Tag& getTag(id_t tagId);
+		//Tag& getTag(std::string tagName);
+		//Tag& editTag(id_t tagId, const Tag& tag);
+		//void deleteTag(id_t tagId); //should throw an exception on failure
+		//std::list<Task*> getTasksList();
+
+		// ----- FilterRule operations -----
+
+		//void addFilterRule(FilterRule& filter);
+		//bool hasFilterRule(id_t filterRuleId);
+		//bool hasFilterRule(std::string filterRuleName);
+		//FilterRule& getFilterRule(id_t filterRuleId);
+		//FilterRule& editFilterRule(id_t filterRuleId, const FilterRule& filter);
+		//void deleteFilterRule(id_t filterRuleId);
+		//std::list<FilterRule*> getFilterRulesList();
+	} catch (database_error& e) {
+		cout << e.what() << endl;
+	}
 }
 
 int main(int argc, char argv[]) {
@@ -624,7 +687,7 @@ int main(int argc, char argv[]) {
 	//testTag();
 	//testFilterRule();
 	//testTask();
-	testTaskPersistence();
-	//testTaskManager();
+	//testTaskPersistence();
+	testTaskManager();
 	return 0;
 }
