@@ -25,7 +25,8 @@ namespace getodo {
 Task::Task() :
 	taskId(-1),
 	priority(0),
-	completedPercentage(0)
+	completedPercentage(0),
+	done(false)
 {
 	using namespace boost;
 	dateCreated = DateTime::now();
@@ -52,7 +53,8 @@ Task::Task(const Task& t) :
 	dateDeadline(t.dateDeadline),
 	dateCompleted(t.dateCompleted),
 	priority(t.priority),
-	completedPercentage(t.completedPercentage)
+	completedPercentage(t.completedPercentage),
+	done(t.done)
 {
 	if (t.recurrence) {
 		// recurrence must be cloned
@@ -165,7 +167,12 @@ int Task::getCompletedPercentage() const { return completedPercentage; }
 void Task::setCompletedPercentage(int completedPercentage) {
 	this->completedPercentage = completedPercentage;
 }
-//void Task::setDone() { setCompletedPercentage(100); } // TODO: ugly constant here
+
+bool Task::isDone() { return done; }
+void Task::setDone(bool done) {
+	this->done = done;
+	setCompletedPercentage(100);  // TODO: ugly constant here
+}
 
 // ----- object-relation representation conversion ----------
 
@@ -188,6 +195,7 @@ databaseRow_t Task::toDatabaseRow() const {
 
 	row["priority"] = boost::lexical_cast<std::string, int>(priority);
 	row["completedPercentage"] = boost::lexical_cast<std::string, int>(completedPercentage);
+	row["done"] = boost::lexical_cast<std::string, bool>(done);
 
 	return row;
 }
@@ -197,7 +205,7 @@ Task* Task::fromDatabaseRow(databaseRow_t row) {
 	
 	try {
 		task->taskId = boost::lexical_cast<id_t, std::string>(row["taskId"]);
-	} catch (boost::bad_lexical_cast &e) {
+	} catch (boost::bad_lexical_cast&) {
 		task->taskId = -1;
 	}
 	
@@ -215,14 +223,20 @@ Task* Task::fromDatabaseRow(databaseRow_t row) {
 	
 	try {
 		task->priority = boost::lexical_cast<int, std::string>(row["priority"]);
-	} catch (boost::bad_lexical_cast &e) {
+	} catch (boost::bad_lexical_cast&) {
 		task->priority = 0; // TODO: default priority
 	}
 
 	try {
 		task->completedPercentage = boost::lexical_cast<int, std::string>(row["completedPercentage"]);
-	} catch (boost::bad_lexical_cast &e) {
+	} catch (boost::bad_lexical_cast&) {
 		task->completedPercentage = 0; // TODO: default completedPercentage
+	}
+
+	try {
+		task->done =  boost::lexical_cast<bool, std::string>(row["done"]);
+	} catch (boost::bad_lexical_cast&) {
+		task->done = false;
 	}
 	
 	return task;
@@ -538,11 +552,12 @@ void TaskPersistence::setCompletedPercentage(int completedPercentage) {
 	setColumn<int>("completedPercentage", completedPercentage);
 	task->setCompletedPercentage(completedPercentage);
 }
-//void TaskPersistence::setDone() {
-//	if (!task) { return; }
-//	// TODO: put this constant into config
-//	setCompletedPercentage(100);
-//	task->setDone();
-//}
+
+void TaskPersistence::setDone(bool done) {
+	if (!task) { return; }
+	setColumn<bool>("done", done);
+	setCompletedPercentage(task->getCompletedPercentage());
+	task->setDone();
+}
 
 } // namespace getodo
