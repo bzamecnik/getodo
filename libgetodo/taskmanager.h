@@ -49,18 +49,17 @@ public:
     
     // ----- Task operations -----
 
-    Task* addTask(Task* task);
+    id_t addTask(const Task& task);
     bool hasTask(id_t taskId);
-    Task* getTask(id_t taskId);
-    TaskPersistence& getPersistentTask(id_t taskId); // for modyfing particular things
-    Task* editTask(id_t taskId, const Task& task);
-    Task* editTask(Task* task);
+    Task* getTask(id_t taskId); // TODO: change return type to Task&
+    TaskPersistence getPersistentTask(id_t taskId); // for modyfing particular things
+    Task& editTask(id_t taskId, const Task& task);
     void deleteTask(id_t taskId); //should throw an exception on failure
 	std::list<Tag*> getTagsList();
 
     // ----- Tag operations -----
 
-    void addTag(const Tag& tag);
+    id_t addTag(const Tag& tag);
     bool hasTag(id_t tagId);
     bool hasTag(std::string tagName);
     Tag& getTag(id_t tagId);
@@ -71,7 +70,7 @@ public:
 
     // ----- FilterRule operations -----
 
-    void addFilterRule(FilterRule& filter);
+    id_t addFilterRule(const FilterRule& filter);
     bool hasFilterRule(id_t filterRuleId);
     bool hasFilterRule(std::string filterRuleName);
     FilterRule& getFilterRule(id_t filterRuleId);

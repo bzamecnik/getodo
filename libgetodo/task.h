@@ -164,9 +164,9 @@ public:
 
 	void setRecurrence(const Recurrence& r);
 
-	void setPriority(int priority);
+	void setPriority(int priority); // TODO: throw domain_error
 
-	void setCompletedPercentage(int completedPercentage);
+	void setCompletedPercentage(int completedPercentage); // TODO: throw domain_error
 	//void setDone();
 private:
 	// update a single column and also last modified date

@@ -1,28 +1,20 @@
 ===== GeToDo TODO =====
 
-- write some testing code to test the libgetodo
-	-	TaskManager!
-	* TaskPersistence
-	* Tag, TagPersistence
-	* FilterRule, FilterRulePersistence
-	* Task, TaskPersistence
-	* Date, DateTime
-	* Recurrence, RecurrenceDaily, RecurrenceWeekly, RecurrenceMonthly,
-		RecurrenceYearly, RecurrenceIntervalDays
-	- [Duration, ...]		
-- complete designing GUI in Glade
-	- editing panel (remake it), menu, toolbar...
-	- Question: how to embed .glade file into the final .exe file?
-	  - Is it needed?
+- **Prepare for pilot version!**
+	- complete designing GUI in Glade
+		- editing panel (remake it), menu, toolbar...
+	- bind GUI actions to libgetodo calls  
+	- make an installer from release build
+
 - Task (database)
 	- add bool done field (to SQL, field, access methods, serialization)
 	- rename: description -> title, longDescription -> description
-- TaskPersistence - split save() into insert() and update()
+- TaskPersistence, FilterRulePersistence - split save() into insert() and update()
+- use operator= for copying Tasks and Tags
+- use operator<< and operator>> for I/O of objects like DateTime, Tag, ...  
 - Recurrence
 	- next() for RecurrenceWeekly, RecurrenceMonthly
 	- use facet for RecurrenceIntervalDays and possibly RecurrenceYearly
-- use operator= for copying Tasks and Tags
-- use operator<< and operator>> for I/O of objects like DateTime, Tag, ...  
 - write custom TreeModel for FilerRule
 - DateTime, Date
 	- discard static toString() and move the code into the non-static toString()
@@ -33,7 +25,7 @@
 - TaskManager
 	- write filtering code
 	- add some new methods (see source code comments)
-	- getPersistentTask() should not return TaskPersistence by reference but by value
+	*- getPersistentTask() should not return TaskPersistence by reference but by value
 	- public methods shouldn't return pointers!
 - use exceptions!
 - avoid duplicating code!!!
@@ -44,6 +36,8 @@
 	- write a README and INSTALL
 	- write a paper on overall architecture and design notes
 	- write file description into each file's header
+- write the rest of testing code to test the libgetodo
+	- [Duration, ...]
 
 ==== Think of ====
 
@@ -59,6 +53,7 @@
 - *Persistence - make a common interface
 - Task - make simple properties public and remove their getters/setters (really?)
 - database triggers for checking date format validity
+- How to embed .glade file into the final .exe file? (Is it really needed?)
 
 ==== BUGS ====
 
@@ -75,3 +70,12 @@
 * use boost::lexical_cast instead of stringstream for simple type conversions
 * run autoreconf --install (only once)
 * set LD_CONFIG_... for running main executable (for .so libraries)
+- write some testing code to test the libgetodo
+	*-	TaskManager
+	* TaskPersistence
+	* Tag, TagPersistence
+	* FilterRule, FilterRulePersistence
+	* Task, TaskPersistence
+	* Date, DateTime
+	* Recurrence, RecurrenceDaily, RecurrenceWeekly, RecurrenceMonthly,
+		RecurrenceYearly, RecurrenceIntervalDays
