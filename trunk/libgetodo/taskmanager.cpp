@@ -451,6 +451,7 @@ void TaskManager::createEmptyDatabase() {
         "recurrence      STRING,"
         "priority      STRING      NOT NULL,"
         "completedPercentage      INTEGER      DEFAULT '0'  NOT NULL,"
+		"done      STRING      DEFAULT '0'  NOT NULL,"
         "CONSTRAINT pk_Task PRIMARY KEY (taskId)"
         ");"
     );

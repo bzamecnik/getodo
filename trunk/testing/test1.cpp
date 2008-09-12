@@ -368,9 +368,16 @@ void testTask() {
 	//void setCompletedPercentage(int completedPercentage);
 	task1.setCompletedPercentage(51);
 	cout << "task1 setCompletedPercentage(51): " << boost::lexical_cast<string,int>(task1.getCompletedPercentage()) << endl;
+	
+	//bool isDone();
+	cout << "task1 isDone(): " << task1.isDone() << endl;
+
 	//void setDone();
-	//task1.setDone();
-	//cout << "task1 setDone(): " << boost::lexical_cast<string,int>(task1.getCompletedPercentage()) << endl;
+	task1.setDone();
+	cout << "task1 setDone(): " << task1.isDone() << endl;
+
+	task1.setDone(false);
+	cout << "task1 setDone(false): " << task1.isDone() << endl;
 
 	// copy constructor
 	Task task2(task1);
@@ -584,6 +591,9 @@ void testTaskPersistence() {
 		//void setCompletedPercentage(int completedPercentage);
 		persistence1.setCompletedPercentage(75);
 		cout << "persistence1.setCompletedPercentage(75)" << endl;
+
+		persistence1.setDone();
+		cout << "persistence1.setDone()" << endl;
 
 		cout << "task2 (with properties updated):" << endl;
 		printTask(*task2, std::cout);

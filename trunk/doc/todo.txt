@@ -7,7 +7,7 @@
 	- make an installer from release build
 
 - Task (database)
-	- add bool done field (to SQL, field, access methods, serialization)
+	*- add bool done field (to SQL, field, access methods, serialization)
 	- rename: description -> title, longDescription -> description
 - TaskPersistence, FilterRulePersistence - split save() into insert() and update()
 - use operator= for copying Tasks and Tags
@@ -54,6 +54,11 @@
 - Task - make simple properties public and remove their getters/setters (really?)
 - database triggers for checking date format validity
 - How to embed .glade file into the final .exe file? (Is it really needed?)
+- use shared_ptr in TaskManager for holding pointers to Tasks, Tags, ...
+- use secondary index containers for reverse lookup of maps (Tasks, Tags, ...)
+	- eg.:
+		- map<id_t, shared_ptr<Tag>> indexed by id_t
+		- map<std::string, map<id_t, shared_ptr<Tag>>::iterator> indexed by tag name
 
 ==== BUGS ====
 

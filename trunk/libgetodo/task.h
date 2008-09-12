@@ -35,7 +35,7 @@ private:
 	std::set<id_t> subtasks;
 	// id_t parent; // TODO
 
-	// bool done; // TODO
+	bool done;
 	// this might be variant in future, let's have it private
 	DateTime dateCreated;
 	DateTime dateLastModified;
@@ -98,10 +98,9 @@ public:
 
 	int getCompletedPercentage() const;
 	void setCompletedPercentage(int completedPercentage);
-	//void setDone();
-	// TODO:
-	//bool isDone();
-	//void setDone(bool done = true);
+	
+	bool isDone();
+	void setDone(bool done = true);
 
 	// ----- object-relation representation conversion ----------
 	databaseRow_t toDatabaseRow() const;
@@ -167,7 +166,9 @@ public:
 	void setPriority(int priority); // TODO: throw domain_error
 
 	void setCompletedPercentage(int completedPercentage); // TODO: throw domain_error
-	//void setDone();
+	
+	bool isDone();
+	void setDone(bool done = true);
 private:
 	// update a single column and also last modified date
 	template<typename T>
