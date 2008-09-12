@@ -43,7 +43,8 @@ public:
 	virtual ~TagPersistence();
 
 	// save Tag to database and assign an id
-	void insert(Tag& tag);
+	// true, if really inserted
+	bool insert(Tag& tag);
 	// update existing Tag (tag.id must be > 0)
 	void update(Tag& tag);
 	// load Tag from database

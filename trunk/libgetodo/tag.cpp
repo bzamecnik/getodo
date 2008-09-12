@@ -37,8 +37,10 @@ TagPersistence::TagPersistence(sqlite3_connection* c) : conn(c) {}
 
 TagPersistence::~TagPersistence() {}
 
-void TagPersistence::insert(Tag& tag) {
+bool TagPersistence::insert(Tag& tag) {
 	// if(!conn) { TODO: throw ...}
+	if (tag.name.empty()) { return false; } // exclude empty tags
+
 	int count = 0;
 	if (tag.id >= 0) {
 		// find out if there is already a tag with such a tagId
@@ -54,12 +56,13 @@ void TagPersistence::insert(Tag& tag) {
 			// tag.id respectively
 			tag.id = cursor.getint(0);
 			cursor.close();
-			return;
+			return false;
 		}
 		cursor.close();
 	}
 	if (count > 0) {
-		update(tag);
+		//update(tag);
+		return false;
 	} else {
 		// it is not there -> insert
 		// id is defined NOT NULL, inserting NULL by not specifying
@@ -70,6 +73,7 @@ void TagPersistence::insert(Tag& tag) {
 		// get the id which database automatically created
 		tag.id = sqlite3_last_insert_rowid(conn->db());
 	}
+	return true;
 }
 
 void TagPersistence::update(Tag& tag) {

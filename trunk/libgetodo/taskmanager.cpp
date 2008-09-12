@@ -68,18 +68,19 @@ sqlite3_connection* TaskManager::getConnection() {
 
 // ----- Task operations -----
 
-Task* TaskManager::addTask(Task* task) {
-    if(!task) { return 0; } // throw an exception
-
-    // TODO: if the Task has already and id check whether
-    // it is in the tasks map
-
+id_t TaskManager::addTask(const Task& task) {
+	Task* taskCopy = new Task(task);
+	taskCopy->setTaskId(-1); // delete id, TODO: don't use literal '-1'
     // save it to database and get the new taskId
-    TaskPersistence tp(conn, task);
-    tp.save();
+    TaskPersistence tp(conn, taskCopy);
+    tp.save(); // TODO: change to insert(), when available
     // insert the task into TaskManager
-    tasks[task->getTaskId()] = task;
-    return task;
+    tasks[taskCopy->getTaskId()] = taskCopy;
+	signal_task_inserted(*taskCopy);
+
+	// TODO: add all tags from task
+
+	return taskCopy->getTaskId();
 }
 
 bool TaskManager::hasTask(id_t taskId) {
@@ -98,31 +99,44 @@ Task* TaskManager::getTask(id_t taskId) {
     }
 }
 
-TaskPersistence& TaskManager::getPersistentTask(id_t taskId) {
-    return *(new TaskPersistence(conn, getTask(taskId)));
+TaskPersistence TaskManager::getPersistentTask(id_t taskId) {
+    return TaskPersistence(conn, getTask(taskId));
 }
 
-Task* TaskManager::editTask(id_t taskId, const Task& task) {
-    Task * t = new Task(task); // copy
-    t->setTaskId(taskId);
-    return editTask(t);
-}
+Task& TaskManager::editTask(id_t taskId, const Task& task) {
+	if (!hasTask(taskId)) { return *(new Task()); } // throw
+    
+	// TODO: Write operator= for Task!!!
+	// TODO: synchronize tags in TaskManager from old to new task
+	// * _add_ tags which are in the in _new_ task only
+	// * DON'T _delete_ tags which are in the _old_ task only
+	//   unless we're sure they're not used in any other task
 
-Task* TaskManager::editTask(Task* task) {
-    // taskId is specified inside the task
-    Task* t = getTask(task->getTaskId());
-    if (!t) { return 0; }
-    delete t;
-    t = task;
-    TaskPersistence tp(conn, t);
-    tp.save();
-    return task;
+	Task* taskCopy = new Task(task); // copy
+	// Delete original task from tasks
+	delete tasks[taskId];
+	tasks[taskId] = 0;
+	// Correct new task's taskId to be the same as the former's one
+    taskCopy->setTaskId(taskId);
+	// Copy new task there
+	tasks[taskId] = taskCopy;
+	// Save it to database
+    TaskPersistence tp(conn, taskCopy);
+    tp.save(); // TODO: change to update(), when available
+	signal_task_updated(*taskCopy);
+    return *taskCopy;
 }
 
 void TaskManager::deleteTask(id_t taskId) {
-    TaskPersistence& tp = getPersistentTask(taskId);
-    tp.erase();
-    tasks.erase(taskId);
+	std::map<id_t,Task*>::iterator foundTask = tasks.find(taskId);
+	if (foundTask != tasks.end()) {
+		signal_task_removed(*foundTask->second);
+		// erase from database
+		TaskPersistence& tp = getPersistentTask(taskId);
+		tp.erase();
+		// erase from task manager
+		tasks.erase(taskId);
+	}
 }
 
 std::list<Task*> TaskManager::getTasksList() {
@@ -131,13 +145,19 @@ std::list<Task*> TaskManager::getTasksList() {
 
 // ----- Tag operations -----
 
-void TaskManager::addTag(const Tag& tag) {
+id_t TaskManager::addTag(const Tag& tag) {
+	//if (hasTag(tag.name)) { return; } // already in TaskManager
+	// TODO: what if tags with the same name have different ids?
+
     TagPersistence tp(conn);
     // when saving, id is assigned by database
     Tag* tagCopy = new Tag(tag);
-    tp.insert(*tagCopy);
-    tags[tagCopy->id] = tagCopy;
-	signal_tag_inserted(*tagCopy);
+	if (tp.insert(*tagCopy)) {
+		tags[tagCopy->id] = tagCopy;
+		signal_tag_inserted(*tagCopy);
+		return tagCopy->id;
+	}
+	return -1;
 }
 
 bool TaskManager::hasTag(id_t tagId) {
@@ -158,7 +178,7 @@ Tag& TaskManager::getTag(id_t tagId) {
 	if (foundTag != tags.end()) {
 		return *(foundTag->second);
     } else {
-		return *(new Tag()); // or throw
+		return *(new Tag()); // or throw range_error
     }
 }
 
@@ -171,16 +191,16 @@ Tag& TaskManager::getTag(std::string tagName) {
 }
 
 Tag& TaskManager::editTag(id_t tagId, const Tag& tag) {
-    if (!hasTag(tagId)) { return *(new Tag()); } //throw
+    if (!hasTag(tagId)) { return *(new Tag()); } //throw range_error
    
+	Tag* tagCopy = new Tag(tag);
     // Delete original tag from tags
     delete tags[tagId];
     tags[tagId] = 0;
-    // Copy new tag there
-    Tag* tagCopy = new Tag(tag);
+	// correct new tag's tagId to be the same as the former's one
+	tagCopy->id = tagId;
+	// Copy new tag there
     tags[tagId] = tagCopy;
-    // correct new tag's tagId to be the same as the former's one
-    tags[tagId]->id = tagId;
     // Save it to database
     TagPersistence p(conn);
     p.update(*tagCopy);
@@ -206,12 +226,14 @@ std::list<Tag*> TaskManager::getTagsList() {
 
 // ----- FilterRule operations -----
 
-void TaskManager::addFilterRule(FilterRule& rule) {
+id_t TaskManager::addFilterRule(const FilterRule& rule) {
     FilterRulePersistence p(conn);
     // when saving, filterRuleId is assigned by database
     FilterRule* ruleCopy = new FilterRule(rule);
     p.save(*ruleCopy);
     filters[ruleCopy->id] = ruleCopy;
+	return ruleCopy->id;
+	signal_filter_inserted(*ruleCopy);
 }
 
 bool TaskManager::hasFilterRule(id_t filterRuleId) {
@@ -238,27 +260,32 @@ FilterRule& TaskManager::getFilterRule(id_t filterRuleId) {
 FilterRule& TaskManager::editFilterRule(id_t filterRuleId, const FilterRule& filter) {
     if (!hasFilterRule(filterRuleId)) { return *(new FilterRule()); } //throw
        
-    // Delete original FilterRule from filters
+	FilterRule* ruleCopy = new FilterRule(filter);
+    // correct new FilterRule's filterRuleId to be the same as former's one
+    ruleCopy->id = filterRuleId;
+	// Delete original FilterRule from filters
     delete filters[filterRuleId];
     filters[filterRuleId] = 0;
-    // Copy new FilterRule there
-    FilterRule* ruleCopy = new FilterRule(filter);
+	// Copy new FilterRule there
     filters[filterRuleId] = ruleCopy;
-    // correct new FilterRule's filterRuleId to be the same as former's one
-    filters[filterRuleId]->id = filterRuleId;
     // Save it to database
     FilterRulePersistence p(conn);
     p.save(*ruleCopy);
+	signal_filter_updated(*ruleCopy);
     return *ruleCopy;
 }
 
 
 void TaskManager::deleteFilterRule(id_t filterRuleId) {
-    // erase from database
-    FilterRulePersistence p(conn);
-    p.erase(filterRuleId);
-    // erase from task manager
-    filters.erase(filterRuleId);
+	std::map<id_t,FilterRule*>::iterator foundFilter = filters.find(filterRuleId);
+	if (foundFilter != filters.end()) {
+		signal_filter_removed(*foundFilter->second);
+		// erase from database
+		FilterRulePersistence p(conn);
+		p.erase(filterRuleId);
+		// erase from task manager
+		filters.erase(filterRuleId);
+	}
 }
 
 std::list<FilterRule*> TaskManager::getFilterRulesList() {

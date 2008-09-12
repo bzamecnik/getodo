@@ -608,6 +608,7 @@ void testTaskManager() {
 		//TaskManager(std::string dbname);
 		cout << "creating TaskManager manager1" << endl;
 		TaskManager manager1("test-task-manager.db");
+		// TODO: clean the database of data from previous runs
 
 		//TaskManager(sqlite3_connection* conn);
 
@@ -615,79 +616,158 @@ void testTaskManager() {
 
 		cout << "creating Task task1" << endl;
 		Task* task1 = makeTestingTask();
+		if (task1) {
+			printTask(*task1, cout);
+		}
 
 		//Task* addTask(Task* task);
-		cout << "manager1.addTask(task1);" << endl;
-		manager1.addTask(task1);
+		cout << "manager1.addTask(task1) -> newTaskId" << endl;
+		id_t newTaskId = manager1.addTask(*task1);
 		
 		//bool hasTask(id_t taskId);
-		cout << "manager1.hasTask(task1->getTaskId()): ";
-		cout << std::boolalpha << manager1.hasTask(task1->getTaskId()) << endl;
+		cout << "manager1.hasTask(newTaskId): ";
+		cout << std::boolalpha << manager1.hasTask(newTaskId) << endl;
 		
 		//Task* getTask(id_t taskId);
-		cout << "manager1.getTask(task1->getTaskId()):" << endl;
-		Task* task2 = manager1.getTask(task1->getTaskId());
+		cout << "manager1.getTask(newTaskId):" << endl;
+		Task* task2 = manager1.getTask(newTaskId);
 		if (task2) {
 			printTask(*task2, cout);
 		}
 
 		//TaskPersistence& getPersistentTask(id_t taskId);
 		cout << "manager1.getPersistentTask(task1->getTaskId())" << endl;
-		TaskPersistence& tp1 = manager1.getPersistentTask(task1->getTaskId());
+		TaskPersistence& tp1 = manager1.getPersistentTask(task2->getTaskId());
 
 		//Task* editTask(id_t taskId, const Task& task);
-		/*task2->setDescription("edited description");
+		task2->setDescription("edited description");
 		cout << "task1 edited" << endl;
-		manager1.editTask(task1->getTaskId(), *task1);
 		cout << "manager1.editTask(task1)" << endl;
-		task2 = manager1.getTask(task1->getTaskId());
-		if (task2) {
-			printTask(*task2, cout);
-		}*/
+		Task& task3 = manager1.editTask(newTaskId, *task2);
+		printTask(task3, cout);
 
-		//Task* editTask(Task* task);
-		//void deleteTask(id_t taskId); //should throw an exception on failure
-		//std::list<Tag*> getTagsList();
+		//void deleteTask(id_t taskId);
+		manager1.deleteTask(newTaskId);
+		cout << "manager1.deleteTask(" << newTaskId << ")" << endl;
+		cout << "manager1.hasTask(" << newTaskId << "): " << manager1.hasTask(newTaskId) << endl;
+
+		//std::list<Task*> getTasksList();
+		manager1.addTask(*task1);
+		manager1.addTask(*task1);
+		cout << "manager1: added two tasks" << endl;
+		cout << "manager1.getTasksList() -> taskList1" << endl;
+		std::list<Task*> taskList1 = manager1.getTasksList();
+		cout << "taskList1.size(): " << taskList1.size() << endl << endl;
+
+		delete task1;
 
 		// ----- Tag operations -----
 
 		//void addTag(const Tag& tag);
+		cout << "manager1.addTag(Tag(42,\"meaning of universe\"))" << endl;
+		Tag tag1(42, "meaning of universe");
+		id_t newTagId = manager1.addTag(tag1);
+
 		//bool hasTag(id_t tagId);
+		cout << "manager1.hasTag(" << newTagId << "): ";
+		cout << manager1.hasTag(newTagId) << endl;
+		
 		//bool hasTag(std::string tagName);
+		cout << "manager1.hasTag(\"" << tag1.name << "\"): ";
+		cout << manager1.hasTag(tag1.name) << endl;
+
 		//Tag& getTag(id_t tagId);
+		cout << "manager1.getTag(" << newTagId << ") -> tag2: ";
+		Tag& tag2 = manager1.getTag(newTagId);
+		cout << tag2.toString() << endl;
+		
 		//Tag& getTag(std::string tagName);
+		cout << "manager1.getTag(\"" << tag1.name << "\") -> tag3: ";
+		Tag& tag3 = manager1.getTag(tag1.name);
+		cout << tag3.toString() << endl;
+
 		//Tag& editTag(id_t tagId, const Tag& tag);
-		//void deleteTag(id_t tagId); //should throw an exception on failure
+		tag2.name = "different tag name";
+		cout << "editing tag2: " << tag2.toString() << endl;
+		newTagId = tag2.id;
+		cout << "manager1.editTag(" << newTagId << ", tag2)" << endl;
+		manager1.editTag(newTagId, tag2);
+		cout << "manager1.getTag(\"different tag name\"): ";
+		cout << manager1.getTag("different tag name").toString() << endl;
+
+		//void deleteTag(id_t tagId);
+		cout << "manager1.deleteTag(" << newTagId << ")" << endl;
+		manager1.deleteTag(newTagId);
+ 
 		//std::list<Task*> getTasksList();
+		manager1.addTag(Tag("hello"));
+		manager1.addTag(Tag("world"));
+		cout << "manager1: added two tags" << endl;
+		cout << "manager1.getTagsList() -> tagList1" << endl;
+		std::list<Tag*> tagList1 = manager1.getTagsList();
+		cout << "tagList1.size(): " << tagList1.size() << endl << endl;
 
 		// ----- FilterRule operations -----
 
 		//void addFilterRule(FilterRule& filter);
+		cout << "manager1.addFilterRule(FilterRule(\"high priority\",\"priority > 7\"))" << endl;
+		FilterRule filter1("high priority","priority > 7");
+		id_t newFilterId = manager1.addFilterRule(filter1);
+
 		//bool hasFilterRule(id_t filterRuleId);
+		cout << "manager1.hasFilterRule(" << newFilterId << "): ";
+		cout << manager1.hasFilterRule(newFilterId) << endl;
+
 		//bool hasFilterRule(std::string filterRuleName);
+		cout << "manager1.hasFilterRule(" << filter1.name << "): ";
+		cout << manager1.hasFilterRule(filter1.name) << endl;
+
 		//FilterRule& getFilterRule(id_t filterRuleId);
+		cout << "manager1.getFilterRule(" << newFilterId << ") -> filter2: ";
+		FilterRule& filter2 = manager1.getFilterRule(newFilterId);
+		cout << filter2.toString() << endl;
+
 		//FilterRule& editFilterRule(id_t filterRuleId, const FilterRule& filter);
+		filter2.name = "different filter name";
+		cout << "editing filter2: " << filter2.toString() << endl;
+		newFilterId = filter2.id;
+		cout << "manager1.editFilterRule(" << newFilterId << ", filter2)" << endl;
+		manager1.editFilterRule(newFilterId, filter2);
+		cout << "manager1.getFilterRule(\"different filter name\"): ";
+		cout << manager1.getFilterRule(newFilterId).toString() << endl;
+
 		//void deleteFilterRule(id_t filterRuleId);
+		manager1.deleteFilterRule(newFilterId);
+		cout << "manager1.deleteFilterRule(" << newFilterId << ")" << endl;
+		cout << "manager1.hasFilterRule(" << newFilterId << "): ";
+		cout << manager1.hasFilterRule(newFilterId) << endl;
+
 		//std::list<FilterRule*> getFilterRulesList();
+		manager1.addFilterRule(FilterRule("low priority","priority <= 3"));
+		manager1.addFilterRule(FilterRule("done","done = true"));
+		cout << "manager1: added two filter rules" << endl;
+		cout << "manager1.getFilterRulesList() -> filterList1" << endl;
+		std::list<FilterRule*> filterList1 = manager1.getFilterRulesList();
+		cout << "filterList1.size(): " << filterList1.size() << endl << endl;
 	} catch (database_error& e) {
 		cout << e.what() << endl;
 	}
 }
 
 int main(int argc, char argv[]) {
-	//testDateTime();
-	//testDate();
-	//testRecurrence();
-	//testRecurrenceOnce();
-	//testRecurrenceDaily();
-	//testRecurrenceWeekly();
-	//testRecurrenceMonthly();
-	//testRecurrenceYearly();
-	//testRecurrenceIntervalDays();
-	//testTag();
-	//testFilterRule();
-	//testTask();
-	//testTaskPersistence();
+	testDateTime();
+	testDate();
+	testRecurrence();
+	testRecurrenceOnce();
+	testRecurrenceDaily();
+	testRecurrenceWeekly();
+	testRecurrenceMonthly();
+	testRecurrenceYearly();
+	testRecurrenceIntervalDays();
+	testTag();
+	testFilterRule();
+	testTask();
+	testTaskPersistence();
 	testTaskManager();
 	return 0;
 }

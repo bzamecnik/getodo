@@ -42,8 +42,10 @@ Task::Task(const Task& t) :
 	description(t.description),
 	longDescription(t.longDescription),
 	tags(t.tags), // TODO: ok?
-	// subtasks(t.subtasks), // don't allow to make circles
+	// Don't allow to make circles
 	// * OR: copy the whole subtree
+	// When tasks is copyied to a brand new one, delete subtasks explicitly!
+	subtasks(t.subtasks),
 	dateCreated(t.dateCreated),
 	dateLastModified(t.dateLastModified),
 	dateStarted(t.dateStarted),
