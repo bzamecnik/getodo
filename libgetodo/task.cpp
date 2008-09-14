@@ -103,6 +103,20 @@ std::list<id_t> Task::getTagsList() const {
 	return convertSetToList<id_t>(tags);
 }
 
+//std::string Task::getTagsAsString(TaskManager& manager) const {
+//	std::ostringstream ss;
+//	std::map<id_t, Tag> tagsMap;
+//	std::set<id_t>::const_iterator it;
+//	for (it = tags.begin(); it != tags.end(); ++it) {
+//		Tag& tag = manager.getTag(*it);
+//		if (!tag.name.empty()) {
+//			tagsMap[*it] = tag;
+//		}
+//	}
+//	join(ss, tagsMap.begin(), tagsMap.end(), ", ");
+//	return ss.str();
+//}
+
 void Task::addSubtask(id_t taskId) {
 	//should throw an exception on failure (?)
 	subtasks.insert(taskId);

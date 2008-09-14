@@ -22,6 +22,8 @@ namespace getodo {
 
 typedef int id_t;
 typedef std::map<std::string,std::string> databaseRow_t;
+// TODO: rename to idset_t, use for tags, subtasks
+typedef std::set<id_t> taskset_t;
 
 // ----- utils --------------------
 

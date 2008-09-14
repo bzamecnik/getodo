@@ -67,9 +67,10 @@
 		- popis
 		- další vlastnosti
 		- tagy
-	- 1. fáze - editace s potvrzením a uložením celého tasku
-	- 2. fáze - editace s jemnìjší granularitou
-		- prùbìžné ukládání jednotlivých zmìn
+	- možnosti
+		- 1. - editace s potvrzením a uložením celého tasku
+		- 2. - editace s jemnìjší granularitou
+			- prùbìžné ukládání jednotlivých zmìn
 - panely pro filtrování
 	- filtrovací pravidla pro Tasky
 		- treeview, ale jen jako list
@@ -93,14 +94,14 @@
 - buòky
 	- speciální typy jsou rùzná Date apod.
 		- použít vlastní CellRenderer (nebo existující z libgda aj.)
-		- nebo je pøevést na string
+		*- nebo je pøevést na string
 	- plán
 		- 1. fáze - jen zobrazení
 		- 2. fáze - i editace nìkterých typù (napø. názvu)
 - sloupce (zbytek bude pouze v editaèním panelu)
 	- taskId (int) (opravdu zobrazovat?)
 	- description (string)
-	- data - hlavnì deadline (vlastní CellRenderer)
+	- data - hlavnì deadline (vlastní CellRenderer nebo string)
 	- priority 
 	- completedPercentage
 		- vlastní renderer (nìco jako SpinButton)
@@ -118,7 +119,10 @@
 	- promyslet, jak má øazení fungovat 
 *- koøenový prvek (UPDATE: není tøeba, TreeModel to øeší sám)
 	- tasky tvoøí les, je tøeba je slouèit do stromu (jako potomky koøene)
-	- navíc skrytý koøen (pøes TreeModelFilter)	
+	- navíc skrytý koøen (pøes TreeModelFilter)
+- výbìr - pomocí Gtk::TreeSelection
+	- 1. fáze - Gtk::SELECTION_SINGLE
+	- 2. fáze - Gtk::SELECTION_MULTIPLE
 
 === Tagy ===
  	- pouze list bez hierarchie
@@ -154,12 +158,20 @@
 			- MINUS: ostatní Tasky budou zabírat mnoho místa
 			- PLUS: bude vidìt, kam vyfiltrované subtasky patøí
 
+==== obecné poznámky ====
+
+- promyslet klávesové zkratky (napø. Del nad taskTreeView apod.)
+- nedávat funkènost pøímo do signal handlerù
+	- akce by bylo možno spustit rùznými zpùsoby
+		- z menu, toolbaru, popup menu, klávesovou zkratkou
+	- výkonný kód do samostatných funkcí a ty pouze volat z rùzných handlerù 
+
 ==== Aplikace ====
 
 - tøída GeToDoApp
 	- bude obsahovat vše potøebné:
 		- gtkmm::Main
-		- hlavní okno
+		- hlavní okno MainWindow
 		- TaskManager
 		- ...
 	- singleton

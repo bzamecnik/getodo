@@ -2,34 +2,6 @@
 #include "tagmodel.h"
 #include "taskmodel.h"
 
-//// ----- class TagWindow --------------------
-//
-//// TagWindow for testing tag TreeView
-//class TagWindow : public Gtk::Window
-//{
-//public:
-//	TagWindow(BaseObjectType* cobject, const Glib::RefPtr<Gnome::Glade::Xml>& refGlade);
-//	virtual ~TagWindow();
-//
-//	void setTaskManager(getodo::TaskManager* manager);
-//protected:
-//	Glib::RefPtr<Gnome::Glade::Xml> refXml;
-//	Glib::RefPtr<getodo::TagTreeModel> refTreeModel;
-//
-//	
-//	Gtk::Entry* pEntryId;
-//	Gtk::Entry* pEntryName;
-//
-//	void on_buttonAdd_clicked();
-//	void on_buttonEdit_clicked();
-//	void on_buttonDelete_clicked();
-//	void on_buttonDebug_clicked();
-//	void on_treeview_cursor_changed();
-//private:
-//	getodo::TaskManager* taskManager;
-//	Gtk::TreeModel::iterator getCursorIter(Gtk::TreeView* pTreeView);
-//};
-
 // ----- class MainWindow --------------------
 
 // MainWindow for testing task TreeView
@@ -44,24 +16,23 @@ protected:
 	Glib::RefPtr<Gnome::Glade::Xml> refXml;
 	
 	// ----- child widgets ----
+
 	// task treeview
 	Gtk::TreeView* pTaskTreeView;
 	Glib::RefPtr<getodo::TaskTreeModel> refTaskTreeModel;
 	//Glib::RefPtr<Gtk::TreeModelSort> refTaskTreeModelSort;
-	
 
 	// task editing panel
 	// TODO:
-	// * add labels to describe the entry widgets
-	// * change widget type from the dummy Entry
+	// * change some widget's type from the dummy Entry
 	Gtk::Entry* pTaskDescriptionEntry;
-	Gtk::TextView* pTaskLongDescriptionTextView; // future: TextView
+	Gtk::TextView* pTaskLongDescriptionTextView;
 	Glib::RefPtr<Gtk::TextBuffer> refTaskLongDescriptionTextBuffer;
 	Gtk::Entry* pTaskTagsEntry;
-	//Gtk::CheckButton* pTaskDoneCheckbutton;
-	Gtk::Entry* pTaskCompletedPercentageEntry; // future: SpinButton
-	Gtk::Entry* pTaskPriorityEntry; // future: SpinButton or ComboBox
-	Gtk::Label* pTaskIdLabel; // future: hidden
+	Gtk::CheckButton* pTaskDoneCheckbutton;
+	Gtk::SpinButton* pTaskCompletedPercentageSpinbutton;
+	Gtk::SpinButton* pTaskPrioritySpinbutton; // SpinButton or ComboBox, colorful at best
+	Gtk::Label* pTaskIdLabel;
 	Gtk::Entry* pTaskDateDeadlineEntry; // future: DateEntry (from GDA)
 	Gtk::Entry* pTaskDateStartedEntry; // future: DateEntry (from GDA)
 	Gtk::Entry* pTaskDateCompletedEntry; // future: DateEntry (from GDA)
@@ -73,19 +44,25 @@ protected:
 	Glib::RefPtr<getodo::TagTreeModel> refTagTreeModel;
 	//Glib::RefPtr<Gtk::TreeModelSort> refTagTreeModelSort;
 
+	// menubar
+
+	// toolbar
+
 	// ----- signal handlers -----
-	//void on_buttonAdd_clicked();
+	void on_buttonTaskNew_clicked();
+	void on_buttonTaskDelete_clicked();
 	//void on_buttonEdit_clicked();
 	//void on_buttonDelete_clicked();
 	//void on_buttonDebug_clicked();
-	void on_tasktreeview_cursor_changed();
+	void on_taskTreeview_selection_changed();
 private:
 	getodo::TaskManager* taskManager;
-	Gtk::TreeModel::iterator getCursorIter(Gtk::TreeView* pTreeView,
-		Glib::RefPtr<Gtk::TreeModel> refTreeModel);
-};
+	//Gtk::TreeModel::iterator getCursorIter(Gtk::TreeView* pTreeView,
+	//	Glib::RefPtr<Gtk::TreeModel> refTreeModel);
 
-// TODO: main window for real usage
+	void MainWindow::fillEditingPanel(getodo::Task& task);
+	void MainWindow::clearEditingPanel();
+};
 
 // ----- class GeToDoApp --------------------
 

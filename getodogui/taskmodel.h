@@ -94,6 +94,7 @@ public:
 		//Gtk::TreeModelColumn<Glib::ustring> recurrence;
 		Gtk::TreeModelColumn<int> priority;
 		Gtk::TreeModelColumn<int> completedPercentage;
+		Gtk::TreeModelColumn<bool> done;
 		
 		std::vector<GType> types;
 
@@ -108,6 +109,7 @@ public:
 			//add(recurrence); types.push_back(GTK_TYPE_STRING);
 			add(priority); types.push_back(GTK_TYPE_INT);
 			add(completedPercentage); types.push_back(GTK_TYPE_INT);
+			add(done); types.push_back(GTK_TYPE_BOOL);
 			//add(done);
 		}
 	};
