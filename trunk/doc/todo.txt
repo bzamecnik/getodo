@@ -1,8 +1,8 @@
 ===== GeToDo TODO =====
 
 - **Prepare for pilot version!**
-	- complete designing GUI in Glade
-		- editing panel (remake it), menu, toolbar...
+	- improve GUI design in Glade
+		- editing panel, menu, toolbar...
 	- bind GUI actions to libgetodo calls  
 	- make an installer from release build
 
@@ -27,6 +27,7 @@
 	- add some new methods (see source code comments)
 	*- getPersistentTask() should not return TaskPersistence by reference but by value
 	- public methods shouldn't return pointers!
+- TreeViews should be sortable (see bugs)
 - use exceptions!
 - avoid duplicating code!!!
 - save sqlite table names somewhere as constants
@@ -68,7 +69,10 @@
 	- from revision 44 on
 	- sometime works OK when sqlite3x optimization is /O2 (Maximize Speed)
 		- when optimiztion is disabled it crashes
-	- happens in conjuction of DateTime (stringstream operations) and sqlite3x 
+	- happens in conjuction of DateTime (stringstream operations) and sqlite3x
+- TreeModelSort doesn't work well with my custom TreeModels
+	- error message: "(getodogui.exe:2596): Gtk-CRITICAL **: gtk_tree_model_sort_build_level: assertion `length > 0' failed"
+	- TaskTreeView is empty
 
 ==== Done - kept for reference ====
 

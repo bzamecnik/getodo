@@ -13,13 +13,18 @@
 #ifndef LIBGETODO_TASK_H
 #define LIBGETODO_TASK_H
 
+//namespace getodo {
+//	class Task;
+//	class TaskPersistence;
+//	class TaskManager;
+//}
+
 #include "common.h"
 #include "tag.h"
+//#include "taskmanager.h"
 #include <sstream>
 
 namespace getodo {
-
-typedef std::set<id_t> taskset_t;
 
 // ----- class Task --------------------
 
@@ -69,6 +74,7 @@ public:
 	bool hasTag(id_t tagId) const;
 	void removeTag(id_t tagId); //should throw an exception on failure
 	std::list<id_t> getTagsList() const;
+	//std::string getTagsAsString(TaskManager& manager) const;
 
 	void addSubtask(id_t taskId); //should throw an exception on failure (?)
 	bool hasSubtask(id_t taskId) const;

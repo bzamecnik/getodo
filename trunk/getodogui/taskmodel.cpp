@@ -444,6 +444,10 @@ void TaskTreeModel::get_value_vfunc(const iterator& iter, int column, Glib::Valu
 		value.init(G_TYPE_INT);
 		g_value_set_int(value.gobj(), node->get_item().getCompletedPercentage());
 		break;
+	case 5: // done
+		value.init(G_TYPE_BOOLEAN);
+		g_value_set_boolean(value.gobj(), node->get_item().isDone());
+		break;
 	}
 }
 
