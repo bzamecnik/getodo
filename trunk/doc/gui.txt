@@ -164,7 +164,8 @@
 - nedávat funkènost pøímo do signal handlerù
 	- akce by bylo možno spustit rùznými zpùsoby
 		- z menu, toolbaru, popup menu, klávesovou zkratkou
-	- výkonný kód do samostatných funkcí a ty pouze volat z rùzných handlerù 
+	- výkonný kód do samostatných funkcí a ty pouze volat z rùzných handlerù
+- pro Gtk::Tooltip je tøeba GTK+ verze >= 2.12
 
 ==== Aplikace ====
 

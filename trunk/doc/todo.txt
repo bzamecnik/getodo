@@ -3,6 +3,8 @@
 - **Prepare for pilot version!**
 	- improve GUI design in Glade
 		- editing panel, menu, toolbar...
+		*- saving the whole editing panel
+		- saving individual items in editing panel
 	- bind GUI actions to libgetodo calls  
 	- make an installer from release build
 
