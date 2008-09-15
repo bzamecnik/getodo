@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.3 on Sun Sep 14 22:35:50 2008 -->
+<!--Generated with glade3 3.4.3 on Mon Sep 15 22:55:47 2008 -->
 <glade-interface>
   <widget class="GtkWindow" id="mainWindow">
-    <property name="width_request">640</property>
+    <property name="width_request">750</property>
     <property name="height_request">480</property>
     <property name="title" translatable="yes">GeToDo</property>
     <child>
@@ -152,7 +152,7 @@
             <child>
               <widget class="GtkToolButton" id="taskNewToolbutton">
                 <property name="visible">True</property>
-                <property name="tooltip" translatable="yes">New Task</property>
+                <property name="tooltip" translatable="yes">New task</property>
                 <property name="label" translatable="yes">New Task</property>
                 <property name="stock_id">gtk-add</property>
               </widget>
@@ -161,9 +161,20 @@
               </packing>
             </child>
             <child>
+              <widget class="GtkToolButton" id="taskUpdateToolbutton">
+                <property name="visible">True</property>
+                <property name="tooltip" translatable="yes">Update edited task</property>
+                <property name="label" translatable="yes">Update Task</property>
+                <property name="stock_id">gtk-apply</property>
+              </widget>
+              <packing>
+                <property name="expand">False</property>
+              </packing>
+            </child>
+            <child>
               <widget class="GtkToolButton" id="taskDeleteToolbutton">
                 <property name="visible">True</property>
-                <property name="tooltip" translatable="yes">Delete Task</property>
+                <property name="tooltip" translatable="yes">Delete task</property>
                 <property name="label" translatable="yes">Delete Task</property>
                 <property name="stock_id">gtk-delete</property>
               </widget>
@@ -302,202 +313,118 @@
                         <property name="visible">True</property>
                         <property name="border_width">2</property>
                         <property name="n_rows">5</property>
-                        <property name="n_columns">7</property>
+                        <property name="n_columns">8</property>
                         <property name="column_spacing">4</property>
                         <child>
-                          <widget class="GtkLabel" id="taskDateLastModifiedCommentLabel">
+                          <widget class="GtkSpinButton" id="taskPrioritySpinbutton">
                             <property name="visible">True</property>
-                            <property name="xalign">1</property>
-                            <property name="label" translatable="yes">Modified:</property>
-                            <property name="justify">GTK_JUSTIFY_RIGHT</property>
+                            <property name="can_focus">True</property>
+                            <property name="tooltip" translatable="yes">Priority</property>
+                            <property name="max_length">3</property>
+                            <property name="adjustment">0 0 10 1 10 10</property>
+                            <property name="update_policy">GTK_UPDATE_IF_VALID</property>
                           </widget>
                           <packing>
-                            <property name="left_attach">5</property>
-                            <property name="right_attach">6</property>
+                            <property name="left_attach">4</property>
+                            <property name="right_attach">5</property>
+                            <property name="top_attach">2</property>
+                            <property name="bottom_attach">3</property>
+                            <property name="x_options">GTK_SHRINK</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkSpinButton" id="taskCompletedPercentageSpinbutton">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="tooltip" translatable="yes">% completed</property>
+                            <property name="max_length">3</property>
+                            <property name="adjustment">0 0 100 1 10 10</property>
+                            <property name="update_policy">GTK_UPDATE_IF_VALID</property>
+                          </widget>
+                          <packing>
+                            <property name="left_attach">4</property>
+                            <property name="right_attach">5</property>
+                            <property name="top_attach">1</property>
+                            <property name="bottom_attach">2</property>
+                            <property name="x_options">GTK_SHRINK</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkLabel" id="taskIdCommentLabel">
+                            <property name="visible">True</property>
+                            <property name="tooltip" translatable="yes">In future there will be a widget for Duration</property>
+                            <property name="xalign">1</property>
+                            <property name="label" translatable="yes">Id:</property>
+                          </widget>
+                          <packing>
+                            <property name="left_attach">3</property>
+                            <property name="right_attach">4</property>
                             <property name="top_attach">4</property>
                             <property name="bottom_attach">5</property>
                             <property name="x_options">GTK_FILL</property>
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkLabel" id="taskDateCreatedCommentLabel">
+                          <widget class="GtkLabel" id="taskProrityCommentLabel">
                             <property name="visible">True</property>
                             <property name="xalign">1</property>
-                            <property name="label" translatable="yes">Created:</property>
-                            <property name="justify">GTK_JUSTIFY_RIGHT</property>
+                            <property name="label" translatable="yes">Priority:</property>
                           </widget>
                           <packing>
-                            <property name="left_attach">5</property>
-                            <property name="right_attach">6</property>
-                            <property name="top_attach">3</property>
-                            <property name="bottom_attach">4</property>
-                            <property name="x_options">GTK_FILL</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkLabel" id="taskDateCompletedCommentLabel">
-                            <property name="visible">True</property>
-                            <property name="xalign">1</property>
-                            <property name="label" translatable="yes">Comleted:</property>
-                            <property name="justify">GTK_JUSTIFY_RIGHT</property>
-                          </widget>
-                          <packing>
-                            <property name="left_attach">5</property>
-                            <property name="right_attach">6</property>
+                            <property name="left_attach">3</property>
+                            <property name="right_attach">4</property>
                             <property name="top_attach">2</property>
                             <property name="bottom_attach">3</property>
                             <property name="x_options">GTK_FILL</property>
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkLabel" id="taskDateStartedCommentLabel">
+                          <widget class="GtkLabel" id="taskCompletedPercentageCommentLabel">
                             <property name="visible">True</property>
                             <property name="xalign">1</property>
-                            <property name="label" translatable="yes">Start:</property>
-                            <property name="justify">GTK_JUSTIFY_RIGHT</property>
+                            <property name="label" translatable="yes">%:</property>
                           </widget>
                           <packing>
-                            <property name="left_attach">5</property>
-                            <property name="right_attach">6</property>
+                            <property name="left_attach">3</property>
+                            <property name="right_attach">4</property>
                             <property name="top_attach">1</property>
                             <property name="bottom_attach">2</property>
                             <property name="x_options">GTK_FILL</property>
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkLabel" id="taskDateDeadlineCommentLabel">
+                          <widget class="GtkLabel" id="taskDoneCommentLabel">
                             <property name="visible">True</property>
                             <property name="xalign">1</property>
-                            <property name="label" translatable="yes">Deadline:</property>
-                            <property name="justify">GTK_JUSTIFY_RIGHT</property>
+                            <property name="label" translatable="yes">Done:</property>
                           </widget>
                           <packing>
-                            <property name="left_attach">5</property>
-                            <property name="right_attach">6</property>
+                            <property name="left_attach">3</property>
+                            <property name="right_attach">4</property>
                             <property name="x_options">GTK_FILL</property>
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkEntry" id="taskDescriptionEntry">
+                          <widget class="GtkLabel" id="taskTagsCommentLabel">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="tooltip" translatable="yes">Title of task</property>
+                            <property name="xalign">1</property>
+                            <property name="label" translatable="yes">Tags:</property>
                           </widget>
                           <packing>
-                            <property name="left_attach">1</property>
-                            <property name="right_attach">3</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkEntry" id="taskTagsEntry">
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="tooltip" translatable="yes">Tags</property>
-                          </widget>
-                          <packing>
-                            <property name="left_attach">1</property>
-                            <property name="right_attach">5</property>
                             <property name="top_attach">4</property>
                             <property name="bottom_attach">5</property>
                             <property name="x_options">GTK_FILL</property>
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkEntry" id="taskDateDeadlineEntry">
+                          <widget class="GtkLabel" id="taskDescriptionCommentLabel">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="tooltip" translatable="yes">When task must be done</property>
+                            <property name="xalign">1</property>
+                            <property name="label" translatable="yes">_Title:</property>
+                            <property name="use_underline">True</property>
+                            <property name="mnemonic_widget">taskDescriptionEntry</property>
                           </widget>
                           <packing>
-                            <property name="left_attach">6</property>
-                            <property name="right_attach">7</property>
-                            <property name="x_options">GTK_SHRINK | GTK_FILL</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkEntry" id="taskDateStartedEntry">
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="tooltip" translatable="yes">When work should start</property>
-                          </widget>
-                          <packing>
-                            <property name="left_attach">6</property>
-                            <property name="right_attach">7</property>
-                            <property name="top_attach">1</property>
-                            <property name="bottom_attach">2</property>
-                            <property name="x_options">GTK_SHRINK | GTK_FILL</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkEntry" id="taskDateCompletedEntry">
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="tooltip" translatable="yes">When task was done</property>
-                          </widget>
-                          <packing>
-                            <property name="left_attach">6</property>
-                            <property name="right_attach">7</property>
-                            <property name="top_attach">2</property>
-                            <property name="bottom_attach">3</property>
-                            <property name="x_options">GTK_SHRINK | GTK_FILL</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkLabel" id="taskDateCreatedLabel">
-                            <property name="visible">True</property>
-                            <property name="tooltip" translatable="yes">Task creation date</property>
-                            <property name="xalign">0</property>
-                            <property name="selectable">True</property>
-                          </widget>
-                          <packing>
-                            <property name="left_attach">6</property>
-                            <property name="right_attach">7</property>
-                            <property name="top_attach">3</property>
-                            <property name="bottom_attach">4</property>
-                            <property name="x_options">GTK_SHRINK | GTK_FILL</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkLabel" id="taskDateLastModifiedLabel">
-                            <property name="visible">True</property>
-                            <property name="tooltip" translatable="yes">Last modification date</property>
-                            <property name="xalign">0</property>
-                            <property name="selectable">True</property>
-                          </widget>
-                          <packing>
-                            <property name="left_attach">6</property>
-                            <property name="right_attach">7</property>
-                            <property name="top_attach">4</property>
-                            <property name="bottom_attach">5</property>
-                            <property name="x_options">GTK_SHRINK | GTK_FILL</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkCheckButton" id="taskDoneCheckbutton">
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="tooltip" translatable="yes">Done</property>
-                            <property name="response_id">0</property>
-                            <property name="draw_indicator">True</property>
-                          </widget>
-                          <packing>
-                            <property name="left_attach">4</property>
-                            <property name="right_attach">5</property>
-                            <property name="x_options">GTK_FILL</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkLabel" id="taskIdLabel">
-                            <property name="visible">True</property>
-                            <property name="tooltip" translatable="yes">Internal Task ID</property>
-                            <property name="xalign">0</property>
-                            <property name="selectable">True</property>
-                          </widget>
-                          <packing>
-                            <property name="left_attach">4</property>
-                            <property name="right_attach">5</property>
-                            <property name="top_attach">3</property>
-                            <property name="bottom_attach">4</property>
                             <property name="x_options">GTK_FILL</property>
                           </packing>
                         </child>
@@ -526,114 +453,243 @@
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkLabel" id="taskDescriptionCommentLabel">
+                          <widget class="GtkLabel" id="taskIdLabel">
                             <property name="visible">True</property>
-                            <property name="xalign">1</property>
-                            <property name="label" translatable="yes">_Title:</property>
-                            <property name="use_underline">True</property>
-                            <property name="mnemonic_widget">taskDescriptionEntry</property>
+                            <property name="tooltip" translatable="yes">Internal Task ID</property>
+                            <property name="xalign">0</property>
+                            <property name="selectable">True</property>
                           </widget>
                           <packing>
-                            <property name="x_options">GTK_FILL</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkLabel" id="taskTagsCommentLabel">
-                            <property name="visible">True</property>
-                            <property name="xalign">1</property>
-                            <property name="label" translatable="yes">Tags:</property>
-                          </widget>
-                          <packing>
+                            <property name="left_attach">4</property>
+                            <property name="right_attach">5</property>
                             <property name="top_attach">4</property>
                             <property name="bottom_attach">5</property>
                             <property name="x_options">GTK_FILL</property>
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkLabel" id="taskDoneCommentLabel">
+                          <widget class="GtkCheckButton" id="taskDoneCheckbutton">
                             <property name="visible">True</property>
-                            <property name="xalign">1</property>
-                            <property name="label" translatable="yes">Done:</property>
+                            <property name="can_focus">True</property>
+                            <property name="tooltip" translatable="yes">Done</property>
+                            <property name="response_id">0</property>
+                            <property name="draw_indicator">True</property>
                           </widget>
                           <packing>
-                            <property name="left_attach">3</property>
-                            <property name="right_attach">4</property>
+                            <property name="left_attach">4</property>
+                            <property name="right_attach">5</property>
+                            <property name="x_options"></property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkLabel" id="taskDateLastModifiedLabel">
+                            <property name="visible">True</property>
+                            <property name="tooltip" translatable="yes">Last modification date</property>
+                            <property name="xalign">0</property>
+                            <property name="selectable">True</property>
+                            <property name="width_chars">20</property>
+                          </widget>
+                          <packing>
+                            <property name="left_attach">6</property>
+                            <property name="right_attach">8</property>
+                            <property name="top_attach">4</property>
+                            <property name="bottom_attach">5</property>
                             <property name="x_options">GTK_FILL</property>
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkLabel" id="taskCompletedPercentageCommentLabel">
+                          <widget class="GtkLabel" id="taskDateCreatedLabel">
                             <property name="visible">True</property>
-                            <property name="xalign">1</property>
-                            <property name="label" translatable="yes">%:</property>
+                            <property name="tooltip" translatable="yes">Task creation date</property>
+                            <property name="xalign">0</property>
+                            <property name="selectable">True</property>
+                            <property name="width_chars">20</property>
                           </widget>
                           <packing>
-                            <property name="left_attach">3</property>
-                            <property name="right_attach">4</property>
-                            <property name="top_attach">1</property>
-                            <property name="bottom_attach">2</property>
-                            <property name="x_options">GTK_FILL</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkLabel" id="taskProrityCommentLabel">
-                            <property name="visible">True</property>
-                            <property name="xalign">1</property>
-                            <property name="label" translatable="yes">Priority:</property>
-                          </widget>
-                          <packing>
-                            <property name="left_attach">3</property>
-                            <property name="right_attach">4</property>
-                            <property name="top_attach">2</property>
-                            <property name="bottom_attach">3</property>
-                            <property name="x_options">GTK_FILL</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkLabel" id="taskIdCommentLabel">
-                            <property name="visible">True</property>
-                            <property name="xalign">1</property>
-                            <property name="label" translatable="yes">Id:</property>
-                          </widget>
-                          <packing>
-                            <property name="left_attach">3</property>
-                            <property name="right_attach">4</property>
+                            <property name="left_attach">6</property>
+                            <property name="right_attach">8</property>
                             <property name="top_attach">3</property>
                             <property name="bottom_attach">4</property>
                             <property name="x_options">GTK_FILL</property>
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkSpinButton" id="taskCompletedPercentageSpinbutton">
+                          <widget class="GtkEntry" id="taskDateCompletedEntry">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
-                            <property name="tooltip" translatable="yes">% completed</property>
-                            <property name="max_length">3</property>
-                            <property name="adjustment">0 0 100 1 10 10</property>
-                            <property name="update_policy">GTK_UPDATE_IF_VALID</property>
+                            <property name="tooltip" translatable="yes">When task was done</property>
+                            <property name="width_chars">20</property>
                           </widget>
                           <packing>
-                            <property name="left_attach">4</property>
-                            <property name="right_attach">5</property>
+                            <property name="left_attach">6</property>
+                            <property name="right_attach">8</property>
+                            <property name="top_attach">2</property>
+                            <property name="bottom_attach">3</property>
+                            <property name="x_options">GTK_FILL</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkEntry" id="taskDateStartedEntry">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="tooltip" translatable="yes">When work should start</property>
+                            <property name="width_chars">20</property>
+                          </widget>
+                          <packing>
+                            <property name="left_attach">6</property>
+                            <property name="right_attach">8</property>
                             <property name="top_attach">1</property>
                             <property name="bottom_attach">2</property>
                             <property name="x_options">GTK_FILL</property>
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkSpinButton" id="taskPrioritySpinbutton">
+                          <widget class="GtkEntry" id="taskDateDeadlineEntry">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
-                            <property name="tooltip" translatable="yes">Priority</property>
-                            <property name="max_length">3</property>
-                            <property name="adjustment">0 0 10 1 10 10</property>
-                            <property name="update_policy">GTK_UPDATE_IF_VALID</property>
+                            <property name="tooltip" translatable="yes">When task must be done</property>
+                            <property name="width_chars">20</property>
                           </widget>
                           <packing>
-                            <property name="left_attach">4</property>
-                            <property name="right_attach">5</property>
+                            <property name="left_attach">6</property>
+                            <property name="right_attach">8</property>
+                            <property name="x_options">GTK_FILL</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkEntry" id="taskTagsEntry">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="tooltip" translatable="yes">Tags</property>
+                          </widget>
+                          <packing>
+                            <property name="left_attach">1</property>
+                            <property name="right_attach">3</property>
+                            <property name="top_attach">4</property>
+                            <property name="bottom_attach">5</property>
+                            <property name="x_options">GTK_FILL</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkEntry" id="taskDescriptionEntry">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="tooltip" translatable="yes">Title of task</property>
+                          </widget>
+                          <packing>
+                            <property name="left_attach">1</property>
+                            <property name="right_attach">3</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkLabel" id="taskDateDeadlineCommentLabel">
+                            <property name="visible">True</property>
+                            <property name="xalign">1</property>
+                            <property name="label" translatable="yes">Deadline:</property>
+                            <property name="justify">GTK_JUSTIFY_RIGHT</property>
+                          </widget>
+                          <packing>
+                            <property name="left_attach">5</property>
+                            <property name="right_attach">6</property>
+                            <property name="x_options">GTK_FILL</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkLabel" id="taskDateStartedCommentLabel">
+                            <property name="visible">True</property>
+                            <property name="xalign">1</property>
+                            <property name="label" translatable="yes">Start:</property>
+                            <property name="justify">GTK_JUSTIFY_RIGHT</property>
+                          </widget>
+                          <packing>
+                            <property name="left_attach">5</property>
+                            <property name="right_attach">6</property>
+                            <property name="top_attach">1</property>
+                            <property name="bottom_attach">2</property>
+                            <property name="x_options">GTK_FILL</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkLabel" id="taskDateCompletedCommentLabel">
+                            <property name="visible">True</property>
+                            <property name="xalign">1</property>
+                            <property name="label" translatable="yes">Completed:</property>
+                            <property name="justify">GTK_JUSTIFY_RIGHT</property>
+                          </widget>
+                          <packing>
+                            <property name="left_attach">5</property>
+                            <property name="right_attach">6</property>
                             <property name="top_attach">2</property>
                             <property name="bottom_attach">3</property>
+                            <property name="x_options">GTK_FILL</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkLabel" id="taskDateCreatedCommentLabel">
+                            <property name="visible">True</property>
+                            <property name="xalign">1</property>
+                            <property name="label" translatable="yes">Created:</property>
+                            <property name="justify">GTK_JUSTIFY_RIGHT</property>
+                          </widget>
+                          <packing>
+                            <property name="left_attach">5</property>
+                            <property name="right_attach">6</property>
+                            <property name="top_attach">3</property>
+                            <property name="bottom_attach">4</property>
+                            <property name="x_options">GTK_FILL</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkLabel" id="taskDateLastModifiedCommentLabel">
+                            <property name="visible">True</property>
+                            <property name="xalign">1</property>
+                            <property name="label" translatable="yes">Modified:</property>
+                            <property name="justify">GTK_JUSTIFY_RIGHT</property>
+                          </widget>
+                          <packing>
+                            <property name="left_attach">5</property>
+                            <property name="right_attach">6</property>
+                            <property name="top_attach">4</property>
+                            <property name="bottom_attach">5</property>
+                            <property name="x_options">GTK_FILL</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkHBox" id="taskRecurrenceHbox">
+                            <property name="visible">True</property>
+                            <property name="tooltip" translatable="yes">Recurrence - how to repeat the task</property>
+                            <child>
+                              <widget class="GtkEntry" id="taskRecurrenceEntry">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="width_chars">12</property>
+                              </widget>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <widget class="GtkButton" id="taskRecurrenceButton">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <property name="tooltip" translatable="yes">Set recurrence details</property>
+                                <property name="label" translatable="yes">...</property>
+                                <property name="response_id">0</property>
+                              </widget>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                          </widget>
+                          <packing>
+                            <property name="left_attach">3</property>
+                            <property name="right_attach">5</property>
+                            <property name="top_attach">3</property>
+                            <property name="bottom_attach">4</property>
                             <property name="x_options">GTK_FILL</property>
                           </packing>
                         </child>

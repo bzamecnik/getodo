@@ -32,6 +32,8 @@ protected:
 	Gtk::CheckButton* pTaskDoneCheckbutton;
 	Gtk::SpinButton* pTaskCompletedPercentageSpinbutton;
 	Gtk::SpinButton* pTaskPrioritySpinbutton; // SpinButton or ComboBox, colorful at best
+	//Gtk::Label* pTaskRecurrenceLabel;
+	Gtk::Entry* pTaskRecurrenceEntry;
 	Gtk::Label* pTaskIdLabel;
 	Gtk::Entry* pTaskDateDeadlineEntry; // future: DateEntry (from GDA)
 	Gtk::Entry* pTaskDateStartedEntry; // future: DateEntry (from GDA)
@@ -51,6 +53,7 @@ protected:
 	// ----- signal handlers -----
 	void on_buttonTaskNew_clicked();
 	void on_buttonTaskDelete_clicked();
+	void on_buttonTaskUpdate_clicked();
 	//void on_buttonEdit_clicked();
 	//void on_buttonDelete_clicked();
 	//void on_buttonDebug_clicked();
@@ -62,6 +65,7 @@ private:
 
 	void MainWindow::fillEditingPanel(getodo::Task& task);
 	void MainWindow::clearEditingPanel();
+	void MainWindow::saveEditingPanelToTask(getodo::Task& task);
 };
 
 // ----- class GeToDoApp --------------------

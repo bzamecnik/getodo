@@ -271,14 +271,17 @@ TaskPersistence::~TaskPersistence() {}
 // save whole Task to database
 // TODO: split into insert() and update()
 void TaskPersistence::save() {
- 	// if(!conn) { TODO: throw }
+	if (!conn || !task) { return; } // TODO: throw
 	
 	// save the task
 	
 	databaseRow_t row = task->toDatabaseRow();
-	// TODO: delete this when Duration and Recurence will be ready
+	// TODO: delete this when Duration will be ready
 	row["estDuration"] = "";
-	row["dateLastModified"] = DateTime::now().toString();
+
+	// update last modification date
+	task->setDateLastModified(DateTime::now());
+	row["dateLastModified"] = task->getDateLastModified().toString();
 	
 	int count = 0;
 	if (task->getTaskId() >= 0) {
