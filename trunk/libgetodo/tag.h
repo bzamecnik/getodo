@@ -32,7 +32,8 @@ public:
 	Tag(id_t tagId, std::string tagName);
 	virtual ~Tag();
 
-	virtual std::string toString() const ;
+	std::string toString() const;
+	friend std::ostream& operator<< (std::ostream& o, const Tag& tag);
 };
 
 class TagPersistence {

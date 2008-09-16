@@ -39,8 +39,8 @@ public:
 	
 	static DateTime now();
 
-	static std::string toString(const DateTime& date);
 	std::string toString() const;
+	friend std::ostream& operator<< (std::ostream& o, const DateTime& date);
 private:
 	// format for string representation
 	// eg. YYYY-MM-DD HH:MM:SS
@@ -59,9 +59,9 @@ public:
 	static Date now();
 	
 	// Format: YYYY-MM-DD
-	static std::string toString(const Date& date);
 	std::string toString() const;
-
+	friend std::ostream& operator<< (std::ostream& o, const Date& date);
+private:
 	static std::string format;
 };
 
@@ -85,20 +85,25 @@ class Recurrence {
 	//   * every day in an interval between two days
 public:
 	virtual ~Recurrence();
-	virtual Recurrence* clone() const =0;
+	virtual Recurrence* clone() const = 0;
 
 	// Maybe use boost::gregorian::date_iterator inside and return date
 	// or make a custom iterator
 	virtual Date next(Date start)=0;
-	virtual std::string toString()const =0;
 	
 	// Prepend correct recurrence type identifier
 	static std::string toString(const Recurrence& r);
+	// Without type identifier
+	std::string toString() const;
 	// Given a string create proper Recurrence* object using
-	// recurrence type identifier
+	// recurrence type identifier.
+	// This is a kind of Factory Method (hope).
 	static Recurrence* fromString(std::string str);
+
+	friend std::ostream& operator<< (std::ostream& o, const Recurrence& r);
 protected:
-	virtual std::string getTypeId()const =0;
+	virtual std::string getTypeId() const = 0;
+	virtual void printOn(std::ostream& o) const = 0;
 };
 
 class RecurrenceOnce : public Recurrence {
@@ -108,9 +113,9 @@ public:
 	virtual ~RecurrenceOnce();
 	virtual RecurrenceOnce* clone() const;
 	virtual Date next(Date start);
-	virtual std::string toString() const; // eg. ""
 protected:
 	virtual std::string getTypeId() const;
+	virtual void printOn(std::ostream& o) const; // eg. ""
 };
 
 class RecurrenceDaily : public Recurrence {
@@ -122,9 +127,9 @@ public:
 	virtual ~RecurrenceDaily();
 	virtual RecurrenceDaily* clone() const;
 	virtual Date next(Date start);
-	virtual std::string toString() const; // eg. "2"
 protected:
 	virtual std::string getTypeId() const;
+	virtual void printOn(std::ostream& o) const; // eg. "2"
 };
 
 class RecurrenceWeekly : public Recurrence {
@@ -142,9 +147,9 @@ public:
 	virtual ~RecurrenceWeekly();
 	virtual RecurrenceWeekly* clone() const;
 	virtual Date next(Date start);
-	virtual std::string toString() const; // eg. "1 Mon Tue"
 protected:
 	virtual std::string getTypeId() const;
+	virtual void printOn(std::ostream& o) const; // eg. "1 Mon Tue"
 };
 
 class RecurrenceMonthly : public Recurrence {
@@ -161,9 +166,9 @@ public:
 	virtual ~RecurrenceMonthly();
 	virtual RecurrenceMonthly* clone() const;
 	virtual Date next(Date start);
-	virtual std::string toString() const; // eg. "3 14"
 protected:
 	virtual std::string getTypeId() const;
+	virtual void printOn(std::ostream& o) const; // eg. "3 14"
 };
 
 class RecurrenceYearly : public Recurrence {
@@ -179,9 +184,9 @@ public:
 	virtual ~RecurrenceYearly();
 	virtual RecurrenceYearly* clone() const;
 	virtual Date next(Date start);
-	virtual std::string toString() const; // eg. "25 Dec"
 protected:
 	virtual std::string getTypeId() const;
+	virtual void printOn(std::ostream& o) const; // eg. "25 Dec"
 };
 
 class RecurrenceIntervalDays : public Recurrence {
@@ -196,9 +201,9 @@ public:
 	virtual ~RecurrenceIntervalDays();
 	virtual RecurrenceIntervalDays* clone() const;
 	virtual Date next(Date start);
-	virtual std::string toString() const;
 protected:
 	virtual std::string getTypeId() const;
+	virtual void printOn(std::ostream& o) const;
 };
 
 class Duration {

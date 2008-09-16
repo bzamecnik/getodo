@@ -17,6 +17,10 @@
 #include "sqlite3x/sqlite3x.hpp"
 #include "datetime.h"
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/join.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/trim.hpp>
 
 namespace getodo {
 
@@ -24,6 +28,10 @@ typedef int id_t;
 typedef std::map<std::string,std::string> databaseRow_t;
 // TODO: rename to idset_t, use for tags, subtasks
 typedef std::set<id_t> taskset_t;
+
+class Task;
+class TaskPersistence;
+class TaskManager;
 
 // ----- utils --------------------
 
@@ -36,6 +44,7 @@ typedef std::set<id_t> taskset_t;
 // join(std::cout,alist.begin(), alist.end(), ", ");
 // Thanks to Thomas Guest:
 // http://wordaligned.org/articles/joined-output-and-the-fencepost-problem
+
 template <class Iterator>
 void join(std::ostream & output,
       Iterator first,
