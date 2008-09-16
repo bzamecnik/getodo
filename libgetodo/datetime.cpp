@@ -33,21 +33,24 @@ DateTime DateTime::now() {
 	return DateTime(boost::posix_time::second_clock::local_time());
 }
 
-std::string DateTime::toString(const DateTime& date) {
+std::string DateTime::toString() const {
+	return boost::lexical_cast<std::string, DateTime>(*this);
+}
+
+std::ostream& operator<< (std::ostream& o, const DateTime& date) {
 	//return boost::posix_time::to_iso_extended_string(date.date);
 
 	// TODO: handle special values (not_a_date_time) -> output ""
-	// TODO: move this to non-static toString()
 	using namespace boost;
 	posix_time::time_facet* time_output = new posix_time::time_facet(DateTime::format.c_str());
+	
+	// NOTE: We don't want to affect the output stream o, so use a local one.
+	// TODO: Save original locale a then restore it.
 	std::ostringstream ss;
 	ss.imbue(std::locale(ss.getloc(), time_output));
 	ss << date.date;
-	return ss.str();
-}
-
-std::string DateTime::toString() const {
-	return DateTime::toString(*this);
+	o << ss.str();
+	return o;
 }
 
 // ----- class Date --------------------
@@ -55,11 +58,11 @@ std::string DateTime::toString() const {
 std::string Date::format("%Y-%m-%d");
 
 //Date::Date() : date(boost::gregorian::date(boost::date_time::not_a_date_time)) {}
-Date::Date() {} //empty
+Date::Date() {} //empty - not_a_date_time is the default date value
 Date::Date(const boost::gregorian::date& d) : date(d) {}
 Date::Date(const Date& d) : date(d.date) {}
 Date::Date(std::string d) {
-	// date = boost::gregorian::from_string(d);
+	// date = boost::gregorian::from_string(d); // previous code: default format
 
 	using namespace boost::gregorian;
 	date_input_facet* date_input = new date_input_facet(Date::format);
@@ -75,24 +78,48 @@ Date Date::now() {
 	return Date(boost::gregorian::day_clock::local_day());
 }
 
-std::string Date::toString(const Date& date) {
-	//return boost::gregorian::to_iso_extended_string(date.date);
+std::string Date::toString() const {
+	return boost::lexical_cast<std::string, Date>(*this);
+}
+
+std::ostream& operator<< (std::ostream& o, const Date& date) {
+	//return boost::gregorian::to_iso_extended_string(date.date); // previous code: default format
 
 	using namespace boost;
 	gregorian::date_facet* date_output = new gregorian::date_facet(Date::format.c_str());
+	
+	// Output special date values as "".
+	// THINK: This code should be done elsewhere (in a special decorator or so),
+	// not here because some day we may need to use the special values.
+	// NOTE: Date input treats empty string as not-a-date-time,
+	// so there's no need to modify the facet settings there.
+	std::string sv[5] = {"","", "", "", "" };
+	std::vector<std::string> sv_names(&sv[0], &sv[5]);
+	gregorian::special_values_formatter sv_formatter(sv_names.begin(), sv_names.end());
+	date_output->special_values_formatter(sv_formatter);
+
+	// NOTE: We don't want to affect the output stream o, so use a local one.
+	// TODO: Save original locale a then restore it.
 	std::ostringstream ss;
 	ss.imbue(std::locale(ss.getloc(), date_output));
 	ss << date.date;
-	return ss.str();
+	o << ss.str();
+	return o;
 }
-
-std::string Date::toString() const { return Date::toString(*this); }
 
 // ----- class Recurrence --------------------
 
+Recurrence::~Recurrence() {} //empty
+
 std::string Recurrence::toString(const Recurrence& r) {
 	std::ostringstream ss;
-	ss << r.getTypeId() << ' ' << r.toString();
+	ss << r.getTypeId() << ' ' << r;
+	return ss.str();
+}
+
+std::string Recurrence::toString() const {
+	std::ostringstream ss;
+	printOn(ss);
 	return ss.str();
 }
 
@@ -116,9 +143,10 @@ Recurrence* Recurrence::fromString(std::string str) {
 	return recurrence;
 }
 
-// ----- class Recurrence --------------------
-
-Recurrence::~Recurrence() {} //empty
+inline std::ostream& operator<< (std::ostream& o, const Recurrence& r) {
+	r.printOn(o);
+	return o;
+}
 
 // ----- class RecurrenceOnce --------------------
 
@@ -133,9 +161,9 @@ Date RecurrenceOnce::next(Date start) {
 	return Date(); // not_a_date_time
 }
 
-std::string RecurrenceOnce::toString() const { return std::string(); }
-
 std::string RecurrenceOnce::getTypeId() const { return std::string(); }
+
+void RecurrenceOnce::printOn(std::ostream& o) const { } // empty
 
 // ----- class RecurrenceDaily --------------------
 
@@ -160,11 +188,11 @@ Date RecurrenceDaily::next(Date start) {
 	return Date(start.date + boost::gregorian::days(period));
 }
 
-std::string RecurrenceDaily::toString() const {
-	return boost::lexical_cast<std::string, int>(period);
-}
-
 std::string RecurrenceDaily::getTypeId() const { return std::string("D"); }
+
+void RecurrenceDaily::printOn(std::ostream& o) const {
+	o << period;
+} 
 
 // ----- class RecurrenceWeekly --------------------
 
@@ -201,16 +229,14 @@ Date RecurrenceWeekly::next(Date start) {
 	return start; // stub
 }
 
-std::string RecurrenceWeekly::toString() const {
-	std::ostringstream ss;
-	//period
-	ss << boost::lexical_cast<std::string, int>(period) << ' ';
-	// weekday selection
-	join(ss, weekdaySelection.begin(), weekdaySelection.end(), " ");
-	return ss.str();
-}
-
 std::string RecurrenceWeekly::getTypeId() const { return std::string("W"); }
+
+void RecurrenceWeekly::printOn(std::ostream& o) const {
+	//period
+	o << period << ' ';
+	// weekday selection
+	join(o, weekdaySelection.begin(), weekdaySelection.end(), " ");
+}
 
 // ----- class RecurrenceMonthly --------------------
 
@@ -243,17 +269,14 @@ Date RecurrenceMonthly::next(Date start) {
 	return start; // stub
 }
 
-std::string RecurrenceMonthly::toString() const {
-	std::ostringstream ss;
-	ss << boost::lexical_cast<std::string, int>(period) << ' ';
-	if (useDayOfMonth) {
-		ss << dayOfMonth;
-	}
-	// TODO: don't output spaces at the end
-	return ss.str();
-}
-
 std::string RecurrenceMonthly::getTypeId() const { return std::string("M"); }
+
+void RecurrenceMonthly::printOn(std::ostream& o) const {
+	o << period;
+	if (useDayOfMonth) {
+		o << ' ' << dayOfMonth;
+	}
+} 
 
 // ----- class RecurrenceYearly --------------------
 
@@ -289,15 +312,13 @@ Date RecurrenceYearly::next(Date start) {
 	return Date(nextDate);
 }
 
-std::string RecurrenceYearly::toString() const {
-	std::ostringstream ss;
-	//if (useDayOfMonth) {
-		ss << dayAndMonth;
-	//}
-	return ss.str();
-}
-
 std::string RecurrenceYearly::getTypeId() const { return std::string("Y"); }
+
+void RecurrenceYearly::printOn(std::ostream& o) const {
+	//if (useDayOfMonth) {
+		o << dayAndMonth;
+	//}
+}
 
 // ----- class RecurrenceIntervalDays --------------------
 
@@ -325,17 +346,15 @@ Date RecurrenceIntervalDays::next(Date start) {
 	} else {
 		return Date();
 	}
-	
 }
 
-std::string RecurrenceIntervalDays::toString() const {
-	//// TODO: make different settings for facet (?)
-	//// - now: 2008-Dec-31
-	//// - i want: 2008-12-31
-	//std::ostringstream ss;
-	//ss << interval;
-	//return ss.str();
-	return boost::lexical_cast<std::string, boost::gregorian::date_period>(interval);
+void RecurrenceIntervalDays::printOn(std::ostream& o) const {
+	// TODO: make different settings for facet (is it reasonable?)
+	// - now: 2008-Dec-31
+	// - i want: 2008-12-31
+	
+	// eg.: [2008-Aug-18/2008-Oct-04]
+	o << interval;
 }
 
 std::string RecurrenceIntervalDays::getTypeId() const { return std::string("I"); }

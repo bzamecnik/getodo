@@ -5,6 +5,7 @@
 		- editing panel, menu, toolbar...
 		*- saving the whole editing panel
 		- saving individual items in editing panel
+		*- tag list editing
 	- bind GUI actions to libgetodo calls  
 	- make an installer from release build
 
@@ -13,14 +14,14 @@
 	- rename: description -> title, longDescription -> description
 - TaskPersistence, FilterRulePersistence - split save() into insert() and update()
 - use operator= for copying Tasks and Tags
-- use operator<< and operator>> for I/O of objects like DateTime, Tag, ...  
+*- use operator<< and operator>> for I/O of objects like DateTime, Tag, ...
+- write custom TreeModel for FilerRule
 - Recurrence
 	- next() for RecurrenceWeekly, RecurrenceMonthly
-	- use facet for RecurrenceIntervalDays and possibly RecurrenceYearly
-- write custom TreeModel for FilerRule
-- DateTime, Date
-	- discard static toString() and move the code into the non-static toString()
-	- output special date values as ""
+	- use facet for RecurrenceIntervalDays and RecurrenceYearly (?)
+*- DateTime, Date
+	*- discard static toString() and move the code into the non-static toString()
+	*- output special date values as ""
 - delete operator
 	- don't check if the deleted pointer isn't NULL, it's redundant
 	- exception: don't delete what was never allocated (and had been initialized to NULL) 

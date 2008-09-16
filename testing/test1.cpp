@@ -16,11 +16,12 @@ void testDateTime() {
 	cout << "----- DateTime -----" << endl;
 
 	DateTime dt1;
-	cout << "DateTime dt1: " << dt1.toString() << endl;
+	cout << "DateTime dt1: " << dt1 << endl;
+	cout << "DateTime dt1.toString(): " << dt1.toString() << endl;
 	DateTime dt2 = DateTime::now();
-	cout << "DateTime dt2 now(), copy: " << dt2.toString() << endl;
+	cout << "DateTime dt2 now(), copy: " << dt2 << endl;
 	DateTime dt3 = DateTime(dt2.toString());
-	cout << "DateTime dt3 from string: " << dt3.toString() << endl;
+	cout << "DateTime dt3 from string: " << dt3 << endl;
 }
 
 void testDate() {
@@ -29,11 +30,12 @@ void testDate() {
 	cout << "----- Date -----" << endl;
 
 	Date date1;
-	cout << "Date date1: " << date1.toString() << endl;
+	cout << "Date date1: " << date1 << endl;
+	cout << "Date date1.toString(): " << date1.toString() << endl;
 	Date date2 = Date::now();
-	cout << "Date date2 now(), copy: " << date2.toString() << endl;
+	cout << "Date date2 now(), copy: " << date2 << endl;
 	Date date3 = Date(date2.toString());
-	cout << "Date date3 from string: " << date3.toString() << endl;
+	cout << "Date date3 from string: " << date3 << endl;
 }
 
 void testRecurrence() {
@@ -43,11 +45,12 @@ void testRecurrence() {
 	
 	Recurrence* r1 = Recurrence::fromString("");
 	cout << "r1 Recurrence::fromString(\"\")" << endl;
-	cout << typeid(*r1).name() << " r1: " << r1->toString() << endl;
+	cout << typeid(*r1).name() << " r1: " << *r1 << endl;
+	cout << typeid(*r1).name() << " r1->toString(): " << r1->toString() << endl;
 
 	Recurrence* r2 = Recurrence::fromString("W   2 Tue		Sat Fri  Fri ");
 	cout << "r2 Recurrence::fromString(\"W  2 Tue		Sat Fri  Fri \")" << endl;
-	cout << typeid(*r2).name() << " r2: " << r2->toString() << endl;
+	cout << typeid(*r2).name() << " r2: " << *r2 << endl;
 
 
 }
@@ -61,9 +64,10 @@ void testRecurrenceType(std::vector<std::string> parameters) {
 	for(vector<string>::iterator it = parameters.begin();
 		it != parameters.end(); ++it) {
 		T r(*it);
-		cout << "\"" << *it << "\"" << endl;
+		cout << "recurrence from string: \"" << *it << "\"" << endl;
+		cout << "  result: \"" << r << "\"" << endl;
 		cout << "  toString(): \"" << r.toString() << "\"" << endl;
-		cout << "  next(Date::now(): " << r.next(Date::now()).toString() << endl;
+		cout << "  next(Date::now()): " << r.next(Date::now()) << endl;
 	}
 }
 void testRecurrenceOnce() {
@@ -72,8 +76,9 @@ void testRecurrenceOnce() {
 	cout << "----- RecurrenceOnce -----" << endl;
 	
 	RecurrenceOnce r1;
+	cout << "r1: " << r1 << endl;
 	cout << "r1.toString(): " << r1.toString() << endl;
-	cout << "r1.next(Date::now()): " << r1.next(Date::now()).toString() << endl;
+	cout << "r1.next(Date::now()): " << r1.next(Date::now()) << endl;
 }
 
 void testRecurrenceDaily() {
@@ -122,10 +127,11 @@ void testTag() {
 	Tag tag2("photos");
 	Tag tag3(tag2);
 	Tag tag4(123, "photos");
-	cout << "tag1: " << tag1.toString() << endl;
-	cout << "tag2: " << tag2.toString() << endl;
-	cout << "tag3: " << tag3.toString() << endl;
-	cout << "tag4: " << tag4.toString() << endl;
+	cout << "tag1: " << tag1 << endl;
+	cout << "tag1.toString(): " << tag1.toString() << endl;
+	cout << "tag2: " << tag2 << endl;
+	cout << "tag3: " << tag3 << endl;
+	cout << "tag4: " << tag4 << endl;
 	
 	cout << "----- TagPersistence -----" << endl;
 
@@ -138,21 +144,21 @@ void testTag() {
 		
 		// insert()
 		tagp.insert(tag2);
-		cout << "tag2 saved: " << tag2.toString() << endl;
+		cout << "tag2 saved: " << tag2 << endl;
 		
 		// TODO: update()
 
 		// load()
 		Tag tag5 = tagp.load(tag2.id);
-		cout << "tag5 loaded from tag2: " << tag5.toString() << endl;
+		cout << "tag5 loaded from tag2: " << tag5 << endl;
 		tag5 = tagp.load(42); // load non-existent tagId
-		cout << "tag5 load non-existent: " << tag5.toString() << endl;
+		cout << "tag5 load non-existent: " << tag5 << endl;
 
 		// erase()
 		tagp.erase(tag2.id);
 		cout << "tag2 erased" << endl;
 		tag5 = tagp.load(tag2.id);
-		cout << "tag5 loading erased tag: " << tag5.toString() << endl;
+		cout << "tag5 loading erased tag: " << tag5 << endl;
 
 		//tag1 = tm.addTag(tag1);
 		//cout << "tm.addTag: " << tag1.tagId << ", " << tag1.tagName << endl;
@@ -173,10 +179,11 @@ void testFilterRule() {
 	FilterRule rule2("rule name","filter rule");
 	FilterRule rule3(rule2);
 	FilterRule rule4(123, "other rule name"," other filter rule");
-	cout << "rule1: " << rule1.toString() << endl;
-	cout << "rule2: " << rule2.toString() << endl;
-	cout << "rule3: " << rule3.toString() << endl;
-	cout << "rule4: " << rule4.toString() << endl;
+	cout << "rule1: " << rule1 << endl;
+	cout << "rule1.toString(): " << rule1.toString() << endl;
+	cout << "rule2: " << rule2 << endl;
+	cout << "rule3: " << rule3 << endl;
+	cout << "rule4: " << rule4 << endl;
 	
 	cout << "----- FilterRulePersistence -----" << endl;
 
@@ -189,28 +196,28 @@ void testFilterRule() {
 		
 		// save()
 		rulep.save(rule2);
-		cout << "rule2 saved: " << rule2.toString() << endl;
+		cout << "rule2 saved: " << rule2 << endl;
 		
 		// load()
 		FilterRule rule5;
 		rulep.load(rule5, rule2.id);
-		cout << "rule5 loaded from rule2: " << rule5.toString() << endl;
+		cout << "rule5 loaded from rule2: " << rule5 << endl;
 		rulep.load(rule5, 42); // load non-existent ruleId
-		cout << "rule5 load non-existent: " << rule5.toString() << endl;
+		cout << "rule5 load non-existent: " << rule5 << endl;
 
 		// setName()
 		rulep.setName(rule2, "modified rule name");
-		cout << "rule2 setName: " << rule2.toString() << endl;
+		cout << "rule2 setName: " << rule2 << endl;
 
 		// setRule()
 		rulep.setRule(rule2, "modified filter rule");
-		cout << "rule2 setRule: " << rule2.toString() << endl;
+		cout << "rule2 setRule: " << rule2 << endl;
 
 		// erase()
 		rulep.erase(rule2.id);
 		cout << "rule2 erased" << endl;
 		rulep.load(rule5, rule2.id);
-		cout << "rule5 loading erased rule: " << rule5.toString() << endl;
+		cout << "rule5 loading erased rule: " << rule5 << endl;
 
 		conn->close();
 	} catch (database_error e) {
@@ -309,53 +316,53 @@ void testTask() {
 	}
 
 	//DateTime getDateCreated() const;
-	cout << "task1 getDateCreated(): " << task1.getDateCreated().toString() << endl;
+	cout << "task1 getDateCreated(): " << task1.getDateCreated() << endl;
 	//void setDateCreated(const DateTime& dateCreated);
 	task1.setDateCreated(DateTime(
 		boost::posix_time::second_clock::local_time()
 		+ boost::posix_time::minutes(5)));
-	cout << "task1 setDateCreated(now + 5 minutes): " << task1.getDateCreated().toString() << endl;
+	cout << "task1 setDateCreated(now + 5 minutes): " << task1.getDateCreated() << endl;
 
 	//DateTime getDateLastModified() const;
-	cout << "task1 getDateLastModified(): " << task1.getDateLastModified().toString() << endl;
+	cout << "task1 getDateLastModified(): " << task1.getDateLastModified() << endl;
 	//void setDateLastModified(const DateTime& dateLastModified);
 	task1.setDateLastModified(DateTime(
 		boost::posix_time::second_clock::local_time()
 		+ boost::posix_time::minutes(10)));
-	cout << "task1 getDateLastModified(now + 10 minutes): " << task1.getDateLastModified().toString() << endl;
+	cout << "task1 getDateLastModified(now + 10 minutes): " << task1.getDateLastModified() << endl;
 
 	//Date getDateStarted() const;
-	cout << "task1 getDateStarted(): " << task1.getDateStarted().toString() << endl;
+	cout << "task1 getDateStarted(): " << task1.getDateStarted() << endl;
 	//void setDateStarted(const Date& dateStarted);
 	task1.setDateStarted(Date(
 		boost::gregorian::day_clock::local_day()
 		+ boost::gregorian::days(5)));
-	cout << "task1 setDateStarted(now + 5 days): " << task1.getDateStarted().toString() << endl;
+	cout << "task1 setDateStarted(now + 5 days): " << task1.getDateStarted() << endl;
 
 	//Date getDateDeadline() const; // should be FuzzyDate
-	cout << "task1 getDateDeadline(): " << task1.getDateDeadline().toString() << endl;
+	cout << "task1 getDateDeadline(): " << task1.getDateDeadline() << endl;
 	//void setDateDeadline(const Date& dateDeadline);
 	task1.setDateDeadline(Date(
 		boost::gregorian::day_clock::local_day()
 		+ boost::gregorian::days(10)));
-	cout << "task1 setDateDeadline(now + 10 days): " << task1.getDateDeadline().toString() << endl;
+	cout << "task1 setDateDeadline(now + 10 days): " << task1.getDateDeadline() << endl;
 
 	//Date getDateCompleted() const;
-	cout << "task1 getDateCompleted(): " << task1.getDateCompleted().toString() << endl;
+	cout << "task1 getDateCompleted(): " << task1.getDateCompleted() << endl;
 	//void setDateCompleted(const Date& dateCompleted);
 	task1.setDateCompleted(Date(
 		boost::gregorian::day_clock::local_day()
 		+ boost::gregorian::days(15)));
-	cout << "task1 setDateCompleted(now + 15 days): " << task1.getDateCompleted().toString() << endl;
+	cout << "task1 setDateCompleted(now + 15 days): " << task1.getDateCompleted() << endl;
 	
 	// Recurrence& getRecurrence() const;
-	cout << "task1 getRecurrence(): \"" << task1.getRecurrence().toString() << "\"" << endl;
+	cout << "task1 getRecurrence(): \"" << task1.getRecurrence() << "\"" << endl;
 	
 	// void setRecurrence(Recurrence* r);
 	Recurrence* recurrenceWeekly = new RecurrenceWeekly("  2 Tue		Sat Fri  Fri ");
 	task1.setRecurrence(recurrenceWeekly);
 	cout << "task1 setRecurrence(\"" << recurrenceWeekly->toString() << "\")" << endl;
-	cout << "task1 getRecurrence(): \"" << task1.getRecurrence().toString() << "\"" << endl;
+	cout << "task1 getRecurrence(): \"" << task1.getRecurrence() << "\"" << endl;
 
 	//int getPriority() const;
 	cout << "task1 getPriority(): " << boost::lexical_cast<string,int>(task1.getPriority()) << endl;
@@ -398,11 +405,11 @@ void testTask() {
 		join(std::cout, subtasks.begin(), subtasks.end(), ", ");
 		cout << "]" << endl;
 	}
-	cout << "task2 getDateCreated(): " << task2.getDateCreated().toString() << endl;
-	cout << "task2 getDateLastModified(): " << task2.getDateLastModified().toString() << endl;
-	cout << "task2 getDateStarted(): " << task2.getDateStarted().toString() << endl;
-	cout << "task2 getDateDeadline(): " << task2.getDateDeadline().toString() << endl;
-	cout << "task2 getDateCompleted(): " << task2.getDateCompleted().toString() << endl;
+	cout << "task2 getDateCreated(): " << task2.getDateCreated() << endl;
+	cout << "task2 getDateLastModified(): " << task2.getDateLastModified() << endl;
+	cout << "task2 getDateStarted(): " << task2.getDateStarted() << endl;
+	cout << "task2 getDateDeadline(): " << task2.getDateDeadline() << endl;
+	cout << "task2 getDateCompleted(): " << task2.getDateCompleted() << endl;
 	cout << "task2 getPriority(): " << boost::lexical_cast<string,int>(task2.getPriority()) << endl;
 	cout << "task2 getCompletedPercentage(): " << boost::lexical_cast<string,int>(task2.getCompletedPercentage()) << endl;
 
@@ -428,29 +435,6 @@ void testTask() {
 		}
 		cout << "]" << endl;
 	}
-}
-
-
-void printTask(Task& task, std::ostream& os) {
-	using namespace std;
-
-	os << "Task [" << endl;
-	databaseRow_t row = task.toDatabaseRow();
-	for (databaseRow_t::iterator it = row.begin(); it != row.end(); ++it) {
-		os << "  " << it->first << " => " << it->second << endl;
-	}
-
-	os << "  tags [";
-	list<id_t> tags = task.getTagsList();
-	join(std::cout, tags.begin(), tags.end(), ", ");
-	os << "]" << endl;
-
-	os << "  subtasks [";
-	list<id_t> subtasks = task.getSubtasksList();
-	join(std::cout, subtasks.begin(), subtasks.end(), ", ");
-	os << "]" << endl;
-
-	os << "]" << endl;
 }
 
 Task* makeTestingTask() {
@@ -509,7 +493,7 @@ void testTaskPersistence() {
 		Task* task1 = makeTestingTask();
 
 		cout << "task1:" << endl;
-		printTask(*task1, std::cout);
+		cout << *task1;
 		
 		//void setTask(Task* task);
 		cout << "persistence1 setTask(task1)" << endl;
@@ -517,7 +501,7 @@ void testTaskPersistence() {
 
 		//Task* getTask() const;
 		cout << "persistence1 getTask(task1)" << endl;
-		printTask(*(persistence1.getTask()), std::cout);
+		cout << *(persistence1.getTask());
 		
 		//void save();
 		cout << "persistence1 save()" << endl;
@@ -530,7 +514,7 @@ void testTaskPersistence() {
 		cout << "persistence1 load(" << task1Id << ") -> task2" << endl;
 		if (task2) {
 			cout << "task2:" << endl;
-			printTask(*task2, std::cout);
+			cout << *task2;
 		}
 
 		cout << "Setting individal properies:" << endl;
@@ -596,7 +580,7 @@ void testTaskPersistence() {
 		cout << "persistence1.setDone()" << endl;
 
 		cout << "task2 (with properties updated):" << endl;
-		printTask(*task2, std::cout);
+		cout << *task2;
 
 		//void erase();
 		cout << "persistence1.erase()" << endl;
@@ -627,7 +611,7 @@ void testTaskManager() {
 		cout << "creating Task task1" << endl;
 		Task* task1 = makeTestingTask();
 		if (task1) {
-			printTask(*task1, cout);
+			cout << *task1;
 		}
 
 		//Task* addTask(Task* task);
@@ -642,7 +626,7 @@ void testTaskManager() {
 		cout << "manager1.getTask(newTaskId):" << endl;
 		Task* task2 = manager1.getTask(newTaskId);
 		if (task2) {
-			printTask(*task2, cout);
+			cout << *task2;
 		}
 
 		//TaskPersistence& getPersistentTask(id_t taskId);
@@ -654,7 +638,7 @@ void testTaskManager() {
 		cout << "task1 edited" << endl;
 		cout << "manager1.editTask(task1)" << endl;
 		Task& task3 = manager1.editTask(newTaskId, *task2);
-		printTask(task3, cout);
+		cout << task3;
 
 		//void deleteTask(id_t taskId);
 		manager1.deleteTask(newTaskId);
@@ -689,21 +673,21 @@ void testTaskManager() {
 		//Tag& getTag(id_t tagId);
 		cout << "manager1.getTag(" << newTagId << ") -> tag2: ";
 		Tag& tag2 = manager1.getTag(newTagId);
-		cout << tag2.toString() << endl;
+		cout << tag2 << endl;
 		
 		//Tag& getTag(std::string tagName);
 		cout << "manager1.getTag(\"" << tag1.name << "\") -> tag3: ";
 		Tag& tag3 = manager1.getTag(tag1.name);
-		cout << tag3.toString() << endl;
+		cout << tag3 << endl;
 
 		//Tag& editTag(id_t tagId, const Tag& tag);
 		tag2.name = "different tag name";
-		cout << "editing tag2: " << tag2.toString() << endl;
+		cout << "editing tag2: " << tag2 << endl;
 		newTagId = tag2.id;
 		cout << "manager1.editTag(" << newTagId << ", tag2)" << endl;
 		manager1.editTag(newTagId, tag2);
 		cout << "manager1.getTag(\"different tag name\"): ";
-		cout << manager1.getTag("different tag name").toString() << endl;
+		cout << manager1.getTag("different tag name") << endl;
 
 		//void deleteTag(id_t tagId);
 		cout << "manager1.deleteTag(" << newTagId << ")" << endl;
@@ -735,16 +719,16 @@ void testTaskManager() {
 		//FilterRule& getFilterRule(id_t filterRuleId);
 		cout << "manager1.getFilterRule(" << newFilterId << ") -> filter2: ";
 		FilterRule& filter2 = manager1.getFilterRule(newFilterId);
-		cout << filter2.toString() << endl;
+		cout << filter2 << endl;
 
 		//FilterRule& editFilterRule(id_t filterRuleId, const FilterRule& filter);
 		filter2.name = "different filter name";
-		cout << "editing filter2: " << filter2.toString() << endl;
+		cout << "editing filter2: " << filter2 << endl;
 		newFilterId = filter2.id;
 		cout << "manager1.editFilterRule(" << newFilterId << ", filter2)" << endl;
 		manager1.editFilterRule(newFilterId, filter2);
 		cout << "manager1.getFilterRule(\"different filter name\"): ";
-		cout << manager1.getFilterRule(newFilterId).toString() << endl;
+		cout << manager1.getFilterRule(newFilterId) << endl;
 
 		//void deleteFilterRule(id_t filterRuleId);
 		manager1.deleteFilterRule(newFilterId);

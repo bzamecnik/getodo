@@ -26,9 +26,13 @@ Tag::Tag(id_t tagId, std::string tagName) : id(tagId), name(tagName) {}
 Tag::~Tag() {}
 
 std::string Tag::toString() const {
-	std::ostringstream ss;
-	ss << "Tag [" << id << "]: " << name;
-	return ss.str();
+	return boost::lexical_cast<std::string, Tag>(*this);
+}
+
+std::ostream& operator<< (std::ostream& o, const Tag& tag) {
+	// eg.: Tag [id]: "tag name"
+	o << "Tag [" << tag.id << "]: \"" << tag.name << '"';
+	return o;
 }
 
 // ----- class TagPersistence --------------------

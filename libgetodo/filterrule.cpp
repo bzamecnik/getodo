@@ -28,9 +28,14 @@ FilterRule::FilterRule(id_t id, std::string n, std::string r)
 FilterRule::~FilterRule() {}
 
 std::string FilterRule::toString() const {
-	std::ostringstream ss;
-	ss << "FilterRule [" << id << ", " << name << "]: " << rule;
-	return ss.str();
+	return boost::lexical_cast<std::string, FilterRule>(*this);
+}
+std::ostream& operator<< (std::ostream& o, const FilterRule& rule) {
+	// eg.: FilterRule [id, "name"]: "fitler rule"
+	o << "FilterRule [";
+	o << rule.id << ", \"" << rule.name << "\"]: \"";
+	o << rule.rule << '"';
+	return o;
 }
 
 // ----- class FilterRulePersistence --------------------

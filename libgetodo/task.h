@@ -13,15 +13,9 @@
 #ifndef LIBGETODO_TASK_H
 #define LIBGETODO_TASK_H
 
-//namespace getodo {
-//	class Task;
-//	class TaskPersistence;
-//	class TaskManager;
-//}
-
 #include "common.h"
 #include "tag.h"
-//#include "taskmanager.h"
+#include "taskmanager.h"
 #include <sstream>
 
 namespace getodo {
@@ -38,20 +32,21 @@ private:
 	// cycles in Subtask relation while loading from database.
 	std::set<id_t> tags;
 	std::set<id_t> subtasks;
-	// id_t parent; // TODO
+	//id_t parent; // TODO
 
-	bool done;
-	// this might be variant in future, let's have it private
+	// theses dates might be variant in future, let's have it private
 	DateTime dateCreated;
 	DateTime dateLastModified;
 	Date dateStarted;
 	Date dateDeadline; // should be FuzzyDate
 	Date dateCompleted;
-//	Duration& estDuration; // estimated duration
-	Recurrence* recurrence;
+
+	//Duration& estDuration; // estimated duration
+	Recurrence* recurrence; // using abstract base class -> pointer
 	
 	int priority; // TODO: number or symbol?
 	int completedPercentage;
+	bool done;
 
 public:
 	// ----- Constructors -----
@@ -59,7 +54,7 @@ public:
 	Task(const Task& t); // copy constructor
 	virtual ~Task();
 
-	// ----- Getters & Setters -----
+	// ----- Access member functions -----
 
 	id_t getTaskId() const;
 	void setTaskId(id_t taskId);
@@ -74,7 +69,8 @@ public:
 	bool hasTag(id_t tagId) const;
 	void removeTag(id_t tagId); //should throw an exception on failure
 	std::list<id_t> getTagsList() const;
-	//std::string getTagsAsString(TaskManager& manager) const;
+	std::string getTagsAsString(TaskManager& manager) const;
+	void setTagsFromString(TaskManager& manager, const std::string& tagsString);
 
 	void addSubtask(id_t taskId); //should throw an exception on failure (?)
 	bool hasSubtask(id_t taskId) const;
@@ -108,9 +104,13 @@ public:
 	bool isDone();
 	void setDone(bool done = true);
 
-	// ----- object-relation representation conversion ----------
+	// ----- object-relation representation conversion -----
 	databaseRow_t toDatabaseRow() const;
 	static Task* fromDatabaseRow(databaseRow_t);
+
+	// ----- text I/O -----
+	std::string toString() const;
+	friend std::ostream& operator<< (std::ostream& o, const Task& task);
 private:
 	template<typename T>
 	std::list<T> convertSetToList(std::set<T> s) const {
