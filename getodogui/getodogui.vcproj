@@ -195,6 +195,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\main-window.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\recurrence-dialog.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.cpp"
 				>
 				<FileConfiguration
@@ -230,6 +238,14 @@
 			>
 			<File
 				RelativePath=".\getodogui.h"
+				>
+			</File>
+			<File
+				RelativePath=".\main-window.h"
+				>
+			</File>
+			<File
+				RelativePath=".\recurrence-dialog.h"
 				>
 			</File>
 			<File

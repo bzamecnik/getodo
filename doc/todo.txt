@@ -6,9 +6,14 @@
 		*- saving the whole editing panel
 		- saving individual items in editing panel
 		*- tag list editing
+		*- recurrence editing dialog
+		- selecting a db file		
 	- bind GUI actions to libgetodo calls  
 	- make an installer from release build
 
+- recurrence editing dialog
+	- fix: make sensitive only controls for selected recurrence type,
+		make others insensitive
 - Task (database)
 	*- add bool done field (to SQL, field, access methods, serialization)
 	- rename: description -> title, longDescription -> description
@@ -45,6 +50,7 @@
 
 ==== Think of ====
 
+- apply GTD stuff on top of GeToDo facilities
 - TaskPersistence/TaskManager how to use individual property setters?
 	- should persistence set* also call set* in its managed task?
 - Task - think of priority:

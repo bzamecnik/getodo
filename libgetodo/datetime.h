@@ -101,6 +101,7 @@ public:
 	static Recurrence* fromString(std::string str);
 
 	friend std::ostream& operator<< (std::ostream& o, const Recurrence& r);
+	virtual std::string getTypeLongName() const = 0;
 protected:
 	virtual std::string getTypeId() const = 0;
 	virtual void printOn(std::ostream& o) const = 0;
@@ -113,6 +114,7 @@ public:
 	virtual ~RecurrenceOnce();
 	virtual RecurrenceOnce* clone() const;
 	virtual Date next(Date start);
+	virtual std::string getTypeLongName() const;
 protected:
 	virtual std::string getTypeId() const;
 	virtual void printOn(std::ostream& o) const; // eg. ""
@@ -122,31 +124,44 @@ class RecurrenceDaily : public Recurrence {
 private:
 	int period;
 public:
+	RecurrenceDaily(int period);
 	explicit RecurrenceDaily(std::string s);
 	RecurrenceDaily(const RecurrenceDaily& r);
 	virtual ~RecurrenceDaily();
 	virtual RecurrenceDaily* clone() const;
 	virtual Date next(Date start);
+
+	int getPeriod() const;
+
+	virtual std::string getTypeLongName() const;
 protected:
 	virtual std::string getTypeId() const;
 	virtual void printOn(std::ostream& o) const; // eg. "2"
 };
 
 class RecurrenceWeekly : public Recurrence {
+public:
+	typedef std::set<boost::gregorian::greg_weekday> weekdaySet_t;
 private:
 	int period;
-	typedef std::set<boost::gregorian::greg_weekday> weekdaySet_t;
 	weekdaySet_t weekdaySelection;
 	// Switch for optionally specified weekday selection:
 	// true - next date will be computed using weekday selection
-	// false - next date will be a wekk after date given in next()
+	// false - next date will be a week after date given in next()
 	bool useWeekdaySelection;
 public:
+	RecurrenceWeekly(int period);
+	RecurrenceWeekly(int period, weekdaySet_t weekdays);
 	explicit RecurrenceWeekly(std::string s);
 	RecurrenceWeekly(const RecurrenceWeekly& r);
 	virtual ~RecurrenceWeekly();
 	virtual RecurrenceWeekly* clone() const;
 	virtual Date next(Date start);
+
+	int getPeriod() const;
+	weekdaySet_t getWeekdaySelection() const;
+
+	virtual std::string getTypeLongName() const;
 protected:
 	virtual std::string getTypeId() const;
 	virtual void printOn(std::ostream& o) const; // eg. "1 Mon Tue"
@@ -161,11 +176,19 @@ private:
 	// false - next date will be a month after date given in next()
 	bool useDayOfMonth;
 public:
+	RecurrenceMonthly(int period);
+	RecurrenceMonthly(int period, boost::gregorian::greg_day dayOfMonth);
 	explicit RecurrenceMonthly(std::string s);
 	RecurrenceMonthly(const RecurrenceMonthly& r);
 	virtual ~RecurrenceMonthly();
 	virtual RecurrenceMonthly* clone() const;
 	virtual Date next(Date start);
+	
+	int getPeriod() const;
+	boost::gregorian::greg_day getDayOfMonth() const;
+	bool isDayOfMonthSet() const;
+
+	virtual std::string getTypeLongName() const;
 protected:
 	virtual std::string getTypeId() const;
 	virtual void printOn(std::ostream& o) const; // eg. "3 14"
@@ -179,11 +202,18 @@ private:
 	// false - next date will be a year after date given in next()
 	bool useDayAndMonth;
 public:
+	RecurrenceYearly();
+	RecurrenceYearly(boost::gregorian::partial_date dayAndMonth);
 	explicit RecurrenceYearly(std::string s);
 	RecurrenceYearly(const RecurrenceYearly& r);
 	virtual ~RecurrenceYearly();
 	virtual RecurrenceYearly* clone() const;
 	virtual Date next(Date start);
+	
+	boost::gregorian::partial_date getDayAndMonth() const;
+	bool isDayAndMonthUsed() const;
+
+	virtual std::string getTypeLongName() const;
 protected:
 	virtual std::string getTypeId() const;
 	virtual void printOn(std::ostream& o) const; // eg. "25 Dec"
@@ -196,11 +226,17 @@ public:
 	// If input is bad, next() will return not_a_date_time,
 	// just like RecurrenceOnce::next().
 	// Period will be invalid, eg. of zero length.
+	RecurrenceIntervalDays(boost::gregorian::date_period datePeriod);
 	explicit RecurrenceIntervalDays(std::string s);
 	RecurrenceIntervalDays(const RecurrenceIntervalDays& r);
 	virtual ~RecurrenceIntervalDays();
 	virtual RecurrenceIntervalDays* clone() const;
 	virtual Date next(Date start);
+
+	boost::gregorian::date getDateStart() const;
+	boost::gregorian::date getDateEnd() const;
+
+	virtual std::string getTypeLongName() const;
 protected:
 	virtual std::string getTypeId() const;
 	virtual void printOn(std::ostream& o) const;
