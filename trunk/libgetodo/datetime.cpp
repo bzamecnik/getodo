@@ -161,11 +161,18 @@ Date RecurrenceOnce::next(Date start) {
 	return Date(); // not_a_date_time
 }
 
+std::string RecurrenceOnce::getTypeLongName() const {
+	return std::string("Once");
+}
+
 std::string RecurrenceOnce::getTypeId() const { return std::string(); }
 
 void RecurrenceOnce::printOn(std::ostream& o) const { } // empty
 
 // ----- class RecurrenceDaily --------------------
+
+RecurrenceDaily::RecurrenceDaily(int _period)
+:	period(_period) {}
 
 RecurrenceDaily::RecurrenceDaily(std::string s) {
 	try {
@@ -188,6 +195,12 @@ Date RecurrenceDaily::next(Date start) {
 	return Date(start.date + boost::gregorian::days(period));
 }
 
+int RecurrenceDaily::getPeriod() const { return period; }
+
+std::string RecurrenceDaily::getTypeLongName() const {
+	return std::string("Daily");
+}
+
 std::string RecurrenceDaily::getTypeId() const { return std::string("D"); }
 
 void RecurrenceDaily::printOn(std::ostream& o) const {
@@ -195,6 +208,15 @@ void RecurrenceDaily::printOn(std::ostream& o) const {
 } 
 
 // ----- class RecurrenceWeekly --------------------
+
+RecurrenceWeekly::RecurrenceWeekly(int _period)
+:	period(_period), useWeekdaySelection(false) {}
+
+RecurrenceWeekly::RecurrenceWeekly(int _period, weekdaySet_t weekdays)
+:	period(_period), weekdaySelection(weekdays)
+{
+	useWeekdaySelection = !weekdaySelection.empty();
+}
 
 RecurrenceWeekly::RecurrenceWeekly(std::string s) {
 	std::istringstream ss(s);
@@ -205,9 +227,10 @@ RecurrenceWeekly::RecurrenceWeekly(std::string s) {
 	}
 	// weekday selection
 	boost::gregorian::greg_weekday weekday(0);
-	while (!ss.eof()) {
+	while (!ss.eof()) { // TODO: should be: while(ss >> weekday) {...}
 		ss >> weekday;
 		if (!ss.fail()) {
+			useWeekdaySelection = true;
 			this->weekdaySelection.insert(weekday);
 		}
 	}
@@ -229,16 +252,35 @@ Date RecurrenceWeekly::next(Date start) {
 	return start; // stub
 }
 
+int RecurrenceWeekly::getPeriod() const { return period; }
+
+RecurrenceWeekly::weekdaySet_t RecurrenceWeekly::getWeekdaySelection() const {
+	return weekdaySelection;
+}
+
+std::string RecurrenceWeekly::getTypeLongName() const {
+	return std::string("Weekly");
+}
+
 std::string RecurrenceWeekly::getTypeId() const { return std::string("W"); }
 
 void RecurrenceWeekly::printOn(std::ostream& o) const {
 	//period
-	o << period << ' ';
+	o << period;
 	// weekday selection
-	join(o, weekdaySelection.begin(), weekdaySelection.end(), " ");
+	if (!weekdaySelection.empty()) {
+		o << ' ';
+		join(o, weekdaySelection.begin(), weekdaySelection.end(), " ");
+	}
 }
 
 // ----- class RecurrenceMonthly --------------------
+
+RecurrenceMonthly::RecurrenceMonthly(int _period)
+:	period(_period), dayOfMonth(1), useDayOfMonth(false) {}
+
+RecurrenceMonthly::RecurrenceMonthly(int _period, boost::gregorian::greg_day _dayOfMonth)
+:	period(_period), dayOfMonth(_dayOfMonth), useDayOfMonth(true) {}
 
 RecurrenceMonthly::RecurrenceMonthly(std::string s)
 : dayOfMonth(1) {
@@ -269,6 +311,22 @@ Date RecurrenceMonthly::next(Date start) {
 	return start; // stub
 }
 
+int RecurrenceMonthly::getPeriod() const {
+	return period;
+}
+
+boost::gregorian::greg_day RecurrenceMonthly::getDayOfMonth() const {
+	return dayOfMonth;
+}
+
+bool RecurrenceMonthly::isDayOfMonthSet() const {
+	return useDayOfMonth;
+}
+
+std::string RecurrenceMonthly::getTypeLongName() const {
+	return std::string("Monthly");
+}
+
 std::string RecurrenceMonthly::getTypeId() const { return std::string("M"); }
 
 void RecurrenceMonthly::printOn(std::ostream& o) const {
@@ -280,8 +338,14 @@ void RecurrenceMonthly::printOn(std::ostream& o) const {
 
 // ----- class RecurrenceYearly --------------------
 
+RecurrenceYearly::RecurrenceYearly()
+:	dayAndMonth(1), useDayAndMonth(false) {}
+
+RecurrenceYearly::RecurrenceYearly(boost::gregorian::partial_date _dayAndMonth)
+:	dayAndMonth(_dayAndMonth), useDayAndMonth(true) {}
+
 RecurrenceYearly::RecurrenceYearly(std::string s)
-: dayAndMonth(1) {
+:	dayAndMonth(1) {
 	using namespace boost::gregorian;
 	std::istringstream ss(s);
 	// day and month of year
@@ -312,15 +376,29 @@ Date RecurrenceYearly::next(Date start) {
 	return Date(nextDate);
 }
 
+boost::gregorian::partial_date RecurrenceYearly::getDayAndMonth() const {
+	return dayAndMonth;
+}
+bool RecurrenceYearly::isDayAndMonthUsed() const {
+	return useDayAndMonth;
+}
+
+std::string RecurrenceYearly::getTypeLongName() const {
+	return std::string("Yearly");
+}
+
 std::string RecurrenceYearly::getTypeId() const { return std::string("Y"); }
 
 void RecurrenceYearly::printOn(std::ostream& o) const {
-	//if (useDayOfMonth) {
+	if (useDayAndMonth) {
 		o << dayAndMonth;
-	//}
+	}
 }
 
 // ----- class RecurrenceIntervalDays --------------------
+
+RecurrenceIntervalDays::RecurrenceIntervalDays(boost::gregorian::date_period datePeriod)
+:	interval(datePeriod) {}
 
 RecurrenceIntervalDays::RecurrenceIntervalDays(std::string s)
 : interval(boost::gregorian::date(), boost::gregorian::days(0)) {
@@ -348,6 +426,13 @@ Date RecurrenceIntervalDays::next(Date start) {
 	}
 }
 
+boost::gregorian::date RecurrenceIntervalDays::getDateStart() const {
+	return interval.begin();
+}
+boost::gregorian::date RecurrenceIntervalDays::getDateEnd() const {
+	return interval.last();
+}
+
 void RecurrenceIntervalDays::printOn(std::ostream& o) const {
 	// TODO: make different settings for facet (is it reasonable?)
 	// - now: 2008-Dec-31
@@ -355,6 +440,10 @@ void RecurrenceIntervalDays::printOn(std::ostream& o) const {
 	
 	// eg.: [2008-Aug-18/2008-Oct-04]
 	o << interval;
+}
+
+std::string RecurrenceIntervalDays::getTypeLongName() const {
+	return std::string("Interval of days");
 }
 
 std::string RecurrenceIntervalDays::getTypeId() const { return std::string("I"); }

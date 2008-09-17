@@ -1,202 +1,14 @@
+// $Id$
+
 #include "stdafx.h"
 #include "getodogui.h"
 
-// ----- class MainWindow --------------------
-
-MainWindow::MainWindow(BaseObjectType* cobject,
-	const Glib::RefPtr<Gnome::Glade::Xml>& refGlade)
-: Gtk::Window(cobject), refXml(refGlade)
-// TODO: initialize all widget pointers to 0
-{
-	Gtk::ToolButton* pTaskNewToolbutton;
-	Gtk::ToolButton* pTaskDeleteToolbutton;
-	Gtk::ToolButton* pTaskUpdateToolbutton;
-	try {
-		// child widgets
-		refXml->get_widget("taskTreeview", pTaskTreeView);
-		refXml->get_widget("tagTreeview", pTagTreeView);
-		
-		refXml->get_widget("taskDescriptionEntry", pTaskDescriptionEntry);
-		refXml->get_widget("taskLongDescriptionTextview", pTaskLongDescriptionTextView);
-		refTaskLongDescriptionTextBuffer = Gtk::TextBuffer::create();
-
-		refXml->get_widget("taskTagsEntry", pTaskTagsEntry);
-		refXml->get_widget("taskDoneCheckbutton", pTaskDoneCheckbutton);
-		refXml->get_widget("taskCompletedPercentageSpinbutton", pTaskCompletedPercentageSpinbutton);
-		refXml->get_widget("taskPrioritySpinbutton", pTaskPrioritySpinbutton);
-		refXml->get_widget("taskRecurrenceEntry", pTaskRecurrenceEntry);
-		refXml->get_widget("taskIdLabel", pTaskIdLabel);
-		refXml->get_widget("taskDateDeadlineEntry", pTaskDateDeadlineEntry);
-		refXml->get_widget("taskDateStartedEntry", pTaskDateStartedEntry);
-		refXml->get_widget("taskDateCompletedEntry", pTaskDateCompletedEntry);
-		refXml->get_widget("taskDateCreatedLabel", pTaskDateCreatedLabel);
-		refXml->get_widget("taskDateLastModifiedLabel", pTaskDateLastModifiedLabel);
-
-		refXml->get_widget("taskNewToolbutton", pTaskNewToolbutton);
-		refXml->get_widget("taskDeleteToolbutton", pTaskDeleteToolbutton);
-		refXml->get_widget("taskUpdateToolbutton", pTaskUpdateToolbutton);
-
-		// signals
-		pTaskNewToolbutton->signal_clicked().connect(
-			sigc::mem_fun(*this, &MainWindow::on_buttonTaskNew_clicked) );
-		pTaskDeleteToolbutton->signal_clicked().connect(
-			sigc::mem_fun(*this, &MainWindow::on_buttonTaskDelete_clicked) );
-		pTaskUpdateToolbutton->signal_clicked().connect(
-			sigc::mem_fun(*this, &MainWindow::on_buttonTaskUpdate_clicked) );
-	} catch (Gnome::Glade::XmlError& e) {
-		std::cerr << e.what() << std::endl;
-		exit(-1);
-	}
-	pTaskTreeView->get_selection()->signal_changed().connect(sigc::mem_fun(*this,
-		&MainWindow::on_taskTreeview_selection_changed) );
-}
-
-MainWindow::~MainWindow() {}
-
-void MainWindow::setTaskManager(getodo::TaskManager* manager) {
-	if (!manager || !pTaskTreeView) { return; } 
-	// set a new model for task TreeView
-	taskManager = manager;
-
-	// ---- task treeview ----
-	refTaskTreeModel = getodo::TaskTreeModel::create(*taskManager);
-	pTaskTreeView->set_model(refTaskTreeModel);
-	
-	// Add TreeView columns when setting a model for the first time.
-	// The model columns don't change, so it's ok to add them only once.
-	if (pTaskTreeView->get_columns().empty()) {
-		//pTaskTreeView->append_column("Id", refTaskTreeModel->columns.id);
-		pTaskTreeView->append_column("Done", refTaskTreeModel->columns.done);
-		pTaskTreeView->append_column("%", refTaskTreeModel->columns.completedPercentage);
-		pTaskTreeView->append_column("!", refTaskTreeModel->columns.priority);
-		pTaskTreeView->append_column("Description", refTaskTreeModel->columns.description);
-		pTaskTreeView->append_column("Deadline", refTaskTreeModel->columns.dateDeadline);
-	}
-	
-	// TODO: Sorting model doesn't work well with my custom models, fix this.
-	//refTaskTreeModelSort = Gtk::TreeModelSort::create(refTaskTreeModel);
-	//refTaskTreeModelSort->set_sort_column(refTaskTreeModel->columns.id, Gtk::SORT_ASCENDING);
-	//pTaskTreeView->set_model(refTaskTreeModelSort);
-
-	// ---- tag treeview ----
-	if (!pTagTreeView) { return; }
-	refTagTreeModel = getodo::TagTreeModel::create(*taskManager);
-
-	pTagTreeView->set_model(refTagTreeModel);
-	if (pTagTreeView->get_columns().empty()) {
-		pTagTreeView->append_column("Id", refTagTreeModel->columns.id); // future: hidden
-		//pTagTreeView->append_column("Active", refTagTreeModel->columns.active);
-		pTagTreeView->append_column("Name", refTagTreeModel->columns.name);
-	}
-	
-	//refTagTreeModelSort = Gtk::TreeModelSort::create(refTagTreeModel);
-	//refTagTreeModelSort->set_sort_column(refTagTreeModel->columns.id, Gtk::SORT_ASCENDING);
-	//pTagTreeView->set_model(refTagTreeModelSort);
-
-	// task long description textview
-	pTaskLongDescriptionTextView->set_buffer(refTaskLongDescriptionTextBuffer);	
-}
-
-void MainWindow::on_taskTreeview_selection_changed() {
-	// display the selected task's contents in the task editing panel
-	using namespace getodo;
-	Gtk::TreeModel::iterator iter = pTaskTreeView->get_selection()->get_selected();
-	if (iter) {
-		TaskNode* node = static_cast<TaskNode*>(iter.gobj()->user_data);
-		if (!node) { return; }
-		Task& task = node->get_item();
-		fillEditingPanel(task);
-	} else {
-		clearEditingPanel();
-	}
-}
-
-void MainWindow::on_buttonTaskNew_clicked() {
-	// create a new task and start editing it
-	using namespace getodo;
-	id_t newTaskId = taskManager->addTask(*(new Task()));
-	fillEditingPanel(*taskManager->getTask(newTaskId));
-	// TODO: select newly created task's row in treeview (?)
-	pTaskDescriptionEntry->grab_focus();
-}
-
-void MainWindow::on_buttonTaskDelete_clicked() {
-	// delete currently selected task
-	Gtk::TreeModel::iterator iter = pTaskTreeView->get_selection()->get_selected();
-	if (iter) {
-		taskManager->deleteTask((*iter)[refTaskTreeModel->columns.id]);
-	}
-}
-
-void MainWindow::on_buttonTaskUpdate_clicked() {
-	// save editing panel contents to currently selected task
-	using namespace getodo;
-	Gtk::TreeModel::iterator iter = pTaskTreeView->get_selection()->get_selected();
-	if (iter) {
-		TaskPersistence tp = taskManager->getPersistentTask(
-			(*iter)[refTaskTreeModel->columns.id]);
-		Task* updatedTask = tp.getTask();
-		if (updatedTask){
-			saveEditingPanelToTask(*updatedTask);
-			tp.save();
-		}
-	}
-}
-
-void MainWindow::fillEditingPanel(getodo::Task& task) {
-	pTaskDescriptionEntry->set_text(task.getDescription());
-	refTaskLongDescriptionTextBuffer->set_text(task.getLongDescription());
-	pTaskTagsEntry->set_text(task.getTagsAsString(*taskManager));
-	pTaskDoneCheckbutton->set_active(task.isDone());
-	pTaskCompletedPercentageSpinbutton->set_value(task.getCompletedPercentage());
-	pTaskPrioritySpinbutton->set_value(task.getPriority());
-	//pTaskRecurrenceEntry->set_text(
-	//	task.getRecurrence().toString()); // without recurrence type id
-	pTaskRecurrenceEntry->set_text(
-		getodo::Recurrence::toString(task.getRecurrence())); // with recurrence type id
-	pTaskIdLabel->set_text(boost::lexical_cast<std::string,int>(task.getTaskId()));
-	pTaskDateDeadlineEntry->set_text(task.getDateDeadline().toString());
-	pTaskDateStartedEntry->set_text(task.getDateStarted().toString());
-	pTaskDateCompletedEntry->set_text(task.getDateCompleted().toString());
-	pTaskDateCreatedLabel->set_text(task.getDateCreated().toString());
-	pTaskDateLastModifiedLabel->set_text(task.getDateLastModified().toString());
-}
-
-void MainWindow::clearEditingPanel() {
-	pTaskDescriptionEntry->set_text("");
-	refTaskLongDescriptionTextBuffer->set_text("");
-	pTaskTagsEntry->set_text("");
-	pTaskDoneCheckbutton->set_active(false);
-	pTaskCompletedPercentageSpinbutton->set_value(0);
-	pTaskPrioritySpinbutton->set_value(0);
-	pTaskRecurrenceEntry->set_text("");
-	pTaskIdLabel->set_text("");
-	pTaskDateDeadlineEntry->set_text("");
-	pTaskDateStartedEntry->set_text("");
-	pTaskDateCompletedEntry->set_text("");
-	pTaskDateCreatedLabel->set_text("");
-	pTaskDateLastModifiedLabel->set_text("");
-}
-
-void MainWindow::saveEditingPanelToTask(getodo::Task& task) {
-	using namespace getodo;
-	task.setDescription(pTaskDescriptionEntry->get_text());
-	task.setLongDescription(refTaskLongDescriptionTextBuffer->get_text());
-	task.setTagsFromString(*taskManager, pTaskTagsEntry->get_text());
-	task.setDone(pTaskDoneCheckbutton->get_active());
-	task.setCompletedPercentage(pTaskCompletedPercentageSpinbutton->get_value_as_int());
-	task.setPriority(pTaskPrioritySpinbutton->get_value_as_int());
-	task.setRecurrence(Recurrence::fromString(
-		pTaskRecurrenceEntry->get_text())); // with recurrence type id
-	task.setDateDeadline(Date(pTaskDateDeadlineEntry->get_text()));
-	task.setDateStarted(Date(pTaskDateStartedEntry->get_text()));
-	task.setDateCompleted(Date(pTaskDateCompletedEntry->get_text()));
-}
-
 // ----- class GeToDoApp --------------------
 
+GeToDoApp* GeToDoApp::instance = 0;
+
 GeToDoApp::GeToDoApp(int argc, char* argv[])
-	: kit(argc, argv), pWindow(0)
+	: kit(argc, argv), pWindow(0), pRecurrenceDialog(0)
 {
 	using namespace getodo;
 	if (argc <= 1) {
@@ -207,8 +19,10 @@ GeToDoApp::GeToDoApp(int argc, char* argv[])
 
 	Glib::RefPtr<Gnome::Glade::Xml> refXml;
 	try {
-		refXml = Gnome::Glade::Xml::create("getodo-mainwindow.glade");
+		refXml = Gnome::Glade::Xml::create("main-window.glade");
 		refXml->get_widget_derived("mainWindow", pWindow);
+		refXml = Gnome::Glade::Xml::create("recurrence-dialog.glade");
+		refXml->get_widget_derived("recurrenceDialog", pRecurrenceDialog);
 	} catch (Gnome::Glade::XmlError& e) {
 		std::cerr << e.what() << std::endl;
 		exit(1);
@@ -217,6 +31,18 @@ GeToDoApp::GeToDoApp(int argc, char* argv[])
 }
 
 GeToDoApp::~GeToDoApp() {
+}
+
+GeToDoApp* GeToDoApp::create(int argc, char* argv[]) {
+	if (instance == 0) {
+		instance = new GeToDoApp(argc, argv);
+	}
+	return instance;
+}
+
+GeToDoApp& GeToDoApp::getSingleton() {
+	// assert(instance);
+	return *instance;
 }
 
 void GeToDoApp::run() {
@@ -229,8 +55,18 @@ void GeToDoApp::run() {
 	}
 }
 
+RecurrenceDialog& GeToDoApp::getRecurrenceDialog() {
+	return *pRecurrenceDialog;
+}
+
 int main(int argc, char* argv[]) {
-	GeToDoApp app(argc, argv);
-	app.run();
+	GeToDoApp *app;
+	try {
+		app = GeToDoApp::create(argc, argv);
+		app->run();
+	} catch(const Glib::Error& ex) {
+		std::cout << ex.what() << std::endl;
+	}
+	delete app;
 	return 0;
 }
