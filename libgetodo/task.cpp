@@ -242,8 +242,8 @@ databaseRow_t Task::toDatabaseRow() const {
 
 	row["taskId"] = boost::lexical_cast<std::string, id_t>(taskId);
 
-	row["description"] = description;
-	row["longDescription"] = longDescription;
+	row["description"] = sqliteEscapeString(description);
+	row["longDescription"] = sqliteEscapeString(longDescription);
 
 	row["dateCreated"] = dateCreated.toString();
 	row["dateLastModified"] = dateLastModified.toString();
@@ -270,8 +270,8 @@ Task* Task::fromDatabaseRow(databaseRow_t row) {
 		task->taskId = -1;
 	}
 	
-	task->description = row["description"];
-	task->longDescription = row["longDescription"];
+	task->description = sqliteUnescapeString(row["description"]);
+	task->longDescription = sqliteUnescapeString(row["longDescription"]);
 	
 	task->dateCreated = DateTime(row["dateCreated"]);
 	task->dateLastModified = DateTime(row["dateLastModified"]);

@@ -3,6 +3,12 @@
 #include "stdafx.h"
 #include "recurrence-dialog.h"
 
+// TODO:
+// * make sensitive only controls for selected recurrence type, make others insensitive
+//   * use setWidgetsInactive() and then handle radio buttons' change signals
+// * set sensitivity for optional controls using checkbuttons
+
+
 // ----- class RecurrenceDialog --------------------
 
 RecurrenceDialog::RecurrenceDialog(BaseObjectType* cobject,
