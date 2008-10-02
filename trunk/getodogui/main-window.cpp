@@ -18,6 +18,7 @@ MainWindow::MainWindow(BaseObjectType* cobject,
 		// child widgets
 		refXml->get_widget("taskTreeview", pTaskTreeView);
 		refXml->get_widget("tagTreeview", pTagTreeView);
+		refXml->get_widget("filterTreeview", pFilterTreeView);
 		
 		refXml->get_widget("taskDescriptionEntry", pTaskDescriptionEntry);
 		refXml->get_widget("taskLongDescriptionTextview", pTaskLongDescriptionTextView);
@@ -100,7 +101,24 @@ void MainWindow::setTaskManager(getodo::TaskManager* manager) {
 	//pTagTreeView->set_model(refTagTreeModelSort);
 
 	// task long description textview
-	pTaskLongDescriptionTextView->set_buffer(refTaskLongDescriptionTextBuffer);	
+	pTaskLongDescriptionTextView->set_buffer(refTaskLongDescriptionTextBuffer);
+
+	// ---- filters treeview ----
+
+	// filter TreeView is now using a dummy ListStore
+	refFilterTreeModel = Gtk::ListStore::create(filterColumns);
+	pFilterTreeView->set_model(refFilterTreeModel);
+	if (pFilterTreeView->get_columns().empty()) {
+		pFilterTreeView->append_column("Id", filterColumns.id);
+		pFilterTreeView->append_column("Name", filterColumns.name);
+		pFilterTreeView->append_column("Rule", filterColumns.rule);
+	}
+
+	// sample data:
+	Gtk::TreeModel::Row row = *(refFilterTreeModel->append());
+	row[filterColumns.id] = 42;
+	row[filterColumns.name] = "dummy filter";
+	row[filterColumns.rule] = "priority > 5";
 }
 
 void MainWindow::on_taskTreeview_selection_changed() {
@@ -139,19 +157,25 @@ void MainWindow::on_buttonTaskDelete_clicked() {
 }
 
 void MainWindow::on_buttonTaskUpdate_clicked() {
-	// save editing panel contents to currently selected task
+	// save editing panel contents
 	if (!taskManager) { return; }
 
 	using namespace getodo;
-	Gtk::TreeModel::iterator iter = pTaskTreeView->get_selection()->get_selected();
-	if (iter) {
-		TaskPersistence tp = taskManager->getPersistentTask(
-			(*iter)[refTaskTreeModel->columns.id]);
-		Task* updatedTask = tp.getTask();
-		if (updatedTask){
-			saveEditingPanelToTask(*updatedTask);
-			tp.save();
-		}
+	id_t taskId;
+	//Gtk::TreeModel::iterator iter = pTaskTreeView->get_selection()->get_selected();
+	//if (iter) {
+	//	taskId = (*iter)[refTaskTreeModel->columns.id];
+	// }
+	try {
+		taskId = boost::lexical_cast<id_t, std::string>(pTaskIdLabel->get_text());
+	} catch (boost::bad_lexical_cast) {
+		return;
+	}
+	TaskPersistence tp = taskManager->getPersistentTask(taskId);
+	Task* updatedTask = tp.getTask();
+	if (updatedTask){
+		saveEditingPanelToTask(*updatedTask);
+		tp.save();
 	}
 }
 

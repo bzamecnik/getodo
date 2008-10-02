@@ -149,6 +149,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\sqlite.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\tag.cpp"
 				>
 			</File>

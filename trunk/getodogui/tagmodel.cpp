@@ -137,7 +137,9 @@ TagModel::Path TagModel::get_path(TagNode& node) const {
 void TagModel::refresh(void) {
 	clear();
 	std::list<Tag*> tagList = manager.getTagsList();
-	for (std::list<Tag*>::iterator it = tagList.begin(); it != tagList.end(); ++it) {
+	// TODO: when sorting will work correctly, use normal iterator here
+	// This is only a hack to sort the list in ascending order (by Id).
+	for (std::list<Tag*>::reverse_iterator it = tagList.rbegin(); it != tagList.rend(); ++it) {
 		insert(**it);
 	}
 }

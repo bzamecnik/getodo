@@ -19,6 +19,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/join.hpp>
+#include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
 
@@ -61,6 +62,9 @@ void join(std::ostream & output,
     }
 }
 
-}
+std::string sqliteEscapeString(const std::string& input);
+std::string sqliteUnescapeString(const std::string& input);
+
+} // namespace getodo
 
 #endif // LIBGETODO_COMMON_H

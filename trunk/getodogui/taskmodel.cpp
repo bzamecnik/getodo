@@ -137,7 +137,9 @@ TaskModel::Path TaskModel::get_path(TaskNode& node) const {
 void TaskModel::refresh(void) {
 	clear();
 	std::list<Task*> taskList = manager.getTasksList();
-	for (std::list<Task*>::iterator it = taskList.begin(); it != taskList.end(); ++it) {
+	// TODO: when sorting will work correctly, use normal iterator here
+	// This is only a hack to sort the list in ascending order (by Id).
+	for (std::list<Task*>::reverse_iterator it = taskList.rbegin(); it != taskList.rend(); ++it) {
 		insert(**it);
 	}
 }

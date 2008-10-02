@@ -48,8 +48,22 @@ protected:
 
 	// filtering panel
 	Gtk::TreeView* pTagTreeView;
+	Gtk::TreeView* pFilterTreeView;
 	Glib::RefPtr<getodo::TagTreeModel> refTagTreeModel;
 	//Glib::RefPtr<Gtk::TreeModelSort> refTagTreeModelSort;
+
+
+	Glib::RefPtr<Gtk::ListStore> refFilterTreeModel;
+	struct FilterModelColumns : public Gtk::TreeModelColumnRecord {
+		Gtk::TreeModelColumn<int> id;
+		Gtk::TreeModelColumn<Glib::ustring> name;
+		Gtk::TreeModelColumn<Glib::ustring> rule;
+
+		FilterModelColumns() {
+			add(id), add(name), add(rule);
+		}
+	};
+	const FilterModelColumns filterColumns;
 
 	// menubar
 

@@ -1,15 +1,15 @@
 ===== GeToDo TODO =====
 
-- **Prepare for pilot version!**
+*- **Prepare for pilot version!**
 	- improve GUI design in Glade
 		- editing panel, menu, toolbar...
 		*- saving the whole editing panel
 		- saving individual items in editing panel
 		*- tag list editing
 		*- recurrence editing dialog
-		- selecting a db file		
-	- bind GUI actions to libgetodo calls  
-	- make an installer from release build
+		- selecting a db file	
+	*- bind GUI actions to libgetodo calls  
+	*- make an installer from release build
 
 - recurrence editing dialog
 	- fix: make sensitive only controls for selected recurrence type,
@@ -47,6 +47,8 @@
 	- write file description into each file's header
 - write the rest of testing code to test the libgetodo
 	- [Duration, ...]
+- use SQL transactions
+- SQL autoincrement - don't repeat what sqlite already set
 
 ==== Think of ====
 
@@ -69,6 +71,14 @@
 	- eg.:
 		- map<id_t, shared_ptr<Tag>> indexed by id_t
 		- map<std::string, map<id_t, shared_ptr<Tag>>::iterator> indexed by tag name
+- database
+	- use autoincrement fields
+	- think of tree structure of tasks
+- use several types of tags
+	- normal tags (used as categories)
+	- status
+	- context (?)
+- better installer
 
 ==== BUGS ====
 
