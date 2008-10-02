@@ -1,0 +1,86 @@
+GeToDo – Správa úkolù a podpora pro plánování
+Specifikace roèníkového projektu 
+
+Kontakt:
+Bohumír Zámeèník <bohumir@zamecnik.org> 
+http://zamecnik.org/projekty/getodo
+http://code.google.com/p/getodo
+
+
+Abstrakt
+
+Projekt GeToDo má za cíl pomoci èlovìku pøi organizaci osobních úkolù. Pøi tom by mìl implementovat nìkteré myšlenky vynikající metodologie Getting Things Done. Nebude ale sloužit jen jako skladištì úkolù, ale hlavnì bude umožòovat rùznì nahlížet na úkoly a vztahy mezi nimi. Díky tagování úkolù a jejich filtrování podle rùzných kritérií bude možno zobrazit relevantní úkoly pro daný kontext nebo situaci. 
+
+
+Datová analýza
+
+Úkol
+Základním objektem pøi analýze dat je úkol. Buï se jedná o kontkrétní vykonatelnou akci, nebo o abstraktnìjší projekt. Umožníme-li hierarchii úkolù, každý úkol, který má nìjaké podøízené úkoly bude navíc projektem. Staèí tedy jeden typ pro úkoly i projekty.
+
+Objekty typu úkol by mìly zhruba obsahovat toto:
+
+	* identifikátor 
+	* popis (náplò úkolu, cíl projektu) 
+	* tagy[] 
+	* podúkoly[] 
+	* priorita – èíslo nebo symbol? 
+	* data – vytvoøeno, poslední zmìna, zaèátek práce, deadline, splnìno 
+	* trvání – odhad, kolik èasu to zabere – øádovì poèet minut, hodin, dní, týdnù, mìsícù, rokù 
+	* opakování – další instanci (kopie) podle data deadline èi splnìní 
+		  o jednou 
+		  o každý týden – dny v týdnu 
+		  o každý mìsíc – den (dny) v mìsíci 
+		  o každý rok – mìsíc, den 
+		  o interval mezi dvìma daty 
+	* podíl splnìní – kolik je už hotovo – 100% = hotovo (èíslo: 0–100) 
+	* poznámka (pøílohy apod.) – text
+
+Mezi jeho metodami by nemìly chybìt metody pro elementární operace s úkoly: vytvoøení, kopie, práce s vlastními tagy a podøazenými úkoly. Mocnìjší funkce pro práci s úkoly bude mít manažer úkolù.
+
+Tag
+Tag, jak ho známe z Webu 2.0. Bude umožòovat i zaøazování do kontextù nebo vyjádøení stavu úkolù. Reprezentován jako textový øetìzec. 
+
+Pohled
+Filtrovací pravidlo, nejspíš v textové reprezentaci, a jeho název. 
+
+Datum
+Konkrétní datum (s pøesností na den, nebo na hodiny a minuty) nebo neurèité (øádovì dané). 
+
+Opakování
+Opakování podle dnù, mìsícù, rokù, podle dnù v týdnu, výètem nebo intervalem dnù. 
+
+Manažer úkolù
+Objekt, který bude sloužit jako kontejner pro sadu úkolù, tagù a pohledù. Bude umožòovat komunikaci s databází, tj. pøevádìt navzájem objektovou a relaèní reprezentaci dat. Bude mimo jiné obsahovat metody pro filtrování dat a poèítání celkové priority úkolù. 
+
+
+Funkèní analýza
+
+Základem bude knihovna pro práci s výše popsanými objekty. Na ni bude pøipojeno GUI, které bude obstarávat pohodlnou práci, zejména vkládání a editaci údajù a jejich filtrování. 
+
+	* jedna otevøená databáze odpovídá jednomu manažeru úkolù 
+	* vykreslení dat do møížek, které bude možno øadit podle rùzných kritérií a pøímo upravovat 
+	* „code completion“ tagù 
+	* doplòování podle existujících tagù 
+	* úkládání filtrovacích pravidel ve formì pohledù 
+	* export èi tisk 
+	* filtrování podle pravidel 
+	* nejlépe logické výrazy nad datovými položkami úkolù, textovì reprezentované 
+	* práce s kolekcí tagù 
+	* stavy úkolù budou reprezentovány pomocí urèitých tagù 
+
+
+Technické zázemí
+
+	* Jazyk: C++ 
+	* Platforma: Win32 
+	* Forma: desktopová aplikace s databází 
+	* Databáze: SQLite 
+	* GUI toolkit: GTK+ 
+
+Další myšlenky
+
+	* tag cloud 
+
+Reference
+
+http://www.davidco.com/what_is_gtd.php – metodologie Getting Things Done Davida Allena

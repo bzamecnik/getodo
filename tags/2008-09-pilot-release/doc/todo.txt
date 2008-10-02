@@ -1,0 +1,109 @@
+===== GeToDo TODO =====
+
+*- **Prepare for pilot version!**
+	- improve GUI design in Glade
+		- editing panel, menu, toolbar...
+		*- saving the whole editing panel
+		- saving individual items in editing panel
+		*- tag list editing
+		*- recurrence editing dialog
+		- selecting a db file	
+	*- bind GUI actions to libgetodo calls  
+	*- make an installer from release build
+
+- recurrence editing dialog
+	- fix: make sensitive only controls for selected recurrence type,
+		make others insensitive
+- Task (database)
+	*- add bool done field (to SQL, field, access methods, serialization)
+	- rename: description -> title, longDescription -> description
+- TaskPersistence, FilterRulePersistence - split save() into insert() and update()
+- use operator= for copying Tasks and Tags
+*- use operator<< and operator>> for I/O of objects like DateTime, Tag, ...
+- write custom TreeModel for FilerRule
+- Recurrence
+	- next() for RecurrenceWeekly, RecurrenceMonthly
+	- use facet for RecurrenceIntervalDays and RecurrenceYearly (?)
+*- DateTime, Date
+	*- discard static toString() and move the code into the non-static toString()
+	*- output special date values as ""
+- delete operator
+	- don't check if the deleted pointer isn't NULL, it's redundant
+	- exception: don't delete what was never allocated (and had been initialized to NULL) 
+- TaskManager
+	- write filtering code
+	- add some new methods (see source code comments)
+	*- getPersistentTask() should not return TaskPersistence by reference but by value
+	- public methods shouldn't return pointers!
+- TreeViews should be sortable (see bugs)
+- use exceptions!
+- avoid duplicating code!!!
+- save sqlite table names somewhere as constants
+- documenation
+	- we need: user docs, programmer's guide
+	- use Doxygen and write better doxygen comments
+	- write a README and INSTALL
+	- write a paper on overall architecture and design notes
+	- write file description into each file's header
+- write the rest of testing code to test the libgetodo
+	- [Duration, ...]
+- use SQL transactions
+- SQL autoincrement - don't repeat what sqlite already set
+
+==== Think of ====
+
+- apply GTD stuff on top of GeToDo facilities
+- TaskPersistence/TaskManager how to use individual property setters?
+	- should persistence set* also call set* in its managed task?
+- Task - think of priority:
+	- explicitly set
+	- computed from other things
+- Duration, FuzzyDate
+- FilterRule - think of format and function
+- think of a common interface to persistent objects (Task, Tag, FilterRule)
+- think whether really use pointers to Task, Tag, ...
+- *Persistence - make a common interface
+- Task - make simple properties public and remove their getters/setters (really?)
+- database triggers for checking date format validity
+- How to embed .glade file into the final .exe file? (Is it really needed?)
+- use shared_ptr in TaskManager for holding pointers to Tasks, Tags, ...
+- use secondary index containers for reverse lookup of maps (Tasks, Tags, ...)
+	- eg.:
+		- map<id_t, shared_ptr<Tag>> indexed by id_t
+		- map<std::string, map<id_t, shared_ptr<Tag>>::iterator> indexed by tag name
+- database
+	- use autoincrement fields
+	- think of tree structure of tasks
+- use several types of tags
+	- normal tags (used as categories)
+	- status
+	- context (?)
+- better installer
+
+==== BUGS ====
+
+- strange crashes in testing module
+	- unhandled exceptions when writing somewhere usually in destructors of
+		a basic_stringstream or so
+	- from revision 44 on
+	- sometime works OK when sqlite3x optimization is /O2 (Maximize Speed)
+		- when optimiztion is disabled it crashes
+	- happens in conjuction of DateTime (stringstream operations) and sqlite3x
+- TreeModelSort doesn't work well with my custom TreeModels
+	- error message: "(getodogui.exe:2596): Gtk-CRITICAL **: gtk_tree_model_sort_build_level: assertion `length > 0' failed"
+	- TaskTreeView is empty
+
+==== Done - kept for reference ====
+
+* use boost::lexical_cast instead of stringstream for simple type conversions
+* run autoreconf --install (only once)
+* set LD_CONFIG_... for running main executable (for .so libraries)
+- write some testing code to test the libgetodo
+	*-	TaskManager
+	* TaskPersistence
+	* Tag, TagPersistence
+	* FilterRule, FilterRulePersistence
+	* Task, TaskPersistence
+	* Date, DateTime
+	* Recurrence, RecurrenceDaily, RecurrenceWeekly, RecurrenceMonthly,
+		RecurrenceYearly, RecurrenceIntervalDays
