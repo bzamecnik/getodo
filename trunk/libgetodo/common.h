@@ -23,6 +23,8 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
 
+/** getodo namespace
+ */
 namespace getodo {
 
 typedef int id_t;

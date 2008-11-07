@@ -45,8 +45,8 @@
 		- Move - 
 			- [Up/Down] - asi ne (protože budeme tøídit a nepamatovat si poøadí) 
 			- Left/Right - posun v hierarchii
-				- Left posune potomka na úroveò jeho rodièe
-				- Right posune sourozence na úroveò potomka
+				- Left posune potomka na úroveò jeho rodièe - CTRL+LEFT
+				- Right posune sourozence na úroveò potomka - CTRL+RIGHT
 	- Sort
 		- øazení taskù podle rùzných kritérií
 		- Disable Sort

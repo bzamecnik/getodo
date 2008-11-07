@@ -22,19 +22,24 @@ namespace getodo {
 
 // ----- class Task --------------------
 
+/** Task.
+ * Representation of a task.
+ */ 
 class Task {
 private:
 	id_t taskId; // -1, if not already in database
+	id_t parentId; // -1, if the task has no parent task
+	// Reverse relationship computed from parentId.
+	// Using sets of id_t here is better than Task& because of possible
+	// cycles in Subtask relation while loading from database.
+	std::set<id_t> subtasks;
+
+	std::set<id_t> tags;
+
 	std::string description;
 	std::string longDescription; // including links, attachments, etc.
 
-	// Using sets of id_t here is better than Task& because of possible
-	// cycles in Subtask relation while loading from database.
-	std::set<id_t> tags;
-	std::set<id_t> subtasks;
-	//id_t parent; // TODO
-
-	// theses dates might be variant in future, let's have it private
+	// these dates might be variant in future, let's have it private
 	DateTime dateCreated;
 	DateTime dateLastModified;
 	Date dateStarted;
@@ -59,6 +64,12 @@ public:
 	id_t getTaskId() const;
 	void setTaskId(id_t taskId);
 
+	id_t getParentId() const;
+	//void setParentId(id_t parentId); // not needed
+	void setParent(Task& newParent);
+	void unsetParent(); // make this task a root level task
+	bool hasParent() const; // false if root
+
 	std::string getDescription() const;
 	void setDescription(const std::string& description);
 
@@ -72,9 +83,14 @@ public:
 	std::string getTagsAsString(TaskManager& manager) const;
 	void setTagsFromString(TaskManager& manager, const std::string& tagsString);
 
+	// update both this task and subtask being operated
+	void addSubtask(Task& subtask);
+	void removeSubtask(Task& subtask);
+	// only update subtasks set. these two should be private!
 	void addSubtask(id_t taskId); //should throw an exception on failure (?)
-	bool hasSubtask(id_t taskId) const;
 	void removeSubtask(id_t taskId); //should throw an exception on failure
+	bool hasSubtask(id_t taskId) const;
+
 	std::list<id_t> getSubtasksList() const;
 
 	DateTime getDateCreated() const;
@@ -158,8 +174,10 @@ public:
 	void addTag(id_t tagId);
 	void removeTag(id_t tagId);
 
-	void addSubtask(id_t taskId);
-	void removeSubtask(id_t taskId);
+	void setParentId(id_t);
+
+	//void addSubtask(id_t taskId); // deprecated
+	//void removeSubtask(id_t taskId); // deprecated
 
 	void setDateCreated(const DateTime& dateCreated);
 	void setDateLastModified(const DateTime& dateLastModified);
