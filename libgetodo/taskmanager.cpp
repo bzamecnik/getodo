@@ -317,7 +317,7 @@ void TaskManager::loadAllFromDatabase() {
         Task* task = Task::fromDatabaseRow(row);
         // what if there's an exception
         tasks[task->getTaskId()] = task;
-        row.clear();
+		row.clear();
     }
     cursor.close();
        
@@ -363,27 +363,22 @@ void TaskManager::loadAllFromDatabase() {
     }
     cursor.close();
        
-    // load Subtask relations
-    cmd.prepare("SELECT * FROM Subtask;");
-    cursor = cmd.executecursor();
-    columnsCount = cursor.colcount();
-    while (cursor.step()) {
-        for (int i = 0; i < columnsCount; i++) {
-            std::string columnData;
-			if (!cursor.isnull(i)) {
-				columnData = cursor.getstring(i);
-			}
-			row[cursor.getcolname(i)] = columnData;
-        }
-        id_t super_taskId = boost::lexical_cast<id_t, std::string>(row["super_taskId"]);
-        id_t sub_taskId = boost::lexical_cast<id_t, std::string>(row["sub_taskId"]);
-        if (hasTask(super_taskId) && hasTask(sub_taskId)) {
-            // at first check if the referenced tasks really exist
-            tasks[super_taskId]->addSubtask(sub_taskId);
-        }
-        row.clear();
-    }
-    cursor.close();
+    // load parent-subtask relations
+	for (std::map<id_t,Task*>::iterator it = tasks.begin();
+		it != tasks.end(); ++it)
+	{
+		if (!it->second) { continue; }
+		cmd.prepare("SELECT taskId FROM Task WHERE parentId = ?;");
+		cmd.bind(1, it->second->getTaskId());
+		cursor = cmd.executecursor();
+		while (cursor.step()) {
+			id_t id = cursor.getint(0);
+			//if (hasTask(id) { // TODO: think of if it is needed to check this
+				it->second->addSubtask(id);
+			//}
+		}
+		cursor.close();
+	}
        
     // load FilterRules
     cmd.prepare("SELECT * FROM FilterRule;");
@@ -411,7 +406,7 @@ bool TaskManager::checkDatabaseStructure() {
     // * this code could be optimized, using a set may be overkill
     // * table names shouldn't be hard-coded
        
-    std::string tables[] = {"Task","Tag","Subtask","Tagged","FilterRule"};
+    std::string tables[] = {"Task","Tag","Tagged","FilterRule"};
     std::set<std::string> tablesNeeded(&tables[0],&tables[5]);
        
     sqlite3_command cmd(*conn,"SELECT name FROM sqlite_master "
@@ -440,6 +435,7 @@ void TaskManager::createEmptyDatabase() {
     cmd.prepare(
         "CREATE TABLE Task ("
         "taskId      INTEGER      NOT NULL,"
+		"parentId      INTEGER,"
         "description      STRING      NOT NULL,"
         "longDescription      STRING,"
         "dateCreated      STRING      NOT NULL,"
@@ -462,17 +458,6 @@ void TaskManager::createEmptyDatabase() {
         "tagId      INTEGER      NOT NULL,"
         "tagName      STRING      NOT NULL,"  // +UNIQUE
         "CONSTRAINT pk_Tag PRIMARY KEY (tagId)"
-        ");"
-    );
-    cmd.executenonquery();
-       
-    cmd.prepare(
-        "CREATE TABLE Subtask ("
-        "sub_taskId      INTEGER      NOT NULL,"
-        "super_taskId      INTEGER      NOT NULL,"
-        "CONSTRAINT pk_Subtask PRIMARY KEY (sub_taskId, super_taskId),"
-        "CONSTRAINT fk_Subtask_Task FOREIGN KEY (sub_taskId, super_taskId) "
-        "REFERENCES Task(taskId,taskId)"
         ");"
     );
     cmd.executenonquery();

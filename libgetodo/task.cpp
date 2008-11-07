@@ -40,12 +40,13 @@ Task::Task() :
 // copy constructor
 Task::Task(const Task& t) :
 	taskId(t.taskId),
+	parentId(t.parentId),
 	description(t.description),
 	longDescription(t.longDescription),
 	tags(t.tags), // TODO: ok?
 	// Don't allow to make circles
 	// * OR: copy the whole subtree
-	// When tasks is copyied to a brand new one, delete subtasks explicitly!
+	// When task is copyied to a brand new one, delete subtasks explicitly!
 	subtasks(t.subtasks),
 	dateCreated(t.dateCreated),
 	dateLastModified(t.dateLastModified),
@@ -78,6 +79,30 @@ Task::~Task() {
 
 id_t Task::getTaskId() const { return taskId; }
 void Task::setTaskId(id_t taskId) { this->taskId = taskId; }
+
+id_t Task::getParentId() const { return parentId; }
+//void Task::setParentId(id_t parentId) { this->parentId = parentId; }
+
+void Task::setParent(Task& newParent) {
+	if ((newParent.parentId != parentId) && (newParent.parentId != taskId)) {
+		unsetParent(); // unset previous parent
+		parentId = newParent.parentId;
+		newParent.addSubtask(*this);
+		// problem: we know this task id after it is persisted!
+	}
+}
+
+void Task::unsetParent() {
+	if (hasParent()) {
+		// we need a reference to parent task!
+		//parent.removeSubtask(*this);
+		parentId = -1;
+	}
+}
+
+bool Task::hasParent() const {
+	return parentId >= 0; // parentId is a valid task id
+}
 
 std::string Task::getDescription() const { return description; }
 void Task::setDescription(const std::string& description) {
@@ -164,12 +189,20 @@ void Task::setTagsFromString(TaskManager& manager, const std::string& tagsString
 	}
 }
 
-void Task::addSubtask(id_t taskId) {
-	//should throw an exception on failure (?)
-	subtasks.insert(taskId);
+void Task::addSubtask(Task& subtask) {
+	subtask.setParent(*this);
 }
-bool Task::hasSubtask(id_t taskId) const {
-	return (subtasks.find(taskId) != subtasks.end());
+void Task::removeSubtask(Task& subtask) {
+	subtask.unsetParent();
+}
+void Task::addSubtask(id_t subtaskId) {
+	//should throw an exception on failure (?)
+	if ((subtaskId >= 0) && (subtaskId != taskId)) { // if it's valid
+		subtasks.insert(subtaskId);
+	}
+}
+bool Task::hasSubtask(id_t subtaskId) const {
+	return (subtasks.find(subtaskId) != subtasks.end());
 }
 void Task::removeSubtask(id_t taskId) {
 	//should throw an exception on failure
@@ -241,6 +274,7 @@ databaseRow_t Task::toDatabaseRow() const {
 	databaseRow_t row;
 
 	row["taskId"] = boost::lexical_cast<std::string, id_t>(taskId);
+	row["parentId"] = boost::lexical_cast<std::string, id_t>(parentId);
 
 	row["description"] = sqliteEscapeString(description);
 	row["longDescription"] = sqliteEscapeString(longDescription);
@@ -268,6 +302,12 @@ Task* Task::fromDatabaseRow(databaseRow_t row) {
 		task->taskId = boost::lexical_cast<id_t, std::string>(row["taskId"]);
 	} catch (boost::bad_lexical_cast&) {
 		task->taskId = -1;
+	}
+
+	try {
+		task->parentId = boost::lexical_cast<id_t, std::string>(row["parentId"]);
+	} catch (boost::bad_lexical_cast&) {
+		task->parentId = -1;
 	}
 	
 	task->description = sqliteUnescapeString(row["description"]);
@@ -315,13 +355,14 @@ std::ostream& operator<< (std::ostream& o, const Task& task) {
 	}
 
 	std::list<id_t> tags = task.getTagsList();
-	std::list<id_t> subtasks = task.getSubtasksList();
 	o << "  tags [";
 	join(o, tags.begin(), tags.end(), ",");
 	o << "]" << std::endl;
-	o << "  subtasks [";
-	join(o, subtasks.begin(), subtasks.end(), ",");
-	o << "]" << std::endl;
+	
+	//std::list<id_t> subtasks = task.getSubtasksList();
+	//o << "  subtasks [";
+	//join(o, subtasks.begin(), subtasks.end(), ",");
+	//o << "]" << std::endl;
 
 	o << "]" << std::endl;
 	return o;
@@ -426,15 +467,6 @@ void TaskPersistence::save() {
 	for (tag = tags.begin(); tag != tags.end(); tag++) {
 		addTag(*tag);
 	}
-	
- 	// save subtasks
-	// TODO: remove unused subtasks
-	
-	std::list<id_t> subtasks = task->getSubtasksList();
-	std::list<id_t>::const_iterator subtask;
-	for (subtask = subtasks.begin(); subtask != subtasks.end(); subtask++) {
-		addSubtask(*subtask);
-	}
 }
 
 Task* TaskPersistence::load(id_t taskId) {
@@ -479,8 +511,7 @@ Task* TaskPersistence::load(id_t taskId) {
 	cursor.close();
 	
 	// Load its subtasks
-	
-	cmd.prepare("SELECT sub_taskId FROM Subtask WHERE super_taskId = ?;");
+	cmd.prepare("SELECT taskId FROM Task WHERE parentId = ?;");
 	cmd.bind(1, taskId);
 	cursor = cmd.executecursor();
 	while (cursor.step()) {
@@ -501,12 +532,18 @@ void TaskPersistence::erase() {
 	cmd.bind(1, task->getTaskId());
 	cmd.executenonquery();
 	
-	// TODO: what about subtasks?
-	// * delete them too?
-	// * make them level 1 tasks?
+	// TODO: Think out of what about subtasks?
+	// - delete them too?
+	// - make them level 1 tasks?
+	// * connect them one level up? (for now)
 
-	cmd.prepare("DELETE FROM Subtask WHERE super_taskId = ?;");
-	cmd.bind(1, task->getTaskId());
+	cmd.prepare("UPDATE Task SET parentId = ? WHERE parentId = ?;");
+	if (task->getParentId() >= 0) {
+		cmd.bind(1, task->getParentId());
+	} else {
+		cmd.bind(1); // bind NULL (instead of -1 or so) - make it a root level task
+	}
+	cmd.bind(2, task->getTaskId());
 	cmd.executenonquery();
 	
 	cmd.prepare("DELETE FROM Task WHERE taskId = ?;");
@@ -553,7 +590,7 @@ void TaskPersistence::addTag(id_t tagId) {
 }
 
 void TaskPersistence::removeTag(id_t tagId) {
-	if(!conn || !task) { return; } //TODO: throw
+	if (!conn || !task) { return; } //TODO: throw
 	// check if the task and the tag exist in the database
 	sqlite3_command cmd(*conn);
 	cmd.prepare("DELETE FROM Tagged WHERE (taskId = ? AND tagId = ?);");
@@ -563,31 +600,43 @@ void TaskPersistence::removeTag(id_t tagId) {
 	task->removeTag(tagId);
 }
 
-void TaskPersistence::addSubtask(id_t taskId) {
-	if(!conn || !task) { return; } //TODO: throw
+void TaskPersistence::setParentId(id_t parentId) {
+	if (!conn || !task) { return; } //TODO: throw
 	sqlite3_command cmd(*conn);
-	cmd.prepare("SELECT count(*) FROM Subtask WHERE (sub_taskId = ? AND super_taskId = ?);");
-	cmd.bind(1, taskId);
-	cmd.bind(2, task-> getTaskId());
-	int count = cmd.executeint();
-	if (count <= 0) {
-		cmd.prepare("INSERT INTO Subtask (sub_taskId, super_taskId) VALUES (?,?);");
-		cmd.bind(1, taskId);
-		cmd.bind(2, task-> getTaskId());
-		cmd.executenonquery();
-	}
-	task->addSubtask(taskId);
+	cmd.prepare("UPDATE Task SET parentId = ? WHERE taskId = ?;");
+	cmd.bind(1, parentId);
+	cmd.bind(2, task->getTaskId());
+	// TODO: task->setParent() - we don't have reference to the new parent
 }
 
-void TaskPersistence::removeSubtask(id_t taskId) {
-	if(!conn || !task) { return; } //TODO: throw
-	sqlite3_command cmd(*conn);
-	cmd.prepare("DELETE FROM Subtask WHERE (sub_taskId = ? AND super_taskId = ?);");
-	cmd.bind(1, taskId);
-	cmd.bind(2, task-> getTaskId());
-	cmd.executenonquery();
-	task->removeSubtask(taskId);
-}
+//// deprecated
+//void TaskPersistence::addSubtask(id_t taskId) {
+//	// TODO: this method wouldn't be needed
+//	// create setParent method instead
+//	if (!conn || !task) { return; } //TODO: throw
+//	sqlite3_command cmd(*conn);
+//	cmd.prepare("SELECT count(*) FROM Subtask WHERE (sub_taskId = ? AND super_taskId = ?);");
+//	cmd.bind(1, taskId);
+//	cmd.bind(2, task-> getTaskId());
+//	int count = cmd.executeint();
+//	if (count <= 0) {
+//		cmd.prepare("INSERT INTO Subtask (sub_taskId, super_taskId) VALUES (?,?);");
+//		cmd.bind(1, taskId);
+//		cmd.bind(2, task-> getTaskId());
+//		cmd.executenonquery();
+//	}
+//	task->addSubtask(taskId);
+//}
+//
+//void TaskPersistence::removeSubtask(id_t taskId) {
+//	if(!conn || !task) { return; } //TODO: throw
+//	sqlite3_command cmd(*conn);
+//	cmd.prepare("DELETE FROM Subtask WHERE (sub_taskId = ? AND super_taskId = ?);");
+//	cmd.bind(1, taskId);
+//	cmd.bind(2, task-> getTaskId());
+//	cmd.executenonquery();
+//	task->removeSubtask(taskId);
+//}
 
 void TaskPersistence::setDateCreated(const DateTime& dateCreated) {
 	if (!task) { return; }
