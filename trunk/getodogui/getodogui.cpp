@@ -66,6 +66,8 @@ int main(int argc, char* argv[]) {
 		app->run();
 	} catch(const Glib::Error& ex) {
 		std::cout << ex.what() << std::endl;
+	} catch(const sqlite3x::database_error& ex) {
+		std::cout << ex.what() << std::endl;
 	}
 	delete app;
 	return 0;

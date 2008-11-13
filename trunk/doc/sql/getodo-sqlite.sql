@@ -11,7 +11,7 @@
 
 CREATE TABLE Task (
 taskId      INTEGER      NOT NULL,
-parentId      INTEGER,
+parentId      INTEGER DEFAULT '-1' NOT NULL,
 description      STRING      NOT NULL,
 longDescription      STRING,
 dateCreated      STRING      NOT NULL,
@@ -23,6 +23,7 @@ estDuration      STRING,
 recurrence      STRING,
 priority      STRING      NOT NULL,
 completedPercentage      INTEGER      DEFAULT '0'  NOT NULL,
+done      STRING      DEFAULT '0'  NOT NULL,
 CONSTRAINT pk_Task PRIMARY KEY (taskId));
 
 CREATE TABLE Tag (

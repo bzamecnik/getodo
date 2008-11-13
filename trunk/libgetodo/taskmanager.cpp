@@ -405,9 +405,11 @@ bool TaskManager::checkDatabaseStructure() {
     // TODO
     // * this code could be optimized, using a set may be overkill
     // * table names shouldn't be hard-coded
-       
+
+	// ATTENTION: when changing number of tables, change
+	// the upper limit in tablesNeeded!
     std::string tables[] = {"Task","Tag","Tagged","FilterRule"};
-    std::set<std::string> tablesNeeded(&tables[0],&tables[5]);
+    std::set<std::string> tablesNeeded(&tables[0],&tables[4]);
        
     sqlite3_command cmd(*conn,"SELECT name FROM sqlite_master "
         "WHERE type='table' ORDER BY name;");
@@ -435,7 +437,7 @@ void TaskManager::createEmptyDatabase() {
     cmd.prepare(
         "CREATE TABLE Task ("
         "taskId      INTEGER      NOT NULL,"
-		"parentId      INTEGER,"
+		"parentId      INTEGER DEFAULT '-1' NOT NULL,"
         "description      STRING      NOT NULL,"
         "longDescription      STRING,"
         "dateCreated      STRING      NOT NULL,"
