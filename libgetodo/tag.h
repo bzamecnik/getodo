@@ -21,6 +21,8 @@ using namespace sqlite3x;
 
 namespace getodo {
 
+/** %Tag.
+ */
 class Tag {
 public:
 	id_t id; // -1, if not already in database
@@ -36,6 +38,9 @@ public:
 	friend std::ostream& operator<< (std::ostream& o, const Tag& tag);
 };
 
+/** %Tag persistence.
+ * Object-relation mapping of Tag objects.
+ */
 class TagPersistence {
 	sqlite3_connection* conn;
 public:
