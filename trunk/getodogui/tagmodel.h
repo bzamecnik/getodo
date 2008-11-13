@@ -40,6 +40,9 @@ namespace getodo {
 class TagNode;
 typedef std::vector<TagNode*> TagNodeVector;
 
+/** %Tag node.
+ * A wrapper for Tag objects in TagModel.
+ */
 class TagNode
 {
 public:
@@ -61,13 +64,14 @@ private:
 	Tag& tag;
 };
 
+/** %Tag model.
+ * TagModel acts as a wrapper over TagManager that holds its tree structure.
+ * It proxies signals from TagManager to TagTreeModel.
+ * - for now TagModel has a flat structure
+ * - TODO: make it have a tree structure
+ * - maybe merge TagModel and TagTreeModel
+*/
 class TagModel : public sigc::trackable {
-// TagModel acts as a wrapper over TagManager that holds its tree structure.
-// It proxies signals from TagManager to TagTreeModel.
-
-// * for now TagModel has a flat structure
-//   * TODO: make it have a tree structure
-// * maybe merge TagModel and TagTreeModel
 public:
     typedef std::deque<int> Path;
 	typedef std::map<id_t, TagNode*> TagNodeMap;
@@ -104,8 +108,11 @@ private:
 	void on_tag_removed(Tag&);
 };
 
+/** %Tag TreeModel.
+ * A custom Gtk::TreeModel implementation for using TagManager from TreeView.
+ */
 class TagTreeModel : public Glib::Object, public Gtk::TreeModel {
-// Custom Gtk::TreeModel implementation for using TagManager from TreeView.
+// 
 public:
 	struct ModelColumns : public Gtk::TreeModelColumnRecord {
 		Gtk::TreeModelColumn<int> id;
@@ -163,6 +170,8 @@ private:
     void on_treemodel_removed(TagNode& node, TagModel::Path& path);
 }; // class TagTreeModel
 
+/** TagTreeModel class for GTK+.
+ */
 class TagTreeModel_Class : public Glib::Class
 {
 public:

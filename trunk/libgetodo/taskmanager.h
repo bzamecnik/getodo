@@ -25,6 +25,9 @@ namespace getodo {
 
 using namespace sqlite3x;
 
+/** %Task manager.
+ * Storage and manipulation of tasks, tags and filter rules.
+ */
 class TaskManager : public sigc::trackable {
 private:
     std::map<id_t,Task*> tasks;

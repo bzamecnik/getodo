@@ -10,6 +10,8 @@
 
 // ----- class MainWindow --------------------
 
+/** GeToDo main window.
+ */
 class MainWindow : public Gtk::Window
 {
 public:

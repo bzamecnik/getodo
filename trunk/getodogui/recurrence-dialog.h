@@ -10,6 +10,8 @@
 
 // this dialog have to return a Recurrence
 
+/** Recurrence editing dialog.
+ */
 class RecurrenceDialog : public Gtk::Dialog
 {
 public:

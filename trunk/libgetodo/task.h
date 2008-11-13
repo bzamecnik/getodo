@@ -22,7 +22,7 @@ namespace getodo {
 
 // ----- class Task --------------------
 
-/** Task.
+/** %Task.
  * Representation of a task.
  */ 
 class Task {
@@ -141,6 +141,9 @@ private:
 
 // ----- class TaskPersistence --------------------
 
+/** %Task persistence.
+ * Object-relation mapping of Task objects.
+ */
 class TaskPersistence {
 private:
 	sqlite3x::sqlite3_connection* conn;

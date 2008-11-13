@@ -18,6 +18,8 @@ class RecurrenceDialog;
 
 // ----- class GeToDoApp --------------------
 
+/** GeToDo application.
+ */
 class GeToDoApp
 {
 // a singleton

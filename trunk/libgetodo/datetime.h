@@ -27,6 +27,9 @@ namespace getodo {
 //	* Make AbstractDate a common ancestor to Date and DateTime?
 //  * How to cope with not_a_date_time invalid dates from bad input strings?
 
+/** %Date and time.
+ * Representaion of date and time.
+ */
 class DateTime {
 public:
 	boost::posix_time::ptime date;
@@ -47,6 +50,9 @@ private:
 	static std::string format;
 };
 
+/** %Date.
+ * Representaion of date.
+ */
 class Date {
 public:
 	boost::gregorian::date date;
@@ -75,6 +81,10 @@ private:
 	*/
 //}
 
+/** %Recurrence.
+ * Representation of repeating date events.
+ * Abstract base for various recurrence types.
+ */
 class Recurrence {
 	// Recurrence types:
 	//   * once - no recurrence - default
@@ -107,6 +117,9 @@ protected:
 	virtual void printOn(std::ostream& o) const = 0;
 };
 
+/** One time recurrence.
+ * Recurrence with no repeating.
+ */
 class RecurrenceOnce : public Recurrence {
 public:
 	RecurrenceOnce();
@@ -120,6 +133,9 @@ protected:
 	virtual void printOn(std::ostream& o) const; // eg. ""
 };
 
+/** Daily recurrence.
+ * Occurs every n-th day.
+ */
 class RecurrenceDaily : public Recurrence {
 private:
 	int period;
@@ -139,6 +155,10 @@ protected:
 	virtual void printOn(std::ostream& o) const; // eg. "2"
 };
 
+/** Weelky recurrence.
+ * Occurs every week. Two modes can be used: every week after specified date
+ * or using a selection of weekdays.
+ */
 class RecurrenceWeekly : public Recurrence {
 public:
 	typedef std::set<boost::gregorian::greg_weekday> weekdaySet_t;
@@ -167,6 +187,10 @@ protected:
 	virtual void printOn(std::ostream& o) const; // eg. "1 Mon Tue"
 };
 
+/** Monthly recurrence.
+ * Occurs every month. Two modes can be used: every month after specified date
+ * or on given day of month.
+ */
 class RecurrenceMonthly : public Recurrence {
 private:
 	int period;
@@ -194,6 +218,10 @@ protected:
 	virtual void printOn(std::ostream& o) const; // eg. "3 14"
 };
 
+/** Yearly recurrence.
+ * Occurs every year. Two modes can be used: every year after specified date
+ * or on given day and month of year.
+ */
 class RecurrenceYearly : public Recurrence {
 private:
 	boost::gregorian::partial_date dayAndMonth;
@@ -219,6 +247,9 @@ protected:
 	virtual void printOn(std::ostream& o) const; // eg. "25 Dec"
 };
 
+/** %Recurrence on interval of days.
+ * Occurs every day between two dates.
+ */
 class RecurrenceIntervalDays : public Recurrence {
 private:
 	boost::gregorian::date_period interval;
@@ -242,6 +273,10 @@ protected:
 	virtual void printOn(std::ostream& o) const;
 };
 
+/** %Duration.
+ * Representation of a time interval with given magnitude.
+ * Not implemented yet.
+ */
 class Duration {
 	/* TODO
 	Duration should express:

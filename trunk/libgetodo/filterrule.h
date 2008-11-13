@@ -20,6 +20,9 @@ using namespace sqlite3x;
 
 namespace getodo {
 
+/** Filter rule.
+ * Rule for filtering tasks.
+ */
 class FilterRule {
 public:
 	id_t id; // -1, if not already in database
@@ -36,6 +39,9 @@ public:
 	friend std::ostream& operator<< (std::ostream& o, const FilterRule& rule);
 };
 
+/** Filter rule persistence.
+ * Object-relation mapping of filter rules.
+ */
 class FilterRulePersistence {
 private:
 	sqlite3_connection* conn;

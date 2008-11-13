@@ -16,6 +16,9 @@ namespace getodo {
 class TaskNode;
 typedef std::vector<TaskNode*> TaskNodeVector;
 
+/** %Task node.
+ * A wrapper for Task objects in TaskModel.
+ */
 class TaskNode
 {
 public:
@@ -37,13 +40,14 @@ private:
 	Task& task;
 };
 
+/** %Task model.
+ * TaskModel acts as a wrapper over TaskManager that holds its tree structure.
+ * It proxies signals from TaskManager to TaskTreeModel.
+ * - for now TaskModel has a flat structure
+ * - TODO: make it have a tree structure
+ * - maybe merge TaskModel and TaskTreeModel
+ */
 class TaskModel : public sigc::trackable {
-// TaskModel acts as a wrapper over TaskManager that holds its tree structure.
-// It proxies signals from TaskManager to TaskTreeModel.
-
-// * for now TaskModel has a flat structure
-//   * TODO: make it have a tree structure
-// * maybe merge TaskModel and TaskTreeModel
 public:
     typedef std::deque<int> Path;
 	typedef std::map<id_t, TaskNode*> TaskNodeMap;
@@ -80,8 +84,10 @@ private:
 	void on_task_removed(Task& task);
 };
 
+/** %Task TreeModel.
+ * A custom Gtk::TreeModel implementation for using TaskManager from TreeView.
+ */
 class TaskTreeModel : public Glib::Object, public Gtk::TreeModel {
-// Custom Gtk::TreeModel implementation for using TaskManager from TreeView.
 public:
 	struct ModelColumns : public Gtk::TreeModelColumnRecord {
 		Gtk::TreeModelColumn<int> id;
@@ -161,6 +167,8 @@ private:
     void on_treemodel_removed(TaskNode& node, TaskModel::Path& path);
 }; // class TaskTreeModel
 
+/** TaskTreeModel class for GTK+.
+ */
 class TaskTreeModel_Class : public Glib::Class
 {
 public:
