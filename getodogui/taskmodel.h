@@ -14,7 +14,7 @@
 namespace getodo {
 
 class TaskNode;
-typedef std::vector<TaskNode*> TaskNodeVector;
+typedef std::vector<TaskNode*> TaskNodeVector; // TODO: use shared_ptr!
 
 /** %Task node.
  * A wrapper for Task objects in TaskModel.
@@ -31,11 +31,12 @@ public:
     }
 	TaskNodeVector& get_children(void) { return children; }
 	TaskNode* get_parent(void) { return parent; }
+	void set_parent(TaskNode& _parent) { parent = &_parent; } // TODO: is it safe?
     Task& get_item(void) { return task; }
     const Task& get_item(void) const { return task; }
 protected:
     TaskNodeVector children;
-    TaskNode* parent;
+    TaskNode* parent; // TODO: use shared_ptr!
 private:
 	Task& task;
 };
@@ -43,14 +44,12 @@ private:
 /** %Task model.
  * TaskModel acts as a wrapper over TaskManager that holds its tree structure.
  * It proxies signals from TaskManager to TaskTreeModel.
- * - for now TaskModel has a flat structure
- * - TODO: make it have a tree structure
- * - maybe merge TaskModel and TaskTreeModel
+ * Maybe merge TaskModel and TaskTreeModel.
  */
 class TaskModel : public sigc::trackable {
 public:
     typedef std::deque<int> Path;
-	typedef std::map<id_t, TaskNode*> TaskNodeMap;
+	typedef std::map<id_t, TaskNode*> TaskNodeMap; // TODO: use shared_ptr!
 
     struct InvalidNode { }; // an exception
     struct InvalidPath { }; // an exception
@@ -72,7 +71,7 @@ public:
     sigc::signal2<void, TaskNode&, Path&> signal_node_removed;
 private:
 	TaskManager& manager;
-	TaskNodeVector taskNodes; // children of root
+	TaskNodeVector topLevelNodes; // children of root
 	TaskNodeMap taskNodeMap;
 
 	void remove(Task& task);
@@ -158,8 +157,6 @@ private:
 
 	void refresh();
     void clearIter(GtkTreeIter* iter) const;
-	inline void TaskTreeModel::convert_path_taskmodel_treemodel(const TaskModel::Path& mpath, TreeModel::Path& tpath) const;
-	inline void TaskTreeModel::convert_path_treemodel_taskmodel(const TreeModel::Path& tpath, TaskModel::Path& mpath) const;
 
 	// called from underlying TaskModel
 	void on_treemodel_inserted(TaskNode& node, TaskModel::Path& path);
