@@ -69,7 +69,7 @@ public:
     Tag& getTag(std::string tagName);
     Tag& editTag(id_t tagId, const Tag& tag);
     void deleteTag(id_t tagId); //should throw an exception on failure
-    std::list<Task*> getTasksList();
+    std::list<Task*> getTasksList(); // better use std::vector
 
     // ----- FilterRule operations -----
 

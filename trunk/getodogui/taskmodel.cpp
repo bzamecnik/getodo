@@ -15,65 +15,6 @@ TaskNode::~TaskNode() {
 	}
 }
 
-//// ----- class TaskManager --------------------
-//
-//TaskManager::TaskManager() {}
-//TaskManager::~TaskManager() {
-//	for(tasks_t::iterator it = tasks.begin(); it != tasks.end(); ++it) {
-//		if(it->second) {
-//			delete it->second;
-//			it->second = 0;
-//		}
-//	}
-//}
-//void TaskManager::insertTask(Task* task) {
-//	using namespace std;
-//	if (task) {
-//		pair<tasks_t::iterator, bool> result = tasks.insert(make_pair(task->id, task));
-//		if (result.second) {
-//			signal_task_inserted(*task);
-//		}
-//	}
-//}
-//bool TaskManager::hasTask(id_t taskId) {
-//	return tasks.find(taskId) != tasks.end();
-//}
-//Task* TaskManager::getTask(id_t taskId) {
-//	tasks_t::iterator foundTask = tasks.find(taskId);
-//	if (foundTask != tasks.end()) {
-//		return foundTask->second;
-//	} else {
-//		return 0;
-//	}
-//}
-//void TaskManager::updateTask(Task* task) {
-//	if (!task) { return; }
-//	tasks_t::iterator updatedTask = tasks.find(task->id);
-//	if (updatedTask != tasks.end()) {
-//		tasks[task->id]->name = task->name;
-//		signal_task_updated(*task);
-//	} else {
-//		insertTask(task);
-//	}
-//	
-//}
-//void TaskManager::removeTask(id_t taskId) {
-//	tasks_t::iterator taskToRemove = tasks.find(taskId);
-//	if(taskToRemove != tasks.end()) {
-//		signal_task_removed(*(taskToRemove->second));
-//		delete taskToRemove->second;
-//		tasks.erase(taskToRemove);
-//	}
-//}
-//
-//std::list<Task*> TaskManager::getTasksList() {
-//	std::list<Task*> taskList;
-//	for (tasks_t::iterator it = tasks.begin(); it != tasks.end(); ++it) {
-//		taskList.push_back(it->second);
-//	}
-//	return taskList;
-//}
-
 // ----- class TaskModel --------------------
 
 TaskModel::TaskModel(TaskManager& _manager)
@@ -93,44 +34,87 @@ TaskModel::~TaskModel() {
 	}
 }
 
-TaskNodeVector& TaskModel::get_tasks(void) const {
-	return const_cast<TaskNodeVector&>(taskNodes);
+std::ostream& operator<<(std::ostream& os, TaskModel::Path& path) {
+	for (TaskModel::Path::iterator it = path.begin(); it != path.end(); ++it) {
+		os << (*it);
+		if ((it+1) != path.end()) {
+			os << ':';
+		}
+	}
+	return os;
 }
 
+TaskNodeVector& TaskModel::get_tasks(void) const {
+	return const_cast<TaskNodeVector&>(topLevelNodes);
+}
+
+/** Get next node.
+ * Next node on the same level as \a node.
+ */
 TaskNode& TaskModel::get_next_node(TaskNode& node) const {
-	TaskNodeVector::const_iterator it = std::find(taskNodes.begin(), taskNodes.end(), &node);
-	if (it == taskNodes.end() || (it+1) == taskNodes.end())
+	// Used by: iter_next_vfunc()
+	TaskNode* parent = node.get_parent();
+	const TaskNodeVector& children(parent != 0 ? parent->get_children() : topLevelNodes);
+	TaskNodeVector::const_iterator it = std::find(children.begin(), children.end(), &node);
+	if (it == children.end() || (it+1) == children.end())
         throw InvalidNode();
     return **(++it);
 }
 
+/** Get node by path.
+ * Traverse the tree of nodes. At each level move to a position
+ * for that level which is specified in the path.
+ */
 TaskNode& TaskModel::get_node(Path& path) const {
-	// this is for lists only
-	// TODO: remake for trees
-	if (path.size() < 1) {
-		throw InvalidPath();
-	}
+	const TaskNodeVector* nodes = &topLevelNodes;
+	TaskNode* node = 0;
 	
-	TaskNodeVector::const_iterator it = taskNodes.begin();
-	std::advance(it, path[0]);
-	if (it == taskNodes.end()) {
-		throw InvalidPath();
+	for (Path::const_iterator it = path.begin(); it != path.end(); ++it) {
+		if ((nodes == 0) || ((size_t)(*it + 1) > nodes->size())) {
+			throw InvalidPath();
+		}
+		TaskNodeVector::const_iterator nodesIt = nodes->begin();
+		// skip as many nodes as current path element says
+		std::advance(nodesIt, *it);
+		if ((nodesIt == nodes->end()) || (*nodesIt == 0)) {
+			throw InvalidPath();
+		}
+		node = *nodesIt;
+		nodes = &(node->get_children());
 	}
-	TaskNode* node = *it;
 	if (!node) {
 		throw InvalidPath();
 	}
 	return *node;
 }
 
+/** Get path by node.
+ */
 TaskModel::Path TaskModel::get_path(TaskNode& node) const {
-	// TODO: remake for trees
-	Path path(1);
-	path[0] = (int)std::distance(taskNodes.begin(),
-		std::find(taskNodes.begin(), taskNodes.end(), &node));
-	//if (path[0] > 0) {
-	//	--path[0];
-	//}
+	Path path;
+	TaskNode* currentNode = &node;
+	TaskNode* parent = node.get_parent();
+
+	// traverse upwards in the tree
+	while (parent != 0) {
+		// find the ordinal number of current node on current level
+		TaskNodeVector& nodes(parent->get_children());
+		TaskNodeVector::iterator it = std::find(nodes.begin(),
+			nodes.end(), currentNode);
+		if (it == nodes.end()) {
+			throw InvalidNode();
+		}
+		path.push_front((int)std::distance(nodes.begin(), it));
+		currentNode = parent;
+		parent = currentNode->get_parent();
+	}
+	// find the ordinal number of current node on top level
+	TaskNodeVector::const_iterator it = std::find(topLevelNodes.begin(),
+		topLevelNodes.end(), currentNode);
+	if (it == topLevelNodes.end()) {
+		throw InvalidNode();
+	}
+	path.push_front((int)std::distance(topLevelNodes.begin(), it));
 	return path;
 }
 
@@ -151,33 +135,48 @@ void TaskModel::clear(void) {
 		TaskNode* node = it->second;
 		signal_node_removed(*node, get_path(*node));
 		delete node;
+		node = 0;
 	}
 	taskNodeMap.clear();
-	taskNodes.clear();
+	topLevelNodes.clear();
 }
 
 void TaskModel::remove(Task& task) {
+	// TODO: remake for tree structure
 	TaskNodeMap::iterator mapIt = taskNodeMap.find(task.getTaskId());
 	if (mapIt == taskNodeMap.end()) { return; }
 	
 	TaskNode* node = mapIt->second;
-	TaskNodeVector::iterator taskNodeIt = std::find(taskNodes.begin(), taskNodes.end(), node);
+	TaskNodeVector::iterator taskNodeIt = std::find(topLevelNodes.begin(), topLevelNodes.end(), node);
 	
 	signal_node_removed(*node, get_path(*node));
-	taskNodes.erase(taskNodeIt);
+	topLevelNodes.erase(taskNodeIt);
 	taskNodeMap.erase(mapIt);
 }
 
 void TaskModel::insert(Task& task) {
+	// If the task has a parent, find it and insert the new task
+	// as parent's child. Otherwise add it to topLevelNodes.
 	TaskNode* newNode = new TaskNode(task);
-	taskNodes.push_back(newNode);
+	TaskNodeMap::iterator parentIt = taskNodeMap.find(task.getParentId());
+	TaskNodeVector* parentChildren = 0;
+	Path newPath;
 	std::pair<TaskNodeMap::iterator,bool> result = taskNodeMap.insert(std::make_pair(task.getTaskId(), newNode));
-	if (result.second) {
-		Path newPath(1);
-		newPath[0] = (int)std::distance(taskNodes.begin(),
-			std::find(taskNodes.begin(), taskNodes.end(), newNode));
-		signal_node_inserted(*newNode, newPath);
+	if (!result.second) {
+		return;
 	}
+	if ((parentIt != taskNodeMap.end()) && (parentIt->second != 0)) {
+		newNode->set_parent(*parentIt->second);
+		TaskNodeVector& parentChildren = parentIt->second->get_children();
+		parentChildren.push_back(newNode);
+		newPath = get_path(*parentChildren.back());
+	} else {
+		topLevelNodes.push_back(newNode);
+		newPath.push_back((int)std::distance(topLevelNodes.begin(),
+		std::find(topLevelNodes.begin(), topLevelNodes.end(), newNode)));
+	}
+	std::cerr << "TaskModel::insert: " << newNode->get_item().getTaskId() << " at " << newPath << std::endl;
+	signal_node_inserted(*newNode, newPath);
 }
 
 void TaskModel::on_task_inserted(Task& task) {
@@ -245,7 +244,7 @@ void TaskTreeModel::set_value_impl(const iterator& row, int column, const Glib::
 
 Gtk::TreeModelFlags TaskTreeModel::get_flags_vfunc() const {
 	using namespace Gtk;
-	return TreeModelFlags() & TREE_MODEL_LIST_ONLY;
+	return TreeModelFlags();// & TREE_MODEL_LIST_ONLY;
 }
 
 int TaskTreeModel::get_n_columns_vfunc() const {
@@ -286,17 +285,16 @@ bool TaskTreeModel::iter_next_vfunc(const iterator& iter, iterator& iter_next) c
 bool TaskTreeModel::iter_children_vfunc(const iterator& parent, iterator& iter) const {
 	// the first child of root
 	GtkTreeIter* gtk_iter = iter.gobj();
+	clearIter(gtk_iter);
 	if (!parent->gobj()) {
 		iter.set_stamp(stamp);
-		clearIter(gtk_iter);
         gtk_iter->user_data = model.get_tasks().front();
         return true;
     }
-
 	const GtkTreeIter* gtk_parent_iter = parent.gobj();
+
 	// invalid parent
     if (!gtk_parent_iter->user_data) {
-        clearIter(gtk_iter);
         return false;
     }
 
@@ -306,13 +304,11 @@ bool TaskTreeModel::iter_children_vfunc(const iterator& parent, iterator& iter) 
 
 	// no children
     if (children.empty()) {
-        clearIter(gtk_iter);
         return false;
     }
 
 	// first child
-    iter.set_stamp(stamp);
-	clearIter(gtk_iter);
+	iter.set_stamp(stamp);
     gtk_iter->user_data = children.front();
     return true;
 }
@@ -342,7 +338,9 @@ bool TaskTreeModel::iter_nth_child_vfunc(const iterator& parent, int n, iterator
 
 	GtkTreeIter* gtk_iter = iter.gobj();
 	clearIter(gtk_iter);
-    if ((int)nodes.size() < n) { return false; }
+    if ((int)nodes.size() < n) {
+		return false;
+	}
 
     TaskNodeVector::iterator it = nodes.begin();
     std::advance(it, n);
@@ -352,8 +350,17 @@ bool TaskTreeModel::iter_nth_child_vfunc(const iterator& parent, int n, iterator
     return true;
 }
 
+/** 
+ * Sets @a iter to be the parent of @a child. If @a child is at the toplevel, and
+ * doesn't have a parent, then @a iter is set to an invalid iterator and false
+ * is returned.
+ *
+ * @param child An iterator.
+ * @param iter An iterator that will be set to refer to the parent node, or will be set as invalid.
+ * @result true if the operation was possible.
+ */
 bool TaskTreeModel::iter_parent_vfunc(const iterator& child, iterator& iter) const {
-	if (!iter_is_valid(iter)) {
+	if (!iter_is_valid(child)) {
 		iter = iterator();
 		return false;
 	}
@@ -387,10 +394,9 @@ Gtk::TreeModel::Path TaskTreeModel::get_path_vfunc(const iterator& iter) const {
 
 	// convert TaskModel iterator -> TaskModel path -> TreeModel path
     TaskNode* node = static_cast<TaskNode*>(it->user_data);
-    TaskModel::Path path(model.get_path(*node));
-
+    TaskModel::Path modelPath(model.get_path(*node));
     TreeModel::Path treePath;
-    convert_path_taskmodel_treemodel(path, treePath);
+	treePath.assign(modelPath.begin(), modelPath.end());
     return treePath;
 }
 
@@ -462,42 +468,26 @@ void TaskTreeModel::refresh() {
 }
 
 void TaskTreeModel::clearIter(GtkTreeIter* iter) const {
-	if (iter) {
-		iter->stamp = 0;
-		iter->user_data = iter->user_data2 = iter->user_data3 = 0;
-	}
-}
-
-void TaskTreeModel::convert_path_taskmodel_treemodel(const TaskModel::Path& mpath, TreeModel::Path& tpath) const {
-	TaskModel::Path::const_iterator it;
-	for (it = mpath.begin(); it != mpath.end(); ++it) {
-        tpath.push_back(*it);
-    }
-}
-
-void TaskTreeModel::convert_path_treemodel_taskmodel(const TreeModel::Path& tpath, TaskModel::Path& mpath) const {
-	TreeModel::Path::const_iterator it;
-	for (it = tpath.begin(); it != tpath.end(); ++it) {
-        mpath.push_back(*it);
-    }
+	iter->stamp = 0;
+	iter->user_data = iter->user_data2 = iter->user_data3 = 0;
 }
 
 void TaskTreeModel::on_treemodel_inserted(TaskNode& node, TaskModel::Path& path) {
 	// TODO: avoid duplicating code
 	TreeModel::Path treePath;
-	convert_path_taskmodel_treemodel(path, treePath);
+	treePath.assign(path.begin(), path.end());
 
     GtkTreeIter iter;
 	clearIter(&iter);
 	++stamp;
     iter.stamp = stamp;
     iter.user_data = &node;
-	TreeModel::iterator treeIter(gobj(), &iter);
-	row_inserted(treePath, treeIter);
+	row_inserted(treePath, TreeModel::iterator(gobj(), &iter));
 }
+
 void TaskTreeModel::on_treemodel_updated(TaskNode& node, TaskModel::Path& path) {
 	TreeModel::Path treePath;
-	convert_path_taskmodel_treemodel(path, treePath);
+	treePath.assign(path.begin(), path.end());
 	//iterator treeIter = get_iter(treePath);
 	//row_changed(treePath, treeIter);
 
@@ -508,9 +498,10 @@ void TaskTreeModel::on_treemodel_updated(TaskNode& node, TaskModel::Path& path) 
     iter.user_data = &node;
 	row_changed(treePath, TreeModel::iterator(gobj(), &iter));
 }
+
 void TaskTreeModel::on_treemodel_removed(TaskNode& node, TaskModel::Path& path) {
 	TreeModel::Path treePath;
-	convert_path_taskmodel_treemodel(path, treePath);
+	treePath.assign(path.begin(), path.end());
 	row_deleted(treePath);
 }
 
@@ -546,5 +537,65 @@ const Glib::Class& TaskTreeModel_Class::init()
 }
 
 void TaskTreeModel_Class::class_init_function(void* g_class, void* class_data) {}
+
+//// for reference (TODO: delete if not needed anymore)
+//// ----- class TaskManager --------------------
+//
+//TaskManager::TaskManager() {}
+//TaskManager::~TaskManager() {
+//	for(tasks_t::iterator it = tasks.begin(); it != tasks.end(); ++it) {
+//		if(it->second) {
+//			delete it->second;
+//			it->second = 0;
+//		}
+//	}
+//}
+//void TaskManager::insertTask(Task* task) {
+//	using namespace std;
+//	if (task) {
+//		pair<tasks_t::iterator, bool> result = tasks.insert(make_pair(task->id, task));
+//		if (result.second) {
+//			signal_task_inserted(*task);
+//		}
+//	}
+//}
+//bool TaskManager::hasTask(id_t taskId) {
+//	return tasks.find(taskId) != tasks.end();
+//}
+//Task* TaskManager::getTask(id_t taskId) {
+//	tasks_t::iterator foundTask = tasks.find(taskId);
+//	if (foundTask != tasks.end()) {
+//		return foundTask->second;
+//	} else {
+//		return 0;
+//	}
+//}
+//void TaskManager::updateTask(Task* task) {
+//	if (!task) { return; }
+//	tasks_t::iterator updatedTask = tasks.find(task->id);
+//	if (updatedTask != tasks.end()) {
+//		tasks[task->id]->name = task->name;
+//		signal_task_updated(*task);
+//	} else {
+//		insertTask(task);
+//	}
+//	
+//}
+//void TaskManager::removeTask(id_t taskId) {
+//	tasks_t::iterator taskToRemove = tasks.find(taskId);
+//	if(taskToRemove != tasks.end()) {
+//		signal_task_removed(*(taskToRemove->second));
+//		delete taskToRemove->second;
+//		tasks.erase(taskToRemove);
+//	}
+//}
+//
+//std::list<Task*> TaskManager::getTasksList() {
+//	std::list<Task*> taskList;
+//	for (tasks_t::iterator it = tasks.begin(); it != tasks.end(); ++it) {
+//		taskList.push_back(it->second);
+//	}
+//	return taskList;
+//}
 
 } // namespace getodo

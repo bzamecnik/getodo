@@ -352,7 +352,7 @@ bool TagTreeModel::iter_nth_child_vfunc(const iterator& parent, int n, iterator&
 }
 
 bool TagTreeModel::iter_parent_vfunc(const iterator& child, iterator& iter) const {
-	if (!iter_is_valid(iter)) {
+	if (!iter_is_valid(child)) {
 		iter = iterator();
 		return false;
 	}
@@ -386,10 +386,9 @@ Gtk::TreeModel::Path TagTreeModel::get_path_vfunc(const iterator& iter) const {
 
 	// convert TagModel iterator -> TagModel path -> TreeModel path
     TagNode* node = static_cast<TagNode*>(it->user_data);
-    TagModel::Path path(model.get_path(*node));
-
+    TagModel::Path modelPath(model.get_path(*node));
     TreeModel::Path treePath;
-    convert_path_tagmodel_treemodel(path, treePath);
+	treePath.assign(modelPath.begin(), modelPath.end());
     return treePath;
 }
 
@@ -451,36 +450,21 @@ void TagTreeModel::clearIter(GtkTreeIter* iter) const {
 	}
 }
 
-void TagTreeModel::convert_path_tagmodel_treemodel(const TagModel::Path& mpath, TreeModel::Path& tpath) const {
-	TagModel::Path::const_iterator it;
-	for (it = mpath.begin(); it != mpath.end(); ++it) {
-        tpath.push_back(*it);
-    }
-}
-
-void TagTreeModel::convert_path_treemodel_tagmodel(const TreeModel::Path& tpath, TagModel::Path& mpath) const {
-	TreeModel::Path::const_iterator it;
-	for (it = tpath.begin(); it != tpath.end(); ++it) {
-        mpath.push_back(*it);
-    }
-}
-
 void TagTreeModel::on_treemodel_inserted(TagNode& node, TagModel::Path& path) {
 	// TODO: avoid duplicating code
 	TreeModel::Path treePath;
-	convert_path_tagmodel_treemodel(path, treePath);
+	treePath.assign(path.begin(), path.end());
 
     GtkTreeIter iter;
 	clearIter(&iter);
 	++stamp;
     iter.stamp = stamp;
     iter.user_data = &node;
-	TreeModel::iterator treeIter(gobj(), &iter);
-	row_inserted(treePath, treeIter);
+	row_inserted(treePath, TreeModel::iterator(gobj(), &iter));
 }
 void TagTreeModel::on_treemodel_updated(TagNode& node, TagModel::Path& path) {
 	TreeModel::Path treePath;
-	convert_path_tagmodel_treemodel(path, treePath);
+	treePath.assign(path.begin(), path.end());
 	//iterator treeIter = get_iter(treePath);
 	//row_changed(treePath, treeIter);
 
@@ -493,7 +477,7 @@ void TagTreeModel::on_treemodel_updated(TagNode& node, TagModel::Path& path) {
 }
 void TagTreeModel::on_treemodel_removed(TagNode& node, TagModel::Path& path) {
 	TreeModel::Path treePath;
-	convert_path_tagmodel_treemodel(path, treePath);
+	treePath.assign(path.begin(), path.end());
 	row_deleted(treePath);
 }
 
