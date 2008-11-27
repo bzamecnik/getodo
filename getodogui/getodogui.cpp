@@ -65,9 +65,11 @@ int main(int argc, char* argv[]) {
 		app = GeToDoApp::create(argc, argv);
 		app->run();
 	} catch(const Glib::Error& ex) {
-		std::cout << ex.what() << std::endl;
+		std::cerr << ex.what() << std::endl;
 	} catch(const sqlite3x::database_error& ex) {
-		std::cout << ex.what() << std::endl;
+		std::cerr << ex.what() << std::endl;
+	} catch(const std::exception& ex) {
+		std::cerr << ex.what() << std::endl;
 	}
 	delete app;
 	return 0;

@@ -162,6 +162,9 @@ private:
 	void refresh();
     void clearIter(GtkTreeIter* iter) const;
 
+	void convert_path_tagmodel_treemodel(const TagModel::Path& mpath, TreeModel::Path& tpath) const;
+	void convert_path_treemodel_tagmodel(const TreeModel::Path& tpath, TagModel::Path& mpath) const;
+
 	// called from underlying TagModel
 	void on_treemodel_inserted(TagNode& node, TagModel::Path& path);
     void on_treemodel_updated(TagNode& node, TagModel::Path& path);

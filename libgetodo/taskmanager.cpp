@@ -128,15 +128,50 @@ Task& TaskManager::editTask(id_t taskId, const Task& task) {
 }
 
 void TaskManager::deleteTask(id_t taskId) {
-	std::map<id_t,Task*>::iterator foundTask = tasks.find(taskId);
-	if (foundTask != tasks.end()) {
-		signal_task_removed(*foundTask->second);
-		// erase from database
-		TaskPersistence& tp = getPersistentTask(taskId);
-		tp.erase();
-		// erase from task manager
-		tasks.erase(taskId);
+	Task* task = getTask(taskId);
+	if (task == 0) { return; }
+	
+	Task* parent = 0;
+	if (task->hasParent()) {
+		id_t parentId = task->getParentId();
+		parent = getTask(parentId);
+		parent->removeSubtask(taskId);
+		TaskPersistence& tp = getPersistentTask(parentId);
+		tp.save();
 	}
+
+	//// connect deleted tasks's children to parent node if any
+	//std::list<id_t> subtaskIds = task->getSubtasksList();
+	//for (std::list<id_t>::iterator subtaskIdIt = subtaskIds.begin();
+	//	subtaskIdIt != subtaskIds.end(); ++subtaskIdIt)
+	//{
+	//	Task* subtask = getTask(*subtaskIdIt);
+	//	if (subtask != 0) {
+	//		if (parent != 0) {
+	//			subtask->setParent(*parent);
+	//		} else {
+	//			subtask->unsetParent();
+	//		}
+	//		TaskPersistence& tp = getPersistentTask(*subtaskIdIt);
+	//		tp.save();
+	//	}
+	//}
+	
+	// delete the whole subtree
+	std::list<id_t> subtaskIds = task->getSubtasksList();
+	for (std::list<id_t>::iterator it = subtaskIds.begin();
+		it != subtaskIds.end(); ++it)
+	{
+		deleteTask(*it); // recursion
+	}
+
+	signal_task_removed(*task);
+
+	// erase from database
+	TaskPersistence& tp = getPersistentTask(taskId);
+	tp.erase();
+	// erase from task manager
+	tasks.erase(taskId);
 }
 
 std::list<Task*> TaskManager::getTasksList() {

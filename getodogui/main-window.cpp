@@ -69,6 +69,11 @@ void MainWindow::setTaskManager(getodo::TaskManager* manager) {
 	refTaskTreeModel = getodo::TaskTreeModel::create(*taskManager);
 	pTaskTreeView->set_model(refTaskTreeModel);
 	
+	// TODO: Sorting model doesn't work well with my custom models, fix this.
+	//refTaskTreeModelSort = Gtk::TreeModelSort::create(refTaskTreeModel);
+	//refTaskTreeModelSort->set_sort_column(refTaskTreeModel->columns.id, Gtk::SORT_ASCENDING);
+	//pTaskTreeView->set_model(refTaskTreeModelSort);
+	
 	// Add TreeView columns when setting a model for the first time.
 	// The model columns don't change, so it's ok to add them only once.
 	if (pTaskTreeView->get_columns().empty()) {
@@ -79,17 +84,12 @@ void MainWindow::setTaskManager(getodo::TaskManager* manager) {
 		pTaskTreeView->append_column("Description", refTaskTreeModel->columns.description);
 		pTaskTreeView->append_column("Deadline", refTaskTreeModel->columns.dateDeadline);
 	}
-	
-	// TODO: Sorting model doesn't work well with my custom models, fix this.
-	//refTaskTreeModelSort = Gtk::TreeModelSort::create(refTaskTreeModel);
-	//refTaskTreeModelSort->set_sort_column(refTaskTreeModel->columns.id, Gtk::SORT_ASCENDING);
-	//pTaskTreeView->set_model(refTaskTreeModelSort);
 
 	// ---- tag treeview ----
 	if (!pTagTreeView) { return; }
 	refTagTreeModel = getodo::TagTreeModel::create(*taskManager);
-
 	pTagTreeView->set_model(refTagTreeModel);
+
 	if (pTagTreeView->get_columns().empty()) {
 		pTagTreeView->append_column("Id", refTagTreeModel->columns.id); // future: hidden
 		//pTagTreeView->append_column("Active", refTagTreeModel->columns.active);

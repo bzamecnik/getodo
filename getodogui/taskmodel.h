@@ -30,10 +30,27 @@ public:
         return !children.empty();
     }
 	TaskNodeVector& get_children(void) { return children; }
+	void add_child(TaskNode& child) { children.push_back(&child); }
+	void remove_child(TaskNode& child);
 	TaskNode* get_parent(void) { return parent; }
-	void set_parent(TaskNode& _parent) { parent = &_parent; } // TODO: is it safe?
+	void set_parent(TaskNode* parent) { this->parent = parent; } // TODO: is it safe?
     Task& get_item(void) { return task; }
     const Task& get_item(void) const { return task; }
+
+	//DEBUG
+	std::ostream& print(std::ostream& os) {
+		os << "TaskNode @ " << this << ": task (" << task.getTaskId() << ")";
+		os << ", parent node @ " << parent << ", parent task: " << task.getParentId();
+		os << ", children: [" << std::endl;
+		for (TaskNodeVector::iterator it = children.begin();
+			it != children.end(); ++it)
+		{
+			(*it)->print(os);
+			os << ", " << std::endl;
+		}
+		os << "]" << std::endl;
+		return os;
+	}
 protected:
     TaskNodeVector children;
     TaskNode* parent; // TODO: use shared_ptr!
@@ -58,6 +75,7 @@ public:
     virtual ~TaskModel();
 
 	TaskNodeVector& get_tasks() const;
+	int get_n_tasks() const;
     TaskNode& get_next_node(TaskNode& node) const;
     TaskNode& get_node(Path& path) const;
     Path get_path(TaskNode& node) const;
@@ -69,6 +87,24 @@ public:
     sigc::signal2<void, TaskNode&, Path&> signal_node_inserted;
     sigc::signal2<void, TaskNode&, Path&> signal_node_updated;
     sigc::signal2<void, TaskNode&, Path&> signal_node_removed;
+	sigc::signal2<void, TaskNode&, Path&> signal_node_has_child_toggled;
+
+	// DEBUG
+	void printNodeTree() {
+		std::cerr << "topLevelNodes:" << std::endl;
+		TaskNodeVector::iterator it;
+		for (it = topLevelNodes.begin(); it != topLevelNodes.end(); ++it) {
+			(*it)->print(std::cerr);
+			std::cerr << std::endl;
+		}
+	}
+	void printNodeMap() {
+		std::cerr << "taskNodeMap:" << std::endl;
+		TaskNodeMap::iterator it;
+		for (it = taskNodeMap.begin(); it != taskNodeMap.end(); ++it) {
+			std::cerr << "  " << (it->first) << ": " << (it->second) << std::endl;
+		}
+	}
 private:
 	TaskManager& manager;
 	TaskNodeVector topLevelNodes; // children of root
@@ -158,10 +194,14 @@ private:
 	void refresh();
     void clearIter(GtkTreeIter* iter) const;
 
+	void convert_path_taskmodel_treemodel(const TaskModel::Path& mpath, TreeModel::Path& tpath) const;
+	void convert_path_treemodel_taskmodel(const TreeModel::Path& tpath, TaskModel::Path& mpath) const;
+
 	// called from underlying TaskModel
 	void on_treemodel_inserted(TaskNode& node, TaskModel::Path& path);
     void on_treemodel_updated(TaskNode& node, TaskModel::Path& path);
     void on_treemodel_removed(TaskNode& node, TaskModel::Path& path);
+	void on_treemodel_has_child_toggled(TaskNode& node, TaskModel::Path& path);
 }; // class TaskTreeModel
 
 /** TaskTreeModel class for GTK+.
