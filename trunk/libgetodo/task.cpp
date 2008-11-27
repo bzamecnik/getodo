@@ -84,10 +84,10 @@ id_t Task::getParentId() const { return parentId; }
 //void Task::setParentId(id_t parentId) { this->parentId = parentId; }
 
 void Task::setParent(Task& newParent) {
-	if ((newParent.parentId != parentId) && (newParent.parentId != taskId)) {
+	if ((newParent.taskId != parentId) && (newParent.taskId != taskId)) {
 		unsetParent(); // unset previous parent
-		parentId = newParent.parentId;
-		newParent.addSubtask(*this);
+		parentId = newParent.taskId;
+		newParent.addSubtask(taskId);
 		// problem: we know this task id after it is persisted!
 	}
 }
@@ -533,24 +533,27 @@ void TaskPersistence::erase() {
 	cmd.executenonquery();
 	
 	// TODO: Think out of what about subtasks?
-	// - delete them too?
+	// * delete them too? (remove the whole subtree)
 	// - make them level 1 tasks?
-	// * connect them one level up? (for now)
+	// - connect them one level up?
 
-	cmd.prepare("UPDATE Task SET parentId = ? WHERE parentId = ?;");
-	if (task->getParentId() >= 0) {
-		cmd.bind(1, task->getParentId());
-	} else {
-		cmd.bind(1); // bind NULL (instead of -1 or so) - make it a root level task
-	}
-	cmd.bind(2, task->getTaskId());
-	cmd.executenonquery();
+	// assume that all children were already removed
+
+	//cmd.prepare("UPDATE Task SET parentId = ? WHERE parentId = ?;");
+	//if (task->getParentId() >= 0) {
+	//	cmd.bind(1, task->getParentId());
+	//} else {
+	//	cmd.bind(1, -1); // make it a root level task
+	//}
+	//cmd.bind(2, task->getTaskId());
+	//cmd.executenonquery();
 	
 	cmd.prepare("DELETE FROM Task WHERE taskId = ?;");
 	cmd.bind(1, task->getTaskId());
 	cmd.executenonquery();
 	
 	delete task;
+	task = 0;
 }
 
 Task* TaskPersistence::getTask() const {
