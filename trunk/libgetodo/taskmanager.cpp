@@ -104,7 +104,9 @@ TaskPersistence TaskManager::getPersistentTask(id_t taskId) {
 }
 
 Task& TaskManager::editTask(id_t taskId, const Task& task) {
-	if (!hasTask(taskId)) { return *(new Task()); } // throw
+	if (!hasTask(taskId)) {
+		throw new GetodoError("No such a task to edit.");
+	}
     
 	// TODO: Write operator= for Task!!!
 	// TODO: synchronize tags in TaskManager from old to new task
@@ -210,11 +212,11 @@ bool TaskManager::hasTag(std::string tagName) {
 
 Tag& TaskManager::getTag(id_t tagId) {
     std::map<id_t,Tag*>::iterator foundTag = tags.find(tagId);
-	if (foundTag != tags.end()) {
-		return *(foundTag->second);
-    } else {
-		return *(new Tag()); // or throw range_error
-    }
+	if (foundTag == tags.end()) {
+		throw new std::invalid_argument("No such a tag.");
+	}
+	return *(foundTag->second);
+    
 }
 
 Tag& TaskManager::getTag(std::string tagName) {
@@ -222,11 +224,13 @@ Tag& TaskManager::getTag(std::string tagName) {
 	for (it = tags.begin(); it != tags.end(); ++it) {
 		if (it->second && (it->second->name == tagName)) { return *(it->second); }
 	}
-	return *(new Tag()); // or throw
+	throw new std::invalid_argument("No such a tag.");
 }
 
 Tag& TaskManager::editTag(id_t tagId, const Tag& tag) {
-    if (!hasTag(tagId)) { return *(new Tag()); } //throw range_error
+    if (!hasTag(tagId)) {
+		throw new std::invalid_argument("No such a tag.");
+	}
    
 	Tag* tagCopy = new Tag(tag);
     // Delete original tag from tags
@@ -285,15 +289,16 @@ bool TaskManager::hasFilterRule(std::string filterRuleName) {
 }
 
 FilterRule& TaskManager::getFilterRule(id_t filterRuleId) {
-    if (hasFilterRule(filterRuleId)) {
-        return *(filters[filterRuleId]);
-    } else {
-        return *(new FilterRule()); // throw
-    }
+    if (!hasFilterRule(filterRuleId)) {
+		throw new std::invalid_argument("No such a filter rule.");
+	}
+    return *(filters[filterRuleId]);
 }
 
 FilterRule& TaskManager::editFilterRule(id_t filterRuleId, const FilterRule& filter) {
-    if (!hasFilterRule(filterRuleId)) { return *(new FilterRule()); } //throw
+    if (!hasFilterRule(filterRuleId)) {
+		throw new std::invalid_argument("No such a filter rule.");
+	}
        
 	FilterRule* ruleCopy = new FilterRule(filter);
     // correct new FilterRule's filterRuleId to be the same as former's one
@@ -330,7 +335,7 @@ std::list<FilterRule*> TaskManager::getFilterRulesList() {
 // ----- Other things -----
 
 void TaskManager::loadAllFromDatabase() {
-    if (!conn) { return; } // throw
+    if (!conn) { throw new GetodoError("No database connection."); }
        
     sqlite3_command cmd(*conn);
     sqlite3_cursor cursor;
@@ -436,7 +441,7 @@ void TaskManager::loadAllFromDatabase() {
 
 // return true, if there exist all the tables needed
 bool TaskManager::checkDatabaseStructure() {
-    if (!conn) { return false; } // throw
+    if (!conn) { throw new GetodoError("No database connection."); }
     // TODO
     // * this code could be optimized, using a set may be overkill
     // * table names shouldn't be hard-coded
@@ -464,7 +469,8 @@ bool TaskManager::checkDatabaseStructure() {
 }
 
 void TaskManager::createEmptyDatabase() {
-    if (!conn) { return; } // throw
+    if (!conn) { throw new GetodoError("No database connection."); }
+
     // TODO: better would be to include this SQL in the compile-time
     // from an external file
     sqlite3_command cmd(*conn);

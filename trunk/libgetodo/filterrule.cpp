@@ -46,7 +46,8 @@ FilterRulePersistence::FilterRulePersistence(sqlite3_connection* c)
 FilterRulePersistence::~FilterRulePersistence() {}
 
 void FilterRulePersistence::save(FilterRule& filter) {
-	// if(!conn) { TODO: throw ...}
+	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
+
 	int count = 0;
 	if (filter.id >= 0) {
 		// find out, if there is already a filter with such a filterRuleId
@@ -89,7 +90,7 @@ void FilterRulePersistence::save(FilterRule& filter) {
 }
 
 void FilterRulePersistence::load(FilterRule& filter, id_t id) {
-	// if(!conn) { TODO: throw ...}
+	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
 
 	filter = FilterRule(); // clean
 	sqlite3_command cmd(*conn, "SELECT name,rule FROM FilterRule WHERE filterRuleId = ?;");
@@ -99,13 +100,15 @@ void FilterRulePersistence::load(FilterRule& filter, id_t id) {
 		filter.id = id;
 		filter.name = cursor.getstring(0);
 		filter.rule = cursor.getstring(1);
+	} else {
+		cursor.close(); // a bit ugly: Duplicate close() call. Think how to do it better.
+		throw new GetodoError("No such a filter rule to load.");
 	}
-	// TODO: throw, if there is not record with this filterRuleId
 	cursor.close();
 }
 
 void FilterRulePersistence::erase(id_t id) {
-	// if(!conn) { TODO: throw ...}
+	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
 	
 	sqlite3_command cmd(*conn, "DELETE FROM FilterRule WHERE filterRuleId = ?;");
 	cmd.bind(1, id);
@@ -122,7 +125,7 @@ void FilterRulePersistence::setRule(FilterRule& filter, const std::string rule) 
 	setColumn(filter.id, rule, "rule");
 }
 void FilterRulePersistence::setColumn(id_t id, const std::string value, const std::string column) {
-	// if(!conn) { TODO: throw ...}
+	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
 	
 	// TODO: check, if the filter rule really exists in database, else throw
 	
