@@ -78,10 +78,10 @@ void MainWindow::setTaskManager(getodo::TaskManager* manager) {
 	// The model columns don't change, so it's ok to add them only once.
 	if (pTaskTreeView->get_columns().empty()) {
 		//pTaskTreeView->append_column("Id", refTaskTreeModel->columns.id);
+		pTaskTreeView->append_column("Description", refTaskTreeModel->columns.description);
 		pTaskTreeView->append_column("Done", refTaskTreeModel->columns.done);
 		pTaskTreeView->append_column("%", refTaskTreeModel->columns.completedPercentage);
 		pTaskTreeView->append_column("!", refTaskTreeModel->columns.priority);
-		pTaskTreeView->append_column("Description", refTaskTreeModel->columns.description);
 		pTaskTreeView->append_column("Deadline", refTaskTreeModel->columns.dateDeadline);
 	}
 

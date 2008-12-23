@@ -42,7 +42,8 @@ TagPersistence::TagPersistence(sqlite3_connection* c) : conn(c) {}
 TagPersistence::~TagPersistence() {}
 
 bool TagPersistence::insert(Tag& tag) {
-	// if(!conn) { TODO: throw ...}
+	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
+
 	if (tag.name.empty()) { return false; } // exclude empty tags
 
 	int count = 0;
@@ -81,37 +82,34 @@ bool TagPersistence::insert(Tag& tag) {
 }
 
 void TagPersistence::update(Tag& tag) {
-	// if(!conn) { TODO: throw ...}
-	if (tag.id >= 0) {
-		// UPDATE doesn't throw any error when given row doesn't exist
-		sqlite3_command cmd(*conn, "UPDATE Tag SET tagName = ? WHERE tagId = ?;");
-		cmd.bind(1, tag.name);
-		cmd.bind(2, tag.id);
-		cmd.executenonquery();
+	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
+	if (tag.id < 0) {
+		if (!conn) { throw new std::invalid_argument("Invalid tag id: " + tag.id); }
 	}
-	// else { // throw }
+
+	// UPDATE doesn't throw any error when given row doesn't exist
+	sqlite3_command cmd(*conn, "UPDATE Tag SET tagName = ? WHERE tagId = ?;");
+	cmd.bind(1, tag.name);
+	cmd.bind(2, tag.id);
+	cmd.executenonquery();
 }
 
 Tag& TagPersistence::load(id_t id) {
-	// if(!conn) { TODO: throw ...}
+	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
 	
 	sqlite3_command cmd(*conn, "SELECT tagName FROM Tag WHERE tagId = ?;");
 	cmd.bind(1, id);
-	//std::string name = cmd.executestring(); // throws if the tag doesn't exist
-	sqlite3_cursor cursor = cmd.executecursor();
 	std::string name;
-	if (cursor.step()) {
-		if (!cursor.isnull(0)) {
-			name = cursor.getstring(0);
-		}
+	try {
+		name = cmd.executestring(); // throws if the tag doesn't exist
+	} catch(sqlite3x::database_error ex) {
+		throw new GetodoError("No such a tag to load.");
 	}
-	cursor.close();
-	// TODO: throw, if there is no record with such a tagId
 	return *(new Tag(id, name));
 }
 
 void TagPersistence::erase(id_t id) {
-	// if(!conn) { TODO: throw ...}
+	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
 	
 	sqlite3_command cmd(*conn, "DELETE FROM Tagged WHERE tagId = ?;");
 	cmd.bind(1, id);

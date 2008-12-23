@@ -121,7 +121,8 @@ bool Task::hasTag(id_t tagId) const {
 	return (tags.find(tagId) != tags.end());
 }
 void Task::removeTag(id_t tagId) {
-	//should throw an exception on failure
+	// tags.erase() returns number of elements erased.
+	// when the tagId is bad, it might be reported
 	tags.erase(tagId);
 }
 std::list<id_t> Task::getTagsList() const {
@@ -205,7 +206,7 @@ bool Task::hasSubtask(id_t subtaskId) const {
 	return (subtasks.find(subtaskId) != subtasks.end());
 }
 void Task::removeSubtask(id_t taskId) {
-	//should throw an exception on failure
+	//should throw an exception on failure (?)
 	subtasks.erase(taskId);
 }
 std::list<id_t> Task::getSubtasksList() const {
@@ -383,7 +384,8 @@ TaskPersistence::~TaskPersistence() {}
 // save whole Task to database
 // TODO: split into insert() and update()
 void TaskPersistence::save() {
-	if (!conn || !task) { return; } // TODO: throw
+	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
+	if (!task) { throw new GetodoError("No task in the persistence."); }
 	
 	// save the task
 	
@@ -470,7 +472,7 @@ void TaskPersistence::save() {
 }
 
 Task* TaskPersistence::load(id_t taskId) {
-	// if(!conn) { TODO: throw ...}
+	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
 	
 	// Load task itself
 	
@@ -478,7 +480,7 @@ Task* TaskPersistence::load(id_t taskId) {
 	cmd.bind(1, taskId);
 	sqlite3_cursor cursor = cmd.executecursor();
 	if (!cursor.step()) {
-		// TODO: throw, if there is not record  with this tagId
+		throw new GetodoError("No such a task to load: " + taskId);
 		return 0;
 	}
 	databaseRow_t row;
@@ -493,8 +495,7 @@ Task* TaskPersistence::load(id_t taskId) {
 	cursor.close();
 	task = Task::fromDatabaseRow(row);
 	if(!task) {
-		// TODO: throw an exception
-		return 0;
+		throw new GetodoError("Can't deserialize the task.");
 	}
 	
 	// Load its tags
@@ -524,9 +525,11 @@ Task* TaskPersistence::load(id_t taskId) {
 }
 
 void TaskPersistence::erase() {
-	if(!conn) { return; } // throw
-	if(!task) { return; } // throw
-	if(task->getTaskId() < 0) { return; } // throw
+	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
+	if (!task) { throw new GetodoError("No task in the persistence."); }
+	if (task->getTaskId() < 0) {
+		throw new std::invalid_argument("Invalid task id: " + task->getTaskId());
+	}
 	
 	sqlite3_command cmd(*conn, "DELETE FROM Tagged WHERE taskId = ?;");
 	cmd.bind(1, task->getTaskId());
@@ -577,7 +580,9 @@ void TaskPersistence::setLongDescription(const std::string& longDescription) {
 }
 
 void TaskPersistence::addTag(id_t tagId) {
-	if(!conn || !task) { return; } //TODO: throw
+	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
+	if (!task) { throw new GetodoError("No task in the persistence."); }
+
 	sqlite3_command cmd(*conn);
 	cmd.prepare("SELECT count(*) FROM Tagged WHERE (taskId = ? AND tagId = ?);");
 	cmd.bind(1, task->getTaskId());
@@ -593,7 +598,9 @@ void TaskPersistence::addTag(id_t tagId) {
 }
 
 void TaskPersistence::removeTag(id_t tagId) {
-	if (!conn || !task) { return; } //TODO: throw
+	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
+	if (!task) { throw new GetodoError("No task in the persistence."); }
+
 	// check if the task and the tag exist in the database
 	sqlite3_command cmd(*conn);
 	cmd.prepare("DELETE FROM Tagged WHERE (taskId = ? AND tagId = ?);");
@@ -604,7 +611,9 @@ void TaskPersistence::removeTag(id_t tagId) {
 }
 
 void TaskPersistence::setParentId(id_t parentId) {
-	if (!conn || !task) { return; } //TODO: throw
+	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
+	if (!task) { throw new GetodoError("No task in the persistence."); }
+
 	sqlite3_command cmd(*conn);
 	cmd.prepare("UPDATE Task SET parentId = ? WHERE taskId = ?;");
 	cmd.bind(1, parentId);

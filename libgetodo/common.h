@@ -36,6 +36,16 @@ class Task;
 class TaskPersistence;
 class TaskManager;
 
+// ----- exceptions ---------------
+
+class GetodoError : public std::runtime_error {
+public:
+	GetodoError() : std::runtime_error("Unknown error") {}
+	GetodoError(const std::string& msg) : std::runtime_error(msg) {}
+};
+
+// TODO: make more exceptions for specific purposes
+
 // ----- utils --------------------
 
 // Join items with "join_with"

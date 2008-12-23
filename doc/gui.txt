@@ -21,7 +21,11 @@
 		- Exit
 	- Edit
 		- New Task - rùzné možnosti, kde task vytvoøit - CTRL+N
+			- top level
+			- na stejné úrovní jako vybraný task
+			- pokud bude volné pøerovnání - pøed/za vybraným
 		- New Subtask - dtto - CTRL+SHIFT+N
+			- jako potomek vybraného
 		- Edit task - skok do editaèního panelu - CTRL+E
 			- navíc rùzné akce pro jednotlivé vlastnosti tasku
 		- Delete Selected Tasks - vymazat vybrané tasky i jejich potomky - DEL
