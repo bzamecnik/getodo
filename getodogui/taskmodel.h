@@ -51,6 +51,9 @@ public:
 
 	ModelColumns columns;
 
+	Gtk::TreeModel::Path& getPathByTask(Task& task);
+	//Gtk::TreeModel::Path& getPathByTaskId(id_t taskId);
+
 protected:
 	TaskTreeStore(TaskManager& manager);
 
@@ -59,8 +62,6 @@ protected:
 	void on_task_updated(Task& task);
 	void on_task_removed(Task& task);
 
-	Gtk::TreeModel::Path& getPathByTask(Task& task);
-	//Gtk::TreeModel::Path& getPathByTaskId(id_t taskId);
 	void setRowFromTask(Gtk::TreeModel::iterator& iter, Task& task);
 	void insertTask(Task& task);
 	void refresh();

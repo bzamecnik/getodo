@@ -18,11 +18,11 @@ namespace getodo {
 // ----- class FilterRule --------------------
 
 FilterRule::FilterRule()
-	: id(-1) {}
+	: id(INVALID_ID) {}
 FilterRule::FilterRule(const FilterRule& r)
 	: id(r.id), name(r.name), rule(r.rule) {}
 FilterRule::FilterRule(std::string n, std::string r)
-	: id(-1), name(n), rule(r) {}
+	: id(INVALID_ID), name(n), rule(r) {}
 FilterRule::FilterRule(id_t id, std::string n, std::string r)
 	: id(id), name(n), rule(r) {}
 FilterRule::~FilterRule() {}
@@ -36,6 +36,14 @@ std::ostream& operator<< (std::ostream& o, const FilterRule& rule) {
 	o << rule.id << ", \"" << rule.name << "\"]: \"";
 	o << rule.rule << '"';
 	return o;
+}
+
+bool FilterRule::isValidId(id_t id) {
+	return id >= 0;
+}
+
+bool FilterRule::hasValidId() const {
+	return FilterRule::isValidId(id);
 }
 
 // ----- class FilterRulePersistence --------------------
