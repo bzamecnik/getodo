@@ -73,7 +73,7 @@ id_t TaskManager::addTask(const Task& task) {
 	taskCopy->setTaskId(Task::INVALID_ID); // delete id
     // save it to database and get the new taskId
     TaskPersistence tp(conn, taskCopy);
-    tp.save(); // TODO: change to insert(), when available
+    tp.insert();
     // insert the task into TaskManager
     tasks[taskCopy->getTaskId()] = taskCopy;
 	signal_task_inserted(*taskCopy);
@@ -124,7 +124,7 @@ Task& TaskManager::editTask(id_t taskId, const Task& task) {
 	tasks[taskId] = taskCopy;
 	// Save it to database
     TaskPersistence tp(conn, taskCopy);
-    tp.save(); // TODO: change to update(), when available
+    tp.update();
 	signal_task_updated(*taskCopy);
     return *taskCopy;
 }
@@ -139,7 +139,7 @@ void TaskManager::deleteTask(id_t taskId) {
 		parent = getTask(parentId);
 		parent->removeSubtask(taskId);
 		TaskPersistence& tp = getPersistentTask(parentId);
-		tp.save();
+		tp.update();
 	}
 
 	//// connect deleted tasks's children to parent node if any

@@ -40,7 +40,7 @@ bool Tag::isValidId(id_t id) {
 }
 
 bool Tag::hasValidId() const {
-	return Tag::isValidId(id) >= 0;
+	return Tag::isValidId(id);
 }
 
 // ----- class TagPersistence --------------------
@@ -90,9 +90,11 @@ bool TagPersistence::insert(Tag& tag) {
 }
 
 void TagPersistence::update(Tag& tag) {
-	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
+	if (!conn) {
+		throw new GetodoError("No database connection in the persistence.");
+	}
 	if (!tag.hasValidId()) {
-		if (!conn) { throw new std::invalid_argument("Invalid tag id: " + tag.id); }
+		throw new std::invalid_argument("Invalid tag id: " + tag.id);
 	}
 
 	// UPDATE doesn't throw any error when given row doesn't exist

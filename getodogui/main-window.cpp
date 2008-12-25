@@ -192,23 +192,21 @@ bool MainWindow::on_taskDescriptionEntry_focus_out_event(GdkEventFocus* event, G
 		return false;
 	}
 	TaskPersistence& tp = taskManager->getPersistentTask(taskId);
-	tp.setDescription(entry->get_text());
-	Task& task = *tp.getTask();
-	pTaskDateLastModifiedLabel->set_text(task.getDateLastModified().toString());
-	taskManager->signal_task_updated(task);
-	return true;
+	return updateTaskPartial(boost::bind( &TaskPersistence::setDescription, _1,
+		boost::ref(entry->get_text()) ));
 }
 
 void MainWindow::on_buttonRecurrence_clicked() {
 	using namespace getodo;
 	RecurrenceDialog& dialog = GeToDoApp::getSingleton().getRecurrenceDialog();
-	Recurrence* recurrence = getodo::Recurrence::fromString(
-		pTaskRecurrenceEntry->get_text());
-	dialog.setRecurrence(*recurrence);
+	dialog.setRecurrence(*getodo::Recurrence::fromString(
+		pTaskRecurrenceEntry->get_text()));
 	int response = dialog.run();
 	if (response == Gtk::RESPONSE_OK) {
 		pTaskRecurrenceEntry->set_text(Recurrence::toString(dialog.getRecurrence()));
 	}
+	updateTaskPartial(boost::bind(
+		&TaskPersistence::setRecurrence, _1, boost::ref(dialog.getRecurrence())));
 }
 
 void MainWindow::fillEditingPanel(getodo::Task& task) {
@@ -272,4 +270,18 @@ getodo::id_t MainWindow::getCurrentlyEditedTaskId() {
 	} catch (boost::bad_lexical_cast) {
 		return -1;
 	}
+}
+
+bool MainWindow::updateTaskPartial(boost::function<void(getodo::TaskPersistence&)> f) {
+	using namespace getodo;
+	id_t taskId = getCurrentlyEditedTaskId();
+	if (!taskManager->hasTask(taskId)) {
+		return false;
+	}
+	TaskPersistence& tp = taskManager->getPersistentTask(taskId);
+	f(tp);
+	Task& task = *tp.getTask();
+	pTaskDateLastModifiedLabel->set_text(task.getDateLastModified().toString());
+	taskManager->signal_task_updated(task);
+	return true;
 }

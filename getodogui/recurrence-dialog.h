@@ -19,7 +19,7 @@ public:
 	~RecurrenceDialog();
 
 	getodo::Recurrence& getRecurrence();
-	void setRecurrence(getodo::Recurrence& r);
+	void setRecurrence(const getodo::Recurrence& r);
 protected:
 	Glib::RefPtr<Gnome::Glade::Xml> refXml;
 
