@@ -19,9 +19,9 @@ namespace getodo {
 
 // ----- class Tag --------------------
 
-Tag::Tag() : id(-1) {}
+Tag::Tag() : id(INVALID_ID) {}
 Tag::Tag(const Tag& t) : id(t.id), name(t.name) {}
-Tag::Tag(std::string tagName) : id(-1), name(tagName) {}
+Tag::Tag(std::string tagName) : id(INVALID_ID), name(tagName) {}
 Tag::Tag(id_t tagId, std::string tagName) : id(tagId), name(tagName) {}
 Tag::~Tag() {}
 
@@ -33,6 +33,14 @@ std::ostream& operator<< (std::ostream& o, const Tag& tag) {
 	// eg.: Tag [id]: "tag name"
 	o << "Tag [" << tag.id << "]: \"" << tag.name << '"';
 	return o;
+}
+
+bool Tag::isValidId(id_t id) {
+	return id >= 0;
+}
+
+bool Tag::hasValidId() const {
+	return Tag::isValidId(id) >= 0;
 }
 
 // ----- class TagPersistence --------------------
@@ -47,7 +55,7 @@ bool TagPersistence::insert(Tag& tag) {
 	if (tag.name.empty()) { return false; } // exclude empty tags
 
 	int count = 0;
-	if (tag.id >= 0) {
+	if (tag.hasValidId()) {
 		// find out if there is already a tag with such a tagId
 		sqlite3_command cmd(*conn, "SELECT count(*) FROM Tag WHERE tagId = ?;");
 		cmd.bind(1, tag.id);
@@ -83,7 +91,7 @@ bool TagPersistence::insert(Tag& tag) {
 
 void TagPersistence::update(Tag& tag) {
 	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
-	if (tag.id < 0) {
+	if (!tag.hasValidId()) {
 		if (!conn) { throw new std::invalid_argument("Invalid tag id: " + tag.id); }
 	}
 

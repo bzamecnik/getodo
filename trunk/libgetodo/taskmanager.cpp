@@ -70,7 +70,7 @@ sqlite3_connection* TaskManager::getConnection() {
 
 id_t TaskManager::addTask(const Task& task) {
 	Task* taskCopy = new Task(task);
-	taskCopy->setTaskId(-1); // delete id, TODO: don't use literal '-1'
+	taskCopy->setTaskId(Task::INVALID_ID); // delete id
     // save it to database and get the new taskId
     TaskPersistence tp(conn, taskCopy);
     tp.save(); // TODO: change to insert(), when available
@@ -99,8 +99,8 @@ Task* TaskManager::getTask(id_t taskId) {
     }
 }
 
-TaskPersistence TaskManager::getPersistentTask(id_t taskId) {
-    return TaskPersistence(conn, getTask(taskId));
+TaskPersistence& TaskManager::getPersistentTask(id_t taskId) {
+    return *(new TaskPersistence(conn, getTask(taskId)));
 }
 
 Task& TaskManager::editTask(id_t taskId, const Task& task) {
@@ -194,7 +194,7 @@ id_t TaskManager::addTag(const Tag& tag) {
 		signal_tag_inserted(*tagCopy);
 		return tagCopy->id;
 	}
-	return -1;
+	return Task::INVALID_ID;
 }
 
 bool TaskManager::hasTag(id_t tagId) {
@@ -478,7 +478,7 @@ void TaskManager::createEmptyDatabase() {
     cmd.prepare(
         "CREATE TABLE Task ("
         "taskId      INTEGER      NOT NULL,"
-		"parentId      INTEGER DEFAULT '-1' NOT NULL,"
+		"parentId      INTEGER DEFAULT '-1' NOT NULL," //-1 -> Task::INVALID_ID
         "description      STRING      NOT NULL,"
         "longDescription      STRING,"
         "dateCreated      STRING      NOT NULL,"

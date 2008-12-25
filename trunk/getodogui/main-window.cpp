@@ -50,6 +50,13 @@ MainWindow::MainWindow(BaseObjectType* cobject,
 
 		refXml->connect_clicked("taskRecurrenceButton",
 			sigc::mem_fun(*this, &MainWindow::on_buttonRecurrence_clicked) );
+
+		pTaskDescriptionEntry->signal_focus_out_event().connect(
+			sigc::bind(
+				sigc::mem_fun(*this, &MainWindow::on_taskDescriptionEntry_focus_out_event),
+				pTaskDescriptionEntry
+			));
+		//on_taskDescriptionEntry_focus_out_event
 	} catch (Gnome::Glade::XmlError& e) {
 		std::cerr << e.what() << std::endl;
 		exit(-1);
@@ -71,6 +78,7 @@ void MainWindow::setTaskManager(getodo::TaskManager* manager) {
 	pTaskTreeView->set_model(refTaskTreeModel);
 	
 	// TODO: Sorting model doesn't work well with my custom models, fix this.
+	// However it works well with TaskTreeStore.
 	//refTaskTreeModelSort = Gtk::TreeModelSort::create(refTaskTreeModel);
 	//refTaskTreeModelSort->set_sort_column(refTaskTreeModel->columns.id, Gtk::SORT_ASCENDING);
 	//pTaskTreeView->set_model(refTaskTreeModelSort);
@@ -143,10 +151,13 @@ void MainWindow::on_buttonTaskNew_clicked() {
 
 	using namespace getodo;
 	id_t newTaskId = taskManager->addTask(*(new Task()));
-	fillEditingPanel(*taskManager->getTask(newTaskId));
-	// TODO: select newly created task's row in treeview
-	// Find out row, iter or path of the new task in the taskTreeView.
-	//pTaskTreeView->get_selection()->select(... row, iter or path ...)
+	Task& newTask = *taskManager->getTask(newTaskId);
+	fillEditingPanel(newTask);
+	
+	// select newly created task's row in treeview
+	Gtk::TreeModel::Path& path = refTaskTreeModel->getPathByTask(newTask);
+	pTaskTreeView->get_selection()->select(path);
+
 	pTaskDescriptionEntry->grab_focus();
 }
 
@@ -164,23 +175,28 @@ void MainWindow::on_buttonTaskDelete_clicked() {
 void MainWindow::on_buttonTaskUpdate_clicked() {
 	// save editing panel contents
 	if (!taskManager) { return; }
-
 	using namespace getodo;
-	id_t taskId;
-	//Gtk::TreeModel::iterator iter = pTaskTreeView->get_selection()->get_selected();
-	//if (iter) {
-	//	taskId = (*iter)[refTaskTreeModel->columns.id];
-	// }
-	try {
-		taskId = boost::lexical_cast<id_t, std::string>(pTaskIdLabel->get_text());
-	} catch (boost::bad_lexical_cast) {
-		return;
-	}
+	id_t taskId = getCurrentlyEditedTaskId();
 	Task* updatedTask = taskManager->getTask(taskId);
 	if (updatedTask) {
 		saveEditingPanelToTask(*updatedTask);
 		taskManager->editTask(taskId, *updatedTask);
 	}
+}
+
+bool MainWindow::on_taskDescriptionEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry) {
+	if (!taskManager || !entry) { return false; }
+	using namespace getodo;
+	id_t taskId = getCurrentlyEditedTaskId();
+	if (!taskManager->hasTask(taskId)) {
+		return false;
+	}
+	TaskPersistence& tp = taskManager->getPersistentTask(taskId);
+	tp.setDescription(entry->get_text());
+	Task& task = *tp.getTask();
+	pTaskDateLastModifiedLabel->set_text(task.getDateLastModified().toString());
+	taskManager->signal_task_updated(task);
+	return true;
 }
 
 void MainWindow::on_buttonRecurrence_clicked() {
@@ -247,4 +263,13 @@ void MainWindow::saveEditingPanelToTask(getodo::Task& task) {
 	task.setDateDeadline(Date(pTaskDateDeadlineEntry->get_text()));
 	task.setDateStarted(Date(pTaskDateStartedEntry->get_text()));
 	task.setDateCompleted(Date(pTaskDateCompletedEntry->get_text()));
+}
+
+getodo::id_t MainWindow::getCurrentlyEditedTaskId() {
+	using namespace getodo;
+	try {
+		return boost::lexical_cast<id_t, std::string>(pTaskIdLabel->get_text());
+	} catch (boost::bad_lexical_cast) {
+		return -1;
+	}
 }

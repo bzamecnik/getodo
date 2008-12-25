@@ -37,6 +37,10 @@ public:
 
 	std::string toString() const;
 	friend std::ostream& operator<< (std::ostream& o, const FilterRule& rule);
+
+	static const id_t INVALID_ID = -1;
+	static bool isValidId(id_t id);
+	bool hasValidId() const;
 };
 
 /** Filter rule persistence.

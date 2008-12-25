@@ -36,6 +36,10 @@ public:
 
 	std::string toString() const;
 	friend std::ostream& operator<< (std::ostream& o, const Tag& tag);
+
+	static const id_t INVALID_ID = -1;
+	static bool isValidId(id_t id);
+	bool hasValidId() const;
 };
 
 /** %Tag persistence.

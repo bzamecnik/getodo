@@ -23,8 +23,8 @@ namespace getodo {
 
 // empty constructor
 Task::Task() :
-	taskId(-1),
-	parentId(-1),
+	taskId(INVALID_ID),
+	parentId(INVALID_ID),
 	priority(0),
 	completedPercentage(0),
 	done(false)
@@ -77,10 +77,15 @@ Task::~Task() {
 	}
 }
 
+bool Task::isValidId(id_t id) {
+	return id >= 0;
+}
+
 // ----- access methods ----------
 
 id_t Task::getTaskId() const { return taskId; }
 void Task::setTaskId(id_t taskId) { this->taskId = taskId; }
+bool Task::hasValidId() const { return Task::isValidId(taskId); }
 
 id_t Task::getParentId() const { return parentId; }
 //void Task::setParentId(id_t parentId) { this->parentId = parentId; }
@@ -98,7 +103,7 @@ void Task::unsetParent() {
 	if (hasParent()) {
 		// we need a reference to parent task!
 		//parent.removeSubtask(*this);
-		parentId = -1;
+		parentId = Task::INVALID_ID;
 	}
 }
 
@@ -203,10 +208,10 @@ void Task::removeSubtask(Task& subtask) {
 	subtask.unsetParent();
 }
 void Task::addSubtask(id_t subtaskId) {
-	//should throw an exception on failure (?)
-	if ((subtaskId >= 0) && (subtaskId != taskId)) { // if it's valid
-		subtasks.insert(subtaskId);
+	if (!Task::isValidId(subtaskId) || !(subtaskId != taskId)) {
+		throw new GetodoError("Invalid subtask id.");
 	}
+	subtasks.insert(subtaskId);
 }
 bool Task::hasSubtask(id_t subtaskId) const {
 	return (subtasks.find(subtaskId) != subtasks.end());
@@ -246,19 +251,18 @@ void Task::setDateCompleted(const Date& dateCompleted) {
 
 Recurrence& Task::getRecurrence() const {
 	if (!recurrence) {
-		return *(new RecurrenceOnce());
+		return *(new RecurrenceOnce()); // default
 	} else {
 		return *recurrence;
 	}
 }
 void Task::setRecurrence(Recurrence* r) {
-	if (!r) {
-		r = new RecurrenceOnce();
-	} else {
+	if (r) {
 		delete recurrence;
-		recurrence = 0;
+		recurrence = r;
+	} else {
+		r = new RecurrenceOnce();
 	}
-	recurrence = r;
 }
 
 int Task::getPriority() const { return priority; }
@@ -308,13 +312,13 @@ Task* Task::fromDatabaseRow(databaseRow_t row) {
 	try {
 		task->taskId = boost::lexical_cast<id_t, std::string>(row["taskId"]);
 	} catch (boost::bad_lexical_cast&) {
-		task->taskId = -1;
+		task->taskId = Task::INVALID_ID;
 	}
 
 	try {
 		task->parentId = boost::lexical_cast<id_t, std::string>(row["parentId"]);
 	} catch (boost::bad_lexical_cast&) {
-		task->parentId = -1;
+		task->parentId = Task::INVALID_ID;
 	}
 	
 	task->description = sqliteUnescapeString(row["description"]);
@@ -404,7 +408,7 @@ void TaskPersistence::save() {
 	row["dateLastModified"] = task->getDateLastModified().toString();
 	
 	int count = 0;
-	if (task->getTaskId() >= 0) {
+	if (task->hasValidId()) {
 		// task has already its taskId, find out if it is in the db
 		sqlite3_command cmd(*conn, "SELECT count(*) FROM Task "
 			"WHERE taskId = (?);");
@@ -533,7 +537,7 @@ Task* TaskPersistence::load(id_t taskId) {
 void TaskPersistence::erase() {
 	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
 	if (!task) { throw new GetodoError("No task in the persistence."); }
-	if (task->getTaskId() < 0) {
+	if (!task->hasValidId()) {
 		throw new std::invalid_argument("Invalid task id: " + task->getTaskId());
 	}
 	
@@ -549,10 +553,10 @@ void TaskPersistence::erase() {
 	// assume that all children were already removed
 
 	//cmd.prepare("UPDATE Task SET parentId = ? WHERE parentId = ?;");
-	//if (task->getParentId() >= 0) {
+	//if (Task::isValidId(task->getParentId())) {
 	//	cmd.bind(1, task->getParentId());
 	//} else {
-	//	cmd.bind(1, -1); // make it a root level task
+	//	cmd.bind(1, Task::INVALID_ID); // make it a root level task
 	//}
 	//cmd.bind(2, task->getTaskId());
 	//cmd.executenonquery();
@@ -635,7 +639,7 @@ void TaskPersistence::setParentId(id_t parentId) {
 //	sqlite3_command cmd(*conn);
 //	cmd.prepare("SELECT count(*) FROM Subtask WHERE (sub_taskId = ? AND super_taskId = ?);");
 //	cmd.bind(1, taskId);
-//	cmd.bind(2, task-> getTaskId());
+//	cmd.bind(2, task->getTaskId());
 //	int count = cmd.executeint();
 //	if (count <= 0) {
 //		cmd.prepare("INSERT INTO Subtask (sub_taskId, super_taskId) VALUES (?,?);");

@@ -55,7 +55,7 @@ public:
     id_t addTask(const Task& task);
     bool hasTask(id_t taskId);
     Task* getTask(id_t taskId); // TODO: change return type to Task&
-    TaskPersistence getPersistentTask(id_t taskId); // for modyfing particular things
+    TaskPersistence& getPersistentTask(id_t taskId); // for modyfing particular things
     Task& editTask(id_t taskId, const Task& task);
     void deleteTask(id_t taskId); //should throw an exception on failure
 	std::list<Tag*> getTagsList();

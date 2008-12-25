@@ -79,14 +79,17 @@ protected:
 	void on_buttonRecurrence_clicked();
 
 	void on_taskTreeview_selection_changed();
+
+	bool on_taskDescriptionEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry);
 private:
 	getodo::TaskManager* taskManager;
 	//Gtk::TreeModel::iterator getCursorIter(Gtk::TreeView* pTreeView,
 	//	Glib::RefPtr<Gtk::TreeModel> refTreeModel);
 
-	void MainWindow::fillEditingPanel(getodo::Task& task);
-	void MainWindow::clearEditingPanel();
-	void MainWindow::saveEditingPanelToTask(getodo::Task& task);
+	void fillEditingPanel(getodo::Task& task);
+	void clearEditingPanel();
+	void saveEditingPanelToTask(getodo::Task& task);
+	getodo::id_t getCurrentlyEditedTaskId();
 };
 
 #endif // GETODOGUI_MAIN_WINDOW_H

@@ -59,10 +59,15 @@ public:
 	Task(const Task& t); // copy constructor
 	virtual ~Task();
 
+	static const id_t INVALID_ID = -1;
+
+	static bool isValidId(id_t id);
+
 	// ----- Access member functions -----
 
 	id_t getTaskId() const;
 	void setTaskId(id_t taskId);
+	bool hasValidId() const;
 
 	id_t getParentId() const;
 	//void setParentId(id_t parentId); // not needed
@@ -144,6 +149,9 @@ private:
 /** %Task persistence.
  * Object-relation mapping of Task objects.
  */
+// TODO:
+// Persistence should contain a reference to TaskManager,
+// not only to a database connection in order to call signals!
 class TaskPersistence {
 private:
 	sqlite3x::sqlite3_connection* conn;
@@ -200,16 +208,21 @@ private:
 	// update a single column and also last modified date
 	template<typename T>
 	void setColumn(std::string columnName, T value) {
-		if(!conn || !task || (task->getTaskId() >= 0)) {
-			return; //TODO: throw
+		if (!conn) {
+			throw new GetodoError("No database connection in the persistence.");
 		}
+		if (!task || !task->hasValidId()) {
+			throw new GetodoError("Invalid task.");
+		}
+		DateTime modifiedDate = DateTime::now();
+		task->setDateLastModified(modifiedDate);
 		sqlite3_command cmd(*conn);
 		std::ostringstream ss;
 		ss << "UPDATE Task SET " << columnName << " = ?, "
 			"dateLastModified = ? WHERE taskId = ?;";
 		cmd.prepare(ss.str());
 		cmd.bind(1, value);
-		cmd.bind(2, DateTime::now().toString());
+		cmd.bind(2, modifiedDate.toString());
 		cmd.bind(3, task->getTaskId());
 		cmd.executenonquery();
 	}
