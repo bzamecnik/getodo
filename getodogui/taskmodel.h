@@ -13,6 +13,65 @@
 
 namespace getodo {
 
+/** Custom %Task TreeStore.
+ * 
+ */
+class TaskTreeStore : public Gtk::TreeStore {
+public:
+	static Glib::RefPtr<TaskTreeStore> create(TaskManager& manager);
+
+	class ModelColumns : public Gtk::TreeModel::ColumnRecord {
+	public:
+		Gtk::TreeModelColumn<int> id;
+		Gtk::TreeModelColumn<Glib::ustring> description;
+		//Gtk::TreeModelColumn<Glib::ustring> dateCreated;
+		//Gtk::TreeModelColumn<Glib::ustring> dateLastModified;
+		//Gtk::TreeModelColumn<Glib::ustring> dateStarted;
+		Gtk::TreeModelColumn<Glib::ustring> dateDeadline;
+		//Gtk::TreeModelColumn<Glib::ustring> dateCompleted;
+		//Gtk::TreeModelColumn<Glib::ustring> recurrence;
+		Gtk::TreeModelColumn<int> priority;
+		Gtk::TreeModelColumn<int> completedPercentage;
+		Gtk::TreeModelColumn<bool> done;
+
+		ModelColumns() {
+			add(id);
+			add(description);
+			//add(dateCreated);
+			//add(dateLastModified);
+			//add(dateStarted);
+			add(dateDeadline);
+			//add(dateCompleted);
+			//add(recurrence);
+			add(priority);
+			add(completedPercentage);
+			add(done);
+		}
+	};
+
+	ModelColumns columns;
+
+protected:
+	TaskTreeStore(TaskManager& manager);
+
+	// called by underlying TaskManager
+	void on_task_inserted(Task& task);
+	void on_task_updated(Task& task);
+	void on_task_removed(Task& task);
+
+	Gtk::TreeModel::Path& getPathByTask(Task& task);
+	//Gtk::TreeModel::Path& getPathByTaskId(id_t taskId);
+	void setRowFromTask(Gtk::TreeModel::iterator& iter, Task& task);
+	void insertTask(Task& task);
+	void refresh();
+private:
+	TaskManager& manager;
+};
+
+
+// ----- The following will be obsoleted by TaskTreeStore: -----
+
+
 class TaskNode;
 typedef std::vector<TaskNode*> TaskNodeVector; // TODO: use shared_ptr!
 

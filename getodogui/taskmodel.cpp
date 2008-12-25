@@ -5,6 +5,112 @@
 
 namespace getodo {
 
+// ----- class TaskTreeStore ---------------
+
+TaskTreeStore::TaskTreeStore(TaskManager& _manager) : manager(_manager) {
+	set_column_types(columns);
+}
+
+Glib::RefPtr<TaskTreeStore> TaskTreeStore::create(TaskManager& _manager) {
+	TaskTreeStore* store = new TaskTreeStore(_manager);
+	_manager.signal_task_inserted.connect(sigc::mem_fun(*store, &TaskTreeStore::on_task_inserted));
+	_manager.signal_task_updated.connect(sigc::mem_fun(*store, &TaskTreeStore::on_task_updated));
+	_manager.signal_task_removed.connect(sigc::mem_fun(*store, &TaskTreeStore::on_task_removed));
+	store->refresh();
+	return Glib::RefPtr<TaskTreeStore>(store);
+}
+
+void TaskTreeStore::on_task_inserted(Task& task) {
+	insertTask(task);
+}
+
+void TaskTreeStore::on_task_updated(Task& task) {
+	Gtk::TreeModel::Path& path = getPathByTask(task);
+	if (path.empty()) {
+		return;
+	}
+	Gtk::TreeModel::iterator iter = get_iter(path);
+	setRowFromTask(iter, task);
+	row_changed(path, iter);
+}
+
+void TaskTreeStore::on_task_removed(Task& task) {
+	erase(get_iter(getPathByTask(task)));
+}
+
+void TaskTreeStore::insertTask(Task& task) {
+	Task* parent = manager.getTask(task.getParentId());
+	Gtk::TreeModel::iterator iter;
+	if (task.hasParent() && parent) {
+		Gtk::TreeModel::Path path = getPathByTask(*parent);
+		Gtk::TreeModel::iterator parentIter = get_iter(path);
+		iter = append(parentIter->children());
+	} else {
+		iter = append();
+	}
+	setRowFromTask(iter, task);
+}
+
+Gtk::TreeModel::Path& TaskTreeStore::getPathByTask(Task& task) {
+	// traverse from this task by parents up to its root
+	// -> make a path containing task ids
+	std::deque<int> taskIdPath;
+	Task* currentTask = &task;
+	id_t currentTaskId = task.getTaskId();
+	do {
+		taskIdPath.push_front(currentTaskId);
+		currentTaskId = task.getParentId();
+		currentTask = manager.getTask(currentTaskId);
+	} while (currentTask != 0);
+
+	// traverse down the treestore searching for proper ids
+	Gtk::TreeNodeChildren childrenIter = children();
+	Gtk::TreeModel::iterator iter;
+	for (std::deque<int>::size_type depth = 0; depth < taskIdPath.size(); depth++) {
+		// problem: this could be slow
+		for (iter = childrenIter.begin(); iter != childrenIter.end(); ++iter) {
+			if ((*iter)[columns.id] == taskIdPath[depth]) {
+				childrenIter = iter->children();
+				break;
+			}
+		}
+	}
+	return *(new Gtk::TreeModel::Path(iter));
+}
+
+void TaskTreeStore::setRowFromTask(Gtk::TreeModel::iterator& iter, Task& task) {
+	Gtk::TreeModel::Row row = *iter;
+	row[columns.id] = task.getTaskId();
+	row[columns.description] = task.getDescription();
+	row[columns.dateDeadline] = task.getDateDeadline().toString();
+	row[columns.priority] = task.getPriority();
+	row[columns.completedPercentage] = task.getCompletedPercentage();
+	row[columns.done] = task.isDone();
+}
+
+// insert all tasks from task manager to tree store
+void TaskTreeStore::refresh() {
+	clear();
+
+	// TODO: (traverse the task tree using DFS)
+	// - get top level tasks
+	// - iterate over them
+	//   - append() the task
+	//   - put it on the stack
+	// - while (stack is not empty)
+	//   - get a task from the queue
+	//   - 
+
+	// dummy implementation - insert top level task only
+	std::list<Task*> taskList = manager.getTasksList();
+	for (std::list<Task*>::iterator it = taskList.begin(); it != taskList.end(); ++it) {
+		if (!(*it)->hasParent()) {
+			Gtk::TreeModel::iterator iter = append();
+			setRowFromTask(iter, **it);
+		}
+	}
+}
+
 // ----- class TaskNode --------------------
 
 TaskNode::~TaskNode() {

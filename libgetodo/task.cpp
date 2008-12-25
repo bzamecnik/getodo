@@ -24,11 +24,13 @@ namespace getodo {
 // empty constructor
 Task::Task() :
 	taskId(-1),
+	parentId(-1),
 	priority(0),
 	completedPercentage(0),
 	done(false)
 {
 	using namespace boost;
+	description = std::string();
 	dateCreated = DateTime::now();
 	dateLastModified = dateCreated;
 	dateStarted = gregorian::date(date_time::not_a_date_time);
@@ -165,6 +167,10 @@ void Task::setTagsFromString(TaskManager& manager, const std::string& tagsString
 	for (std::vector<std::string>::iterator it = newTags.begin();
 		it != newTags.end(); ++it)
 	{
+		if (it->empty()) {
+			continue; // ingnore empty tag names
+		}
+
 		if (manager.hasTag(*it)) {
 			Tag& tag = manager.getTag(*it);
 			if (hasTag(tag.id)) {
