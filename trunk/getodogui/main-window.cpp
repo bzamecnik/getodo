@@ -66,7 +66,8 @@ void MainWindow::setTaskManager(getodo::TaskManager* manager) {
 	taskManager = manager;
 
 	// ---- task treeview ----
-	refTaskTreeModel = getodo::TaskTreeModel::create(*taskManager);
+	//refTaskTreeModel = getodo::TaskTreeModel::create(*taskManager);
+	refTaskTreeModel = getodo::TaskTreeStore::create(*taskManager);
 	pTaskTreeView->set_model(refTaskTreeModel);
 	
 	// TODO: Sorting model doesn't work well with my custom models, fix this.
@@ -77,7 +78,7 @@ void MainWindow::setTaskManager(getodo::TaskManager* manager) {
 	// Add TreeView columns when setting a model for the first time.
 	// The model columns don't change, so it's ok to add them only once.
 	if (pTaskTreeView->get_columns().empty()) {
-		//pTaskTreeView->append_column("Id", refTaskTreeModel->columns.id);
+		pTaskTreeView->append_column("Id", refTaskTreeModel->columns.id);
 		pTaskTreeView->append_column("Description", refTaskTreeModel->columns.description);
 		pTaskTreeView->append_column("Done", refTaskTreeModel->columns.done);
 		pTaskTreeView->append_column("%", refTaskTreeModel->columns.completedPercentage);
@@ -125,11 +126,12 @@ void MainWindow::on_taskTreeview_selection_changed() {
 	// display the selected task's contents in the task editing panel
 	using namespace getodo;
 	Gtk::TreeModel::iterator iter = pTaskTreeView->get_selection()->get_selected();
+	Task* task = 0;
 	if (iter) {
-		TaskNode* node = static_cast<TaskNode*>(iter.gobj()->user_data);
-		if (!node) { return; }
-		Task& task = node->get_item();
-		fillEditingPanel(task);
+		task = taskManager->getTask((*iter)[refTaskTreeModel->columns.id]);
+	}
+	if (task){
+		fillEditingPanel(*task);
 	} else {
 		clearEditingPanel();
 	}
@@ -142,7 +144,9 @@ void MainWindow::on_buttonTaskNew_clicked() {
 	using namespace getodo;
 	id_t newTaskId = taskManager->addTask(*(new Task()));
 	fillEditingPanel(*taskManager->getTask(newTaskId));
-	// TODO: select newly created task's row in treeview (?)
+	// TODO: select newly created task's row in treeview
+	// Find out row, iter or path of the new task in the taskTreeView.
+	//pTaskTreeView->get_selection()->select(... row, iter or path ...)
 	pTaskDescriptionEntry->grab_focus();
 }
 
@@ -150,6 +154,7 @@ void MainWindow::on_buttonTaskDelete_clicked() {
 	// delete currently selected task
 	if (!taskManager) { return; }
 
+	// TODO: or delete multiple selected rows (use get_selected_rows())
 	Gtk::TreeModel::iterator iter = pTaskTreeView->get_selection()->get_selected();
 	if (iter) {
 		taskManager->deleteTask((*iter)[refTaskTreeModel->columns.id]);
@@ -171,11 +176,10 @@ void MainWindow::on_buttonTaskUpdate_clicked() {
 	} catch (boost::bad_lexical_cast) {
 		return;
 	}
-	TaskPersistence tp = taskManager->getPersistentTask(taskId);
-	Task* updatedTask = tp.getTask();
-	if (updatedTask){
+	Task* updatedTask = taskManager->getTask(taskId);
+	if (updatedTask) {
 		saveEditingPanelToTask(*updatedTask);
-		tp.save();
+		taskManager->editTask(taskId, *updatedTask);
 	}
 }
 

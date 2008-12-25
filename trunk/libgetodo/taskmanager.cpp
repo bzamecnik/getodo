@@ -95,7 +95,7 @@ Task* TaskManager::getTask(id_t taskId) {
     if (it != tasks.end()) {
         return it->second;
     } else {
-        return 0;
+        return 0; // maybe throw GetodoError
     }
 }
 
