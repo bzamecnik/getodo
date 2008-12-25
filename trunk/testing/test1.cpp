@@ -504,8 +504,8 @@ void testTaskPersistence() {
 		cout << *(persistence1.getTask());
 		
 		//void save();
-		cout << "persistence1 save()" << endl;
-		persistence1.save();
+		//cout << "persistence1 save()" << endl;
+		//persistence1.save();
 
 		int task1Id = task1->getTaskId();
 

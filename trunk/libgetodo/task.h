@@ -126,8 +126,8 @@ public:
 	void setDone(bool done = true);
 
 	// ----- object-relation representation conversion -----
-	databaseRow_t toDatabaseRow() const;
-	static Task* fromDatabaseRow(databaseRow_t);
+	databaseRow_t& toDatabaseRow() const;
+	static Task* fromDatabaseRow(databaseRow_t& row);
 
 	// ----- text I/O -----
 	std::string toString() const;
@@ -163,9 +163,12 @@ public:
 	TaskPersistence(sqlite3x::sqlite3_connection* conn, Task* task);
 	~TaskPersistence();
 	
-	// save whole Task to database
-	// TODO: split into insert() and update()
-	void save();
+	// save Task to database and assign an id
+	// true, if really inserted
+	bool insert();
+	// update existing Task (with valid taskId)
+	void update();
+
 	// load Task from database
 	Task* load(id_t taskId);
 
@@ -226,6 +229,11 @@ private:
 		cmd.bind(3, task->getTaskId());
 		cmd.executenonquery();
 	}
+
+	void saveTags();
+
+	// common code to insert() and update()
+	databaseRow_t& prepareRowToSave();
 };
 
 } // namespace getodo

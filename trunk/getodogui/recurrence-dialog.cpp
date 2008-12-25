@@ -132,7 +132,7 @@ getodo::Recurrence& RecurrenceDialog::getRecurrence() {
 	}
 	return *recurrence;
 }
-void RecurrenceDialog::setRecurrence(getodo::Recurrence& r) {
+void RecurrenceDialog::setRecurrence(const getodo::Recurrence& r) {
 	using namespace getodo;
 	recurrence = r.clone();
 	// set dialog contents according to recurrence

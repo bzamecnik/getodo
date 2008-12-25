@@ -208,7 +208,7 @@ void Task::removeSubtask(Task& subtask) {
 	subtask.unsetParent();
 }
 void Task::addSubtask(id_t subtaskId) {
-	if (!Task::isValidId(subtaskId) || !(subtaskId != taskId)) {
+	if (!Task::isValidId(subtaskId) || (subtaskId == taskId)) {
 		throw new GetodoError("Invalid subtask id.");
 	}
 	subtasks.insert(subtaskId);
@@ -281,8 +281,8 @@ void Task::setDone(bool done) {
 
 // ----- object-relation representation conversion ----------
 
-databaseRow_t Task::toDatabaseRow() const {
-	databaseRow_t row;
+databaseRow_t& Task::toDatabaseRow() const {
+	databaseRow_t& row = *(new databaseRow_t());
 
 	row["taskId"] = boost::lexical_cast<std::string, id_t>(taskId);
 	row["parentId"] = boost::lexical_cast<std::string, id_t>(parentId);
@@ -306,7 +306,7 @@ databaseRow_t Task::toDatabaseRow() const {
 	return row;
 }
 
-Task* Task::fromDatabaseRow(databaseRow_t row) {
+Task* Task::fromDatabaseRow(databaseRow_t& row) {
 	Task* task = new Task();
 	
 	try {
@@ -391,22 +391,9 @@ TaskPersistence::TaskPersistence(sqlite3_connection* c, Task* t)
 
 TaskPersistence::~TaskPersistence() {}
 
-// save whole Task to database
-// TODO: split into insert() and update()
-void TaskPersistence::save() {
-	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
-	if (!task) { throw new GetodoError("No task in the persistence."); }
-	
-	// save the task
-	
-	databaseRow_t row = task->toDatabaseRow();
-	// TODO: delete this when Duration will be ready
-	row["estDuration"] = "";
+bool TaskPersistence::insert() {
+	databaseRow_t& row = prepareRowToSave();
 
-	// update last modification date
-	task->setDateLastModified(DateTime::now());
-	row["dateLastModified"] = task->getDateLastModified().toString();
-	
 	int count = 0;
 	if (task->hasValidId()) {
 		// task has already its taskId, find out if it is in the db
@@ -414,71 +401,72 @@ void TaskPersistence::save() {
 			"WHERE taskId = (?);");
 		cmd.bind(1, row["taskId"]);
 		count = cmd.executeint();
+		if (count > 0) {
+			return false; // it is already in the db
+		}
 	}
-	if (count > 0) {
-		// it is already there -> update
-		
-		// build the SQL command
-		std::ostringstream ss;
-		ss << "UPDATE Task SET ";
-		databaseRow_t::const_iterator col = row.begin();
-		for (; col != (--row.end()); col++) {
-			// don't overwrite the taskId
-			if (col->first == "taskId") { continue; }
-			ss << col->first << " = '" << col->second << "', ";
-		}
-		if (col != row.end()) {
-			// the last column without comma
-			ss << col->first << " = '" << col->second << "' ";
-		}
-		ss << "WHERE taskId = " << row["taskId"] << ";";
-		sqlite3_command cmd(*conn, ss.str());
-		ss.str(""); // clear the stream
-		cmd.executenonquery();
-	} else {
-		// it is not in the db -> insert
-		row["dateCreated"] = row["dateLastModified"];
-		row.erase("taskId"); // don't set id directly, db will set it
+	row["dateCreated"] = row["dateLastModified"];
+	row.erase("taskId"); // don't set id directly, db will set it
 
-		std::ostringstream sql;
-		std::ostringstream values;
-		sql << "INSERT INTO Task (";
-		databaseRow_t::const_iterator col = row.begin();
-		for (; col != (--(row.end())); col++) {
-			sql << col->first << ", ";
-			values << "'" << col->second << "',";
-		}
-		if (col != row.end()) {
-			// the last column without comma
-			sql << col->first << ' ';
-			values << "'" << col->second << "'";
-		}
-		sql << ") VALUES (" << values.str() << ");";
-		sqlite3_command cmd(*conn, sql.str());
-		sql.str(""); // clear the stream
-		values.str(""); // clear the stream
-		cmd.executenonquery();
-		
-		// the database automatically created a new taskId
-		// set it to the task object
-		task->setTaskId(sqlite3_last_insert_rowid(conn->db()));
-		
-		// set it to the newly created database row too
-		// this row is identified by a special ROWID column
-		cmd.prepare("UPDATE Task SET taskId = ? WHERE ROWID = ?");
-		cmd.bind(1, task->getTaskId());
-		cmd.bind(2, task->getTaskId());
-		cmd.executenonquery();
+	std::ostringstream sql;
+	std::ostringstream values;
+	sql << "INSERT INTO Task (";
+	databaseRow_t::const_iterator col = row.begin();
+	for (; col != (--(row.end())); col++) {
+		sql << col->first << ", ";
+		values << "'" << col->second << "',";
 	}
-	
- 	// save tags
-	// TODO: remove unused tags (ie. the ones deleted in Task but not yet in db)
-	
-	std::list<id_t> tags = task->getTagsList();
-	std::list<id_t>::const_iterator tag;
-	for (tag = tags.begin(); tag != tags.end(); tag++) {
-		addTag(*tag);
+	if (col != row.end()) {
+		// the last column without comma
+		sql << col->first << ' ';
+		values << "'" << col->second << "'";
 	}
+	sql << ") VALUES (" << values.str() << ");";
+	sqlite3_command cmd(*conn, sql.str());
+	cmd.executenonquery();
+	
+	// the database automatically created a new taskId
+	// set it to the task object
+	task->setTaskId(sqlite3_last_insert_rowid(conn->db()));
+	return true;
+}
+
+void TaskPersistence::update() {
+	databaseRow_t& row = prepareRowToSave();
+
+	// NOTE: if there is no row with such an id in the db,
+	// nothing bad happens
+
+	// build the SQL command
+	std::ostringstream ss;
+	ss << "UPDATE Task SET ";
+	databaseRow_t::const_iterator col = row.begin();
+	for (; col != (--row.end()); col++) {
+		// don't overwrite the taskId
+		if (col->first == "taskId") { continue; }
+		ss << col->first << " = '" << col->second << "', ";
+	}
+	if (col != row.end()) {
+		// the last column without comma
+		ss << col->first << " = '" << col->second << "' ";
+	}
+	ss << "WHERE taskId = " << row["taskId"] << ";";
+	sqlite3_command cmd(*conn, ss.str());
+	cmd.executenonquery();
+}
+
+databaseRow_t& TaskPersistence::prepareRowToSave() {
+	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
+	if (!task) { throw new GetodoError("No task in the persistence."); }
+
+	databaseRow_t& row = task->toDatabaseRow();
+	// TODO: delete this when Duration will be ready
+	row["estDuration"] = "";
+
+	// update last modification date
+	task->setDateLastModified(DateTime::now());
+	row["dateLastModified"] = task->getDateLastModified().toString();
+	return row;
 }
 
 Task* TaskPersistence::load(id_t taskId) {
@@ -717,6 +705,17 @@ void TaskPersistence::setDone(bool done) {
 	setColumn<bool>("done", done);
 	setCompletedPercentage(task->getCompletedPercentage());
 	task->setDone();
+}
+
+void TaskPersistence::saveTags() {
+	if (!task) { throw new GetodoError("No task in the persistence."); }
+	
+	// TODO: remove unused tags (ie. the ones deleted in Task but not yet in db)
+	std::list<id_t> tags = task->getTagsList();
+	std::list<id_t>::const_iterator tag;
+	for (tag = tags.begin(); tag != tags.end(); tag++) {
+		addTag(*tag);
+	}
 }
 
 } // namespace getodo

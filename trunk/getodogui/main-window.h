@@ -7,6 +7,8 @@
 #include "getodogui.h"
 #include "tagmodel.h"
 #include "taskmodel.h"
+#include <boost/lambda/lambda.hpp>
+#include <boost/bind.hpp>
 
 // ----- class MainWindow --------------------
 
@@ -90,6 +92,7 @@ private:
 	void clearEditingPanel();
 	void saveEditingPanelToTask(getodo::Task& task);
 	getodo::id_t getCurrentlyEditedTaskId();
+	bool updateTaskPartial(boost::function<void(getodo::TaskPersistence&)> f);
 };
 
 #endif // GETODOGUI_MAIN_WINDOW_H
