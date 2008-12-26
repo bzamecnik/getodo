@@ -143,8 +143,8 @@ void TaskManager::deleteTask(id_t taskId) {
 	}
 
 	//// connect deleted tasks's children to parent node if any
-	//std::list<id_t> subtaskIds = task->getSubtasksList();
-	//for (std::list<id_t>::iterator subtaskIdIt = subtaskIds.begin();
+	//std::vector<id_t> subtaskIds = task->getSubtaskIds();
+	//for (std::vector<id_t>::iterator subtaskIdIt = subtaskIds.begin();
 	//	subtaskIdIt != subtaskIds.end(); ++subtaskIdIt)
 	//{
 	//	Task* subtask = getTask(*subtaskIdIt);
@@ -160,8 +160,8 @@ void TaskManager::deleteTask(id_t taskId) {
 	//}
 	
 	// delete the whole subtree
-	std::list<id_t> subtaskIds = task->getSubtasksList();
-	for (std::list<id_t>::iterator it = subtaskIds.begin();
+	std::vector<id_t> subtaskIds = task->getSubtaskIds();
+	for (std::vector<id_t>::iterator it = subtaskIds.begin();
 		it != subtaskIds.end(); ++it)
 	{
 		deleteTask(*it); // recursion
@@ -176,8 +176,8 @@ void TaskManager::deleteTask(id_t taskId) {
 	tasks.erase(taskId);
 }
 
-std::list<Task*> TaskManager::getTasksList() {
-    return convertMapToList<id_t, Task>(tasks);
+std::vector<Task*>& TaskManager::getTasks() {
+    return convertMapToVector<id_t, Task>(tasks);
 }
 
 // ----- Tag operations -----
@@ -259,8 +259,8 @@ void TaskManager::deleteTag(id_t tagId) {
 	}
 }
 
-std::list<Tag*> TaskManager::getTagsList() {
-    return convertMapToList<id_t, Tag>(tags);
+std::vector<Tag*>& TaskManager::getTags() {
+    return convertMapToVector<id_t, Tag>(tags);
 }
 
 // ----- FilterRule operations -----
@@ -328,8 +328,8 @@ void TaskManager::deleteFilterRule(id_t filterRuleId) {
 	}
 }
 
-std::list<FilterRule*> TaskManager::getFilterRulesList() {
-    return convertMapToList<id_t, FilterRule>(filters);
+std::vector<FilterRule*>& TaskManager::getFilterRules() {
+    return convertMapToVector<id_t, FilterRule>(filters);
 }
 
 // ----- Other things -----

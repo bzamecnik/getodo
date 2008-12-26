@@ -66,8 +66,8 @@ TagNode::~TagNode() {
 //	}
 //}
 //
-//std::list<Tag*> TagManager::getTagsList() {
-//	std::list<Tag*> tagList;
+//std::vector<Tag*> TagManager::getTags() {
+//	std::vector<Tag*> tagList;
 //	for (tags_t::iterator it = tags.begin(); it != tags.end(); ++it) {
 //		tagList.push_back(it->second);
 //	}
@@ -136,10 +136,11 @@ TagModel::Path TagModel::get_path(TagNode& node) const {
 
 void TagModel::refresh(void) {
 	clear();
-	std::list<Tag*> tagList = manager.getTagsList();
+	std::vector<Tag*>& tags = manager.getTags();
 	// TODO: when sorting will work correctly, use normal iterator here
 	// This is only a hack to sort the list in ascending order (by Id).
-	for (std::list<Tag*>::reverse_iterator it = tagList.rbegin(); it != tagList.rend(); ++it) {
+	std::vector<Tag*>::reverse_iterator it;
+	for (it = tags.rbegin(); it != tags.rend(); ++it) {
 		insert(**it);
 	}
 }

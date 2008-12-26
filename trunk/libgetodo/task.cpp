@@ -132,8 +132,8 @@ void Task::removeTag(id_t tagId) {
 	// when the tagId is bad, it might be reported
 	tags.erase(tagId);
 }
-std::list<id_t> Task::getTagsList() const {
-	return convertSetToList<id_t>(tags);
+std::vector<id_t>& Task::getTagIds() const {
+	return convertSetToVector<id_t>(tags);
 }
 
 std::string Task::getTagsAsString(TaskManager& manager) const {
@@ -220,8 +220,8 @@ void Task::removeSubtask(id_t taskId) {
 	//should throw an exception on failure (?)
 	subtasks.erase(taskId);
 }
-std::list<id_t> Task::getSubtasksList() const {
-	return convertSetToList<id_t>(subtasks);
+std::vector<id_t>& Task::getSubtaskIds() const {
+	return convertSetToVector<id_t>(subtasks);
 }
 
 DateTime Task::getDateCreated() const { return dateCreated; }
@@ -365,12 +365,12 @@ std::ostream& operator<< (std::ostream& o, const Task& task) {
 		o << "  " << it->first << " => " << it->second << std::endl;
 	}
 
-	std::list<id_t> tags = task.getTagsList();
+	std::vector<id_t>& tags = task.getTagIds();
 	o << "  tags [";
 	join(o, tags.begin(), tags.end(), ",");
 	o << "]" << std::endl;
 	
-	//std::list<id_t> subtasks = task.getSubtasksList();
+	//std::vector<id_t> subtasks = task.getSubtaskIds();
 	//o << "  subtasks [";
 	//join(o, subtasks.begin(), subtasks.end(), ",");
 	//o << "]" << std::endl;
@@ -711,8 +711,8 @@ void TaskPersistence::saveTags() {
 	if (!task) { throw new GetodoError("No task in the persistence."); }
 	
 	// TODO: remove unused tags (ie. the ones deleted in Task but not yet in db)
-	std::list<id_t> tags = task->getTagsList();
-	std::list<id_t>::const_iterator tag;
+	std::vector<id_t>& tags = task->getTagIds();
+	std::vector<id_t>::const_iterator tag;
 	for (tag = tags.begin(); tag != tags.end(); tag++) {
 		addTag(*tag);
 	}

@@ -102,8 +102,9 @@ void TaskTreeStore::refresh() {
 	//   - 
 
 	// dummy implementation - insert top level task only
-	std::list<Task*> taskList = manager.getTasksList();
-	for (std::list<Task*>::iterator it = taskList.begin(); it != taskList.end(); ++it) {
+	std::vector<Task*>& tasks = manager.getTasks();
+	std::vector<Task*>::iterator it;
+	for (it = tasks.begin(); it != tasks.end(); ++it) {
 		if (!(*it)->hasParent()) {
 			Gtk::TreeModel::iterator iter = append();
 			setRowFromTask(iter, **it);
@@ -237,10 +238,11 @@ TaskModel::Path TaskModel::get_path(TaskNode& node) const {
 
 void TaskModel::refresh(void) {
 	clear();
-	std::list<Task*> taskList = manager.getTasksList();
+	std::vector<Task*>& tasks = manager.getTasks();
 	// TODO: when sorting will work correctly, use normal iterator here
 	// This is only a hack to sort the list in ascending order (by Id).
-	for (std::list<Task*>::reverse_iterator it = taskList.rbegin(); it != taskList.rend(); ++it) {
+	std::vector<Task*>::reverse_iterator it;
+	for (it = tasks.rbegin(); it != tasks.rend(); ++it) {
 		insert(**it);
 	}
 }
@@ -726,65 +728,5 @@ const Glib::Class& TaskTreeModel_Class::init()
 }
 
 void TaskTreeModel_Class::class_init_function(void* g_class, void* class_data) {}
-
-//// for reference (TODO: delete if not needed anymore)
-//// ----- class TaskManager --------------------
-//
-//TaskManager::TaskManager() {}
-//TaskManager::~TaskManager() {
-//	for(tasks_t::iterator it = tasks.begin(); it != tasks.end(); ++it) {
-//		if(it->second) {
-//			delete it->second;
-//			it->second = 0;
-//		}
-//	}
-//}
-//void TaskManager::insertTask(Task* task) {
-//	using namespace std;
-//	if (task) {
-//		pair<tasks_t::iterator, bool> result = tasks.insert(make_pair(task->id, task));
-//		if (result.second) {
-//			signal_task_inserted(*task);
-//		}
-//	}
-//}
-//bool TaskManager::hasTask(id_t taskId) {
-//	return tasks.find(taskId) != tasks.end();
-//}
-//Task* TaskManager::getTask(id_t taskId) {
-//	tasks_t::iterator foundTask = tasks.find(taskId);
-//	if (foundTask != tasks.end()) {
-//		return foundTask->second;
-//	} else {
-//		return 0;
-//	}
-//}
-//void TaskManager::updateTask(Task* task) {
-//	if (!task) { return; }
-//	tasks_t::iterator updatedTask = tasks.find(task->id);
-//	if (updatedTask != tasks.end()) {
-//		tasks[task->id]->name = task->name;
-//		signal_task_updated(*task);
-//	} else {
-//		insertTask(task);
-//	}
-//	
-//}
-//void TaskManager::removeTask(id_t taskId) {
-//	tasks_t::iterator taskToRemove = tasks.find(taskId);
-//	if(taskToRemove != tasks.end()) {
-//		signal_task_removed(*(taskToRemove->second));
-//		delete taskToRemove->second;
-//		tasks.erase(taskToRemove);
-//	}
-//}
-//
-//std::list<Task*> TaskManager::getTasksList() {
-//	std::list<Task*> taskList;
-//	for (tasks_t::iterator it = tasks.begin(); it != tasks.end(); ++it) {
-//		taskList.push_back(it->second);
-//	}
-//	return taskList;
-//}
 
 } // namespace getodo
