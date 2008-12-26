@@ -264,10 +264,10 @@ void testTask() {
 	task1.removeTag(17);
 	cout << "task1 hasTag(17): " << task1.hasTag(17) << endl;
 	
-	//std::list<id_t> getTagsList() const;
+	//std::vector<id_t> getTags() const;
 	{
-		list<id_t> tags = task1.getTagsList();
-		cout << "task1 getTagsList(): [";
+		vector<id_t> tags = task1.getTags();
+		cout << "task1 getTags(): [";
 		join(std::cout, tags.begin(), tags.end(), ", ");
 		cout << "]" << endl;
 	}
@@ -277,8 +277,8 @@ void testTask() {
 	task1.addTag(20);
 	task1.addTag(21);
 	{
-		list<id_t> tags = task1.getTagsList();
-		cout << "task1 getTagsList(): [";
+		vector<id_t> tags = task1.getTags();
+		cout << "task1 getTags(): [";
 		join(std::cout, tags.begin(), tags.end(), ", ");
 		cout << "]" << endl;
 	}
@@ -296,10 +296,10 @@ void testTask() {
 	task1.removeSubtask(117);
 	cout << "task1 hasSubtask(117): " << task1.hasSubtask(117) << endl;
 	
-	//std::list<id_t> getSubtasksList() const;
+	//std::vector<id_t> getSubtasks() const;
 	{
-		list<id_t> subtasks = task1.getSubtasksList();
-		cout << "task1 getSubtasksList(): [";
+		vector<id_t> subtasks = task1.getSubtasks();
+		cout << "task1 getSubtasks(): [";
 		join(std::cout, subtasks.begin(), subtasks.end(), ", ");
 		cout << "]" << endl;
 	}
@@ -309,8 +309,8 @@ void testTask() {
 	task1.addSubtask(120);
 	task1.addSubtask(121);
 	{
-		list<id_t> subtasks = task1.getSubtasksList();
-		cout << "task1 getSubtasksList(): [";
+		vector<id_t> subtasks = task1.getSubtasks();
+		cout << "task1 getSubtasks(): [";
 		join(std::cout, subtasks.begin(), subtasks.end(), ", ");
 		cout << "]" << endl;
 	}
@@ -394,14 +394,14 @@ void testTask() {
 	cout << "task2 getDescription(): " << task2.getDescription() << endl;
 	cout << "task2 getLongDescription(): " << task2.getLongDescription() << endl;
 	{
-		list<id_t> tags = task2.getTagsList();
-		cout << "task2 getTagsList(): [";
+		vector<id_t> tags = task2.getTags();
+		cout << "task2 getTags(): [";
 		join(std::cout, tags.begin(), tags.end(), ", ");
 		cout << "]" << endl;
 	}
 	{
-		list<id_t> subtasks = task2.getSubtasksList();
-		cout << "task2 getSubtasksList(): [";
+		vector<id_t> subtasks = task2.getSubtasks();
+		cout << "task2 getSubtasks(): [";
 		join(std::cout, subtasks.begin(), subtasks.end(), ", ");
 		cout << "]" << endl;
 	}
@@ -645,13 +645,13 @@ void testTaskManager() {
 		cout << "manager1.deleteTask(" << newTaskId << ")" << endl;
 		cout << "manager1.hasTask(" << newTaskId << "): " << manager1.hasTask(newTaskId) << endl;
 
-		//std::list<Task*> getTasksList();
+		//std::vector<Task*> getTasks();
 		manager1.addTask(*task1);
 		manager1.addTask(*task1);
 		cout << "manager1: added two tasks" << endl;
-		cout << "manager1.getTasksList() -> taskList1" << endl;
-		std::list<Task*> taskList1 = manager1.getTasksList();
-		cout << "taskList1.size(): " << taskList1.size() << endl << endl;
+		cout << "manager1.getTasks() -> tasks1" << endl;
+		std::vector<Task*> tasks1 = manager1.getTasks();
+		cout << "tasks1.size(): " << tasks1.size() << endl << endl;
 
 		delete task1;
 
@@ -693,13 +693,13 @@ void testTaskManager() {
 		cout << "manager1.deleteTag(" << newTagId << ")" << endl;
 		manager1.deleteTag(newTagId);
  
-		//std::list<Task*> getTasksList();
+		//std::vector<Task*> getTasks();
 		manager1.addTag(Tag("hello"));
 		manager1.addTag(Tag("world"));
 		cout << "manager1: added two tags" << endl;
-		cout << "manager1.getTagsList() -> tagList1" << endl;
-		std::list<Tag*> tagList1 = manager1.getTagsList();
-		cout << "tagList1.size(): " << tagList1.size() << endl << endl;
+		cout << "manager1.getTags() -> tags1" << endl;
+		std::vector<Tag*>& tags1 = manager1.getTags();
+		cout << "tags1.size(): " << tags1.size() << endl << endl;
 
 		// ----- FilterRule operations -----
 
@@ -736,13 +736,13 @@ void testTaskManager() {
 		cout << "manager1.hasFilterRule(" << newFilterId << "): ";
 		cout << manager1.hasFilterRule(newFilterId) << endl;
 
-		//std::list<FilterRule*> getFilterRulesList();
+		//std::vector<FilterRule*> getFilterRules();
 		manager1.addFilterRule(FilterRule("low priority","priority <= 3"));
 		manager1.addFilterRule(FilterRule("done","done = true"));
 		cout << "manager1: added two filter rules" << endl;
-		cout << "manager1.getFilterRulesList() -> filterList1" << endl;
-		std::list<FilterRule*> filterList1 = manager1.getFilterRulesList();
-		cout << "filterList1.size(): " << filterList1.size() << endl << endl;
+		cout << "manager1.getFilterRules() -> filters1" << endl;
+		std::vector<FilterRule*> filters1 = manager1.getFilterRules();
+		cout << "filters1.size(): " << filters1.size() << endl << endl;
 	} catch (database_error& e) {
 		cout << e.what() << endl;
 	}

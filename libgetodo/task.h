@@ -84,7 +84,7 @@ public:
 	void addTag(id_t tagId); //should throw an exception on failure (?)
 	bool hasTag(id_t tagId) const;
 	void removeTag(id_t tagId); //should throw an exception on failure
-	std::list<id_t> getTagsList() const;
+	std::vector<id_t>& getTagIds() const;
 	std::string getTagsAsString(TaskManager& manager) const;
 	void setTagsFromString(TaskManager& manager, const std::string& tagsString);
 
@@ -96,7 +96,7 @@ public:
 	void removeSubtask(id_t taskId); //should throw an exception on failure
 	bool hasSubtask(id_t taskId) const;
 
-	std::list<id_t> getSubtasksList() const;
+	std::vector<id_t>& getSubtaskIds() const;
 
 	DateTime getDateCreated() const;
 	void setDateCreated(const DateTime& dateCreated);
@@ -134,13 +134,13 @@ public:
 	friend std::ostream& operator<< (std::ostream& o, const Task& task);
 private:
 	template<typename T>
-	std::list<T> convertSetToList(std::set<T> s) const {
-		std::list<T> list;
+	std::vector<T>& convertSetToVector(std::set<T> s) const {
+		std::vector<T>& vector = *(new std::vector<T>());
 		std::set<T>::const_iterator it;
 		for (it = s.begin(); it != s.end(); it++) {
-			list.push_front(*it);
+			vector.push_back(*it);
 		}
-		return list;
+		return vector;
 	}
 };
 

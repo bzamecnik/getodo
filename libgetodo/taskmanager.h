@@ -58,7 +58,7 @@ public:
     TaskPersistence& getPersistentTask(id_t taskId); // for modyfing particular things
     Task& editTask(id_t taskId, const Task& task);
     void deleteTask(id_t taskId); //should throw an exception on failure
-	std::list<Tag*> getTagsList();
+	std::vector<Task*>& getTasks();
 
     // ----- Tag operations -----
 
@@ -69,7 +69,7 @@ public:
     Tag& getTag(std::string tagName);
     Tag& editTag(id_t tagId, const Tag& tag);
     void deleteTag(id_t tagId); //should throw an exception on failure
-    std::list<Task*> getTasksList(); // better use std::vector
+    std::vector<Tag*>& getTags();
 
     // ----- FilterRule operations -----
 
@@ -79,7 +79,7 @@ public:
     FilterRule& getFilterRule(id_t filterRuleId);
     FilterRule& editFilterRule(id_t filterRuleId, const FilterRule& filter);
     void deleteFilterRule(id_t filterRuleId); //should throw an exception on failure
-    std::list<FilterRule*> getFilterRulesList();
+    std::vector<FilterRule*>& getFilterRules();
 
     // TODO:
     // - specify a format for FilterRules
@@ -109,14 +109,17 @@ private:
     void createEmptyDatabase(); // create an inital database structure
     bool checkDatabaseStructure(); // true, if all needed tables exist
 
+	// TODO: Use output iterator and back_inserter.
+	// See: http://bytes.com/groups/c/60522-returning-vector-reference#post225137
     template<typename T_key, typename T_value>
-    std::list<T_value*> convertMapToList(std::map<T_key, T_value *> m) {
-        std::list<T_value*> list;
+    std::vector<T_value*>& convertMapToVector(std::map<T_key, T_value *>& m)
+	{
+        std::vector<T_value*>& vector = *(new std::vector<T_value*>());
         std::map<T_key, T_value *>::iterator it;
         for (it = m.begin(); it != m.end(); it++) {
-            list.push_front(it->second);
+            vector.push_back(it->second);
         }
-        return list;
+        return vector;
     }
 };
 
