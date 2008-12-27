@@ -7,8 +7,6 @@
 #include "getodogui.h"
 #include "tagmodel.h"
 #include "taskmodel.h"
-#include <boost/lambda/lambda.hpp>
-#include <boost/bind.hpp>
 
 // ----- class MainWindow --------------------
 
