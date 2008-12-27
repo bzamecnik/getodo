@@ -143,7 +143,7 @@ void TaskManager::deleteTask(id_t taskId) {
 	}
 
 	//// connect deleted tasks's children to parent node if any
-	//std::vector<id_t> subtaskIds = task->getSubtaskIds();
+	//std::vector<id_t>& subtaskIds = task->getSubtaskIds();
 	//for (std::vector<id_t>::iterator subtaskIdIt = subtaskIds.begin();
 	//	subtaskIdIt != subtaskIds.end(); ++subtaskIdIt)
 	//{
@@ -160,7 +160,7 @@ void TaskManager::deleteTask(id_t taskId) {
 	//}
 	
 	// delete the whole subtree
-	std::vector<id_t> subtaskIds = task->getSubtaskIds();
+	std::vector<id_t>& subtaskIds = task->getSubtaskIds();
 	for (std::vector<id_t>::iterator it = subtaskIds.begin();
 		it != subtaskIds.end(); ++it)
 	{
@@ -178,6 +178,13 @@ void TaskManager::deleteTask(id_t taskId) {
 
 std::vector<Task*>& TaskManager::getTasks() {
     return convertMapToVector<id_t, Task>(tasks);
+}
+
+std::vector<Task*>& TaskManager::getTopLevelTasks() {
+    std::vector<Task*>& allTasks = getTasks();
+	allTasks.erase(std::remove_if(allTasks.begin(), allTasks.end(),
+		boost::bind(&Task::hasParent, _1)), allTasks.end());
+	return allTasks;
 }
 
 // ----- Tag operations -----

@@ -59,7 +59,7 @@ Gtk::TreeModel::Path& TaskTreeStore::getPathByTask(Task& task) {
 	id_t currentTaskId = task.getTaskId();
 	do {
 		taskIdPath.push_front(currentTaskId);
-		currentTaskId = task.getParentId();
+		currentTaskId = currentTask->getParentId();
 		currentTask = manager.getTask(currentTaskId);
 	} while (currentTask != 0);
 
@@ -92,24 +92,70 @@ void TaskTreeStore::setRowFromTask(Gtk::TreeModel::iterator& iter, Task& task) {
 void TaskTreeStore::refresh() {
 	clear();
 
-	// TODO: (traverse the task tree using DFS)
-	// - get top level tasks
-	// - iterate over them
-	//   - append() the task
-	//   - put it on the stack
-	// - while (stack is not empty)
-	//   - get a task from the queue
-	//   - 
+	// Traverse the task tree using a kind of DFS and append
+	// tasks to the tree store.
+
+	// TODO: Could be more efficient
+	
+	// A stack of node levels of task tree waiting for
+	// appending to the TaskTreeStore
+	// - vector<id_t> - substasks
+	// - vector<id_t>::iterator - next task to process
+	std::stack<
+		std::pair<
+			boost::shared_ptr<std::vector<id_t>>,
+			std::vector<id_t>::iterator
+		>> stack;
+
+	std::vector<Task*>& topLevelTasks = manager.getTopLevelTasks();
+	// figure out top level task id's only
+	boost::shared_ptr<std::vector<id_t>> topLevelIds(
+		new std::vector<id_t>(topLevelTasks.size()));
+	std::transform(topLevelTasks.begin(), topLevelTasks.end(), topLevelIds->begin(),
+		boost::bind(&Task::getTaskId, _1));
+	stack.push(std::make_pair(topLevelIds, topLevelIds->begin()));
+	while (!stack.empty()) {
+		std::pair<
+			boost::shared_ptr<std::vector<id_t>>,
+			std::vector<id_t>::iterator
+		>& pair = stack.top();
+		while (pair.second != pair.first->end()) {
+			Task* task = manager.getTask(*pair.second);
+			if (!task) {
+				continue; // odd situation
+			}
+			Gtk::TreeModel::iterator iter;
+			if (task->hasParent()) {
+				Task* parentTask = manager.getTask(task->getParentId());
+				if (!parentTask) {
+					iter = append(); // odd situation
+				}
+				iter = append(get_iter(getPathByTask(*parentTask))->children());
+			} else {
+				iter = append();
+			}
+			setRowFromTask(iter, *task);
+			pair.second++;
+			boost::shared_ptr<std::vector<id_t>> subtasks(&task->getSubtaskIds());
+			if (!subtasks->empty()) {
+				stack.push(std::make_pair(subtasks, subtasks->begin()));
+				goto continueloop; // break this loop and continue to the outer loop
+			}
+		}
+		stack.pop();
+		continueloop:
+		;
+	}
 
 	// dummy implementation - insert top level task only
-	std::vector<Task*>& tasks = manager.getTasks();
-	std::vector<Task*>::iterator it;
-	for (it = tasks.begin(); it != tasks.end(); ++it) {
-		if (!(*it)->hasParent()) {
-			Gtk::TreeModel::iterator iter = append();
-			setRowFromTask(iter, **it);
-		}
-	}
+	//std::vector<Task*>& tasks = manager.getTasks();
+	//std::vector<Task*>::iterator it;
+	//for (it = tasks.begin(); it != tasks.end(); ++it) {
+	//	if (!(*it)->hasParent()) {
+	//		Gtk::TreeModel::iterator iter = append();
+	//		setRowFromTask(iter, **it);
+	//	}
+	//}
 }
 
 // ----- class TaskNode --------------------
