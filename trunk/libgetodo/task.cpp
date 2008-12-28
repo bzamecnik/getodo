@@ -90,21 +90,32 @@ bool Task::hasValidId() const { return Task::isValidId(taskId); }
 id_t Task::getParentId() const { return parentId; }
 //void Task::setParentId(id_t parentId) { this->parentId = parentId; }
 
-void Task::setParent(Task& newParent) {
-	if ((newParent.taskId != parentId) && (newParent.taskId != taskId)) {
-		unsetParent(); // unset previous parent
-		parentId = newParent.taskId;
-		newParent.addSubtask(taskId);
-		// problem: we know this task id after it is persisted!
+void Task::setParent(id_t newParentId, TaskManager& manager) {
+	if ((newParentId != parentId) && (newParentId != taskId)) {
+		// unset previous parent
+		if (hasParent()) {
+			Task* parentTask = manager.getTask(parentId);
+			if (parentTask) {
+				parentTask->removeSubtask(taskId);
+			}
+		}
+		Task* newParentTask = manager.getTask(newParentId);
+		id_t oldParentId = parentId;
+		if (newParentTask) {
+			newParentTask->addSubtask(taskId);
+			parentId = newParentId;
+		} else {
+			parentId = Task::INVALID_ID;
+		}
+		TaskPersistence persistence(manager.getConnection(), this);
+		persistence.setParentId();
+		// problem: we know this task id only after it is persisted!
+		manager.signal_task_moved(*this, oldParentId);
 	}
 }
 
-void Task::unsetParent() {
-	if (hasParent()) {
-		// we need a reference to parent task!
-		//parent.removeSubtask(*this);
-		parentId = Task::INVALID_ID;
-	}
+void Task::unsetParent(TaskManager& manager) {
+	setParent(Task::INVALID_ID, manager);
 }
 
 bool Task::hasParent() const {
@@ -201,12 +212,6 @@ void Task::setTagsFromString(TaskManager& manager, const std::string& tagsString
 	}
 }
 
-void Task::addSubtask(Task& subtask) {
-	subtask.setParent(*this);
-}
-void Task::removeSubtask(Task& subtask) {
-	subtask.unsetParent();
-}
 void Task::addSubtask(id_t subtaskId) {
 	if (!Task::isValidId(subtaskId) || (subtaskId == taskId)) {
 		throw new GetodoError("Invalid subtask id.");
@@ -608,14 +613,15 @@ void TaskPersistence::removeTag(id_t tagId) {
 	task->removeTag(tagId);
 }
 
-void TaskPersistence::setParentId(id_t parentId) {
+void TaskPersistence::setParentId() {
 	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
 	if (!task) { throw new GetodoError("No task in the persistence."); }
 
 	sqlite3_command cmd(*conn);
 	cmd.prepare("UPDATE Task SET parentId = ? WHERE taskId = ?;");
-	cmd.bind(1, parentId);
+	cmd.bind(1, task->getParentId());
 	cmd.bind(2, task->getTaskId());
+	cmd.executenonquery();
 	// TODO: task->setParent() - we don't have reference to the new parent
 }
 

@@ -74,6 +74,7 @@ protected:
 
 	// ----- signal handlers -----
 	void on_buttonTaskNew_clicked();
+	void on_buttonTaskNewSubtask_clicked();
 	void on_buttonTaskDelete_clicked();
 	void on_buttonTaskUpdate_clicked();
 	void on_buttonRecurrence_clicked();

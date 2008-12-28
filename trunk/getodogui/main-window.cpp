@@ -12,6 +12,7 @@ MainWindow::MainWindow(BaseObjectType* cobject,
 // TODO: initialize all widget pointers to 0
 {
 	Gtk::ToolButton* pTaskNewToolbutton;
+	Gtk::ToolButton* pTaskNewSubtaskToolbutton;
 	Gtk::ToolButton* pTaskDeleteToolbutton;
 	Gtk::ToolButton* pTaskUpdateToolbutton;
 	try {
@@ -37,12 +38,15 @@ MainWindow::MainWindow(BaseObjectType* cobject,
 		refXml->get_widget("taskDateLastModifiedLabel", pTaskDateLastModifiedLabel);
 
 		refXml->get_widget("taskNewToolbutton", pTaskNewToolbutton);
+		refXml->get_widget("taskNewSubtaskToolbutton", pTaskNewSubtaskToolbutton);
 		refXml->get_widget("taskDeleteToolbutton", pTaskDeleteToolbutton);
 		refXml->get_widget("taskUpdateToolbutton", pTaskUpdateToolbutton);
 
 		// signals
 		pTaskNewToolbutton->signal_clicked().connect(
 			sigc::mem_fun(*this, &MainWindow::on_buttonTaskNew_clicked) );
+		pTaskNewSubtaskToolbutton->signal_clicked().connect(
+			sigc::mem_fun(*this, &MainWindow::on_buttonTaskNewSubtask_clicked) );
 		pTaskDeleteToolbutton->signal_clicked().connect(
 			sigc::mem_fun(*this, &MainWindow::on_buttonTaskDelete_clicked) );
 		pTaskUpdateToolbutton->signal_clicked().connect(
@@ -146,7 +150,7 @@ void MainWindow::on_taskTreeview_selection_changed() {
 }
 
 void MainWindow::on_buttonTaskNew_clicked() {
-	// create a new task and start editing it
+	// Create a new top level task and start editing it.
 	if (!taskManager) { return; }
 
 	using namespace getodo;
@@ -155,7 +159,35 @@ void MainWindow::on_buttonTaskNew_clicked() {
 	fillEditingPanel(newTask);
 	
 	// select newly created task's row in treeview
-	Gtk::TreeModel::Path& path = refTaskTreeModel->getPathByTask(newTask);
+	Gtk::TreeModel::iterator iter = refTaskTreeModel->getIterByTask(newTask);
+	pTaskTreeView->get_selection()->select(refTaskTreeModel->get_path(iter));
+
+	pTaskDescriptionEntry->grab_focus();
+}
+
+void MainWindow::on_buttonTaskNewSubtask_clicked() {
+	// Create a new subtask or currently selected task and start editing it.
+	// Create new top level task if nothing selected.
+	if (!taskManager) { return; }
+
+	using namespace getodo;
+	id_t selectedTaskId = getCurrentlyEditedTaskId();
+	Task* parentTask = 0;
+	id_t newTaskId = taskManager->addTask(*(new Task()));
+	Task& newTask = *taskManager->getTask(newTaskId);
+
+	if (Task::isValidId(selectedTaskId)	&&
+		(parentTask = taskManager->getTask(selectedTaskId)))
+	{
+		newTask.setParent(parentTask->getTaskId(), *taskManager);
+	}
+	
+	fillEditingPanel(newTask);
+	
+	// select newly created task's row in treeview
+	Gtk::TreeModel::iterator iter = refTaskTreeModel->getIterByTask(newTask);
+	Gtk::TreeModel::Path path = refTaskTreeModel->get_path(iter);
+	pTaskTreeView->expand_to_path(path);
 	pTaskTreeView->get_selection()->select(path);
 
 	pTaskDescriptionEntry->grab_focus();
@@ -168,6 +200,7 @@ void MainWindow::on_buttonTaskDelete_clicked() {
 	// TODO: or delete multiple selected rows (use get_selected_rows())
 	Gtk::TreeModel::iterator iter = pTaskTreeView->get_selection()->get_selected();
 	if (iter) {
+		// TODO: select next row (will that work, when using a sorted model?)
 		taskManager->deleteTask((*iter)[refTaskTreeModel->columns.id]);
 	}
 }
