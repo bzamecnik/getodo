@@ -92,6 +92,7 @@ public:
 	sigc::signal1<void, Task&> signal_task_inserted;
 	sigc::signal1<void, Task&> signal_task_updated;
 	sigc::signal1<void, Task&> signal_task_removed;
+	sigc::signal2<void, Task&, id_t> signal_task_moved; // args: task being moved, old parent id
 
 	sigc::signal1<void, Tag&> signal_tag_inserted;
 	sigc::signal1<void, Tag&> signal_tag_updated;

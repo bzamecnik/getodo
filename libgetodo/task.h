@@ -71,8 +71,11 @@ public:
 
 	id_t getParentId() const;
 	//void setParentId(id_t parentId); // not needed
-	void setParent(Task& newParent);
-	void unsetParent(); // make this task a root level task
+	
+	void setParent(id_t newParentId, TaskManager& manager);
+	// we need a reference to 
+	// passing task manager is not a clean solution
+	void unsetParent(TaskManager& manager); // make this task a root level task
 	bool hasParent() const; // false if root
 
 	std::string getDescription() const;
@@ -88,9 +91,6 @@ public:
 	std::string getTagsAsString(TaskManager& manager) const;
 	void setTagsFromString(TaskManager& manager, const std::string& tagsString);
 
-	// update both this task and subtask being operated
-	void addSubtask(Task& subtask);
-	void removeSubtask(Task& subtask);
 	// only update subtasks set. these two should be private!
 	void addSubtask(id_t taskId); //should throw an exception on failure (?)
 	void removeSubtask(id_t taskId); //should throw an exception on failure
@@ -188,7 +188,7 @@ public:
 	void addTag(id_t tagId);
 	void removeTag(id_t tagId);
 
-	void setParentId(id_t);
+	void setParentId();
 
 	//void addSubtask(id_t taskId); // deprecated
 	//void removeSubtask(id_t taskId); // deprecated
