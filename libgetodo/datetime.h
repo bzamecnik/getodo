@@ -24,8 +24,12 @@
 namespace getodo {
 
 // THINK:
-//	* Make AbstractDate a common ancestor to Date and DateTime?
-//  * How to cope with not_a_date_time invalid dates from bad input strings?
+//	- Make AbstractDate a common ancestor to Date and DateTime?
+//  - How to cope with not_a_date_time invalid dates from bad input strings?
+
+// TODO:
+// - Support operator==() on DateTime, Date and Recurrence.
+//	 It would be useful in TaskPersistence.
 
 /** %Date and time.
  * Representaion of date and time.

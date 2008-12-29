@@ -188,6 +188,8 @@ public:
 	void addTag(id_t tagId);
 	void removeTag(id_t tagId);
 
+	// TODO: set tags from string
+
 	void setParentId();
 
 	//void addSubtask(id_t taskId); // deprecated

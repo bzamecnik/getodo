@@ -55,12 +55,55 @@ MainWindow::MainWindow(BaseObjectType* cobject,
 		refXml->connect_clicked("taskRecurrenceButton",
 			sigc::mem_fun(*this, &MainWindow::on_buttonRecurrence_clicked) );
 
+		// - saving individual parts of task
+		// TODO: bind the signal handler in a cycle over such a vector:
+		//std::vector<std::pair<Gtk::Widget*, boost::function>> editingPanelWidgets =
+		
 		pTaskDescriptionEntry->signal_focus_out_event().connect(
 			sigc::bind(
 				sigc::mem_fun(*this, &MainWindow::on_taskDescriptionEntry_focus_out_event),
 				pTaskDescriptionEntry
 			));
-		//on_taskDescriptionEntry_focus_out_event
+		pTaskLongDescriptionTextView->signal_focus_out_event().connect(
+			sigc::bind(
+				sigc::mem_fun(*this, &MainWindow::on_taskLongDescriptionTextview_focus_out_event),
+				pTaskLongDescriptionTextView
+			));
+		pTaskDoneCheckbutton->signal_focus_out_event().connect(
+			sigc::bind(
+				sigc::mem_fun(*this, &MainWindow::on_taskDoneCheckbutton_focus_out_event),
+				pTaskDoneCheckbutton
+			));
+		pTaskCompletedPercentageSpinbutton->signal_focus_out_event().connect(
+			sigc::bind(
+				sigc::mem_fun(*this, &MainWindow::on_taskCompletedPercentageSpinbutton_focus_out_event),
+				pTaskCompletedPercentageSpinbutton
+			));
+		pTaskPrioritySpinbutton->signal_focus_out_event().connect(
+			sigc::bind(
+				sigc::mem_fun(*this, &MainWindow::on_taskPrioritySpinbutton_focus_out_event),
+				pTaskPrioritySpinbutton
+			));
+		pTaskRecurrenceEntry->signal_focus_out_event().connect(
+			sigc::bind(
+				sigc::mem_fun(*this, &MainWindow::on_taskRecurrenceEntry_focus_out_event),
+				pTaskRecurrenceEntry
+			));
+		pTaskDateDeadlineEntry->signal_focus_out_event().connect(
+			sigc::bind(
+				sigc::mem_fun(*this, &MainWindow::on_taskDateDeadlineEntry_focus_out_event),
+				pTaskDateDeadlineEntry
+			));
+		pTaskDateStartedEntry->signal_focus_out_event().connect(
+			sigc::bind(
+				sigc::mem_fun(*this, &MainWindow::on_taskDateStartedEntry_focus_out_event),
+				pTaskDateStartedEntry
+			));
+		pTaskDateCompletedEntry->signal_focus_out_event().connect(
+			sigc::bind(
+				sigc::mem_fun(*this, &MainWindow::on_taskDateCompletedEntry_focus_out_event),
+				pTaskDateCompletedEntry
+			));
 	} catch (Gnome::Glade::XmlError& e) {
 		std::cerr << e.what() << std::endl;
 		exit(-1);
@@ -217,17 +260,75 @@ void MainWindow::on_buttonTaskUpdate_clicked() {
 	}
 }
 
+// event handling to save individual items of editing panel
+
 bool MainWindow::on_taskDescriptionEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry) {
-	if (!taskManager || !entry) { return false; }
 	using namespace getodo;
-	id_t taskId = getCurrentlyEditedTaskId();
-	if (!taskManager->hasTask(taskId)) {
-		return false;
-	}
-	TaskPersistence& tp = taskManager->getPersistentTask(taskId);
+	if (!entry) { return false; }
 	return updateTaskPartial(boost::bind( &TaskPersistence::setDescription, _1,
 		boost::ref(entry->get_text()) ));
 }
+
+bool MainWindow::on_taskLongDescriptionTextview_focus_out_event(GdkEventFocus* event, Gtk::TextView* textview) {
+	using namespace getodo;
+	if (!textview) { return false; }
+	return updateTaskPartial(boost::bind( &TaskPersistence::setLongDescription, _1,
+		boost::ref(textview->get_buffer()->get_text()) ));
+}
+
+//bool MainWindow: on_taskTagsEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry) {
+// //TODO: we need TaskPersistence.setTagsFromString()
+//}
+
+bool MainWindow::on_taskDoneCheckbutton_focus_out_event(GdkEventFocus* event, Gtk::CheckButton* checkbutton) {
+	using namespace getodo;
+	if (!checkbutton) { return false; }
+	return updateTaskPartial(boost::bind( &TaskPersistence::setDone, _1,
+		checkbutton->get_active() ));
+}
+
+bool MainWindow::on_taskCompletedPercentageSpinbutton_focus_out_event(GdkEventFocus* event, Gtk::SpinButton* spinbutton) {
+	using namespace getodo;
+	if (!spinbutton) { return false; }
+	return updateTaskPartial(boost::bind( &TaskPersistence::setCompletedPercentage, _1,
+		spinbutton->get_value_as_int() ));
+}
+
+bool MainWindow::on_taskPrioritySpinbutton_focus_out_event(GdkEventFocus* event, Gtk::SpinButton* spinbutton) {
+	using namespace getodo;
+	if (!spinbutton) { return false; }
+	return updateTaskPartial(boost::bind( &TaskPersistence::setPriority, _1,
+		spinbutton->get_value_as_int() ));
+}
+
+bool MainWindow::on_taskRecurrenceEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry) {
+	using namespace getodo;
+	if (!entry) { return false; }
+	return updateTaskPartial(boost::bind( &TaskPersistence::setRecurrence, _1,
+		boost::ref(*Recurrence::fromString(entry->get_text())) ));
+}
+
+bool MainWindow::on_taskDateDeadlineEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry) {
+	using namespace getodo;
+	if (!entry) { return false; }
+	return updateTaskPartial(boost::bind( &TaskPersistence::setDateDeadline, _1,
+		boost::ref(Date(entry->get_text())) ));
+}
+
+bool MainWindow::on_taskDateStartedEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry) {
+	using namespace getodo;
+	if (!entry) { return false; }
+	return updateTaskPartial(boost::bind( &TaskPersistence::setDateStarted, _1,
+		boost::ref(Date(entry->get_text())) ));
+}
+
+bool MainWindow::on_taskDateCompletedEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry) {
+	using namespace getodo;
+	if (!entry) { return false; }
+	return updateTaskPartial(boost::bind( &TaskPersistence::setDateCompleted, _1,
+		boost::ref(Date(entry->get_text())) ));
+}
+
 
 void MainWindow::on_buttonRecurrence_clicked() {
 	using namespace getodo;
@@ -238,15 +339,16 @@ void MainWindow::on_buttonRecurrence_clicked() {
 	if (response == Gtk::RESPONSE_OK) {
 		pTaskRecurrenceEntry->set_text(Recurrence::toString(dialog.getRecurrence()));
 	}
-	updateTaskPartial(boost::bind(
-		&TaskPersistence::setRecurrence, _1, boost::ref(dialog.getRecurrence())));
+	updateTaskPartial(boost::bind( &TaskPersistence::setRecurrence, _1,
+		boost::ref(dialog.getRecurrence()) ));
 }
 
 void MainWindow::fillEditingPanel(getodo::Task& task) {
 	if (!taskManager) { return; }
 
 	pTaskDescriptionEntry->set_text(task.getDescription());
-	refTaskLongDescriptionTextBuffer->set_text(task.getLongDescription());
+	//refTaskLongDescriptionTextBuffer->set_text(task.getLongDescription());
+	pTaskLongDescriptionTextView->get_buffer()->set_text(task.getLongDescription());
 	pTaskTagsEntry->set_text(task.getTagsAsString(*taskManager));
 	pTaskDoneCheckbutton->set_active(task.isDone());
 	pTaskCompletedPercentageSpinbutton->set_value(task.getCompletedPercentage());
@@ -265,7 +367,7 @@ void MainWindow::fillEditingPanel(getodo::Task& task) {
 
 void MainWindow::clearEditingPanel() {
 	pTaskDescriptionEntry->set_text("");
-	refTaskLongDescriptionTextBuffer->set_text("");
+	pTaskLongDescriptionTextView->get_buffer()->set_text("");
 	pTaskTagsEntry->set_text("");
 	pTaskDoneCheckbutton->set_active(false);
 	pTaskCompletedPercentageSpinbutton->set_value(0);
@@ -284,7 +386,7 @@ void MainWindow::saveEditingPanelToTask(getodo::Task& task) {
 
 	using namespace getodo;
 	task.setDescription(pTaskDescriptionEntry->get_text());
-	task.setLongDescription(refTaskLongDescriptionTextBuffer->get_text());
+	task.setLongDescription(pTaskLongDescriptionTextView->get_buffer()->get_text());
 	task.setTagsFromString(*taskManager, pTaskTagsEntry->get_text());
 	task.setDone(pTaskDoneCheckbutton->get_active());
 	task.setCompletedPercentage(pTaskCompletedPercentageSpinbutton->get_value_as_int());
@@ -308,13 +410,14 @@ getodo::id_t MainWindow::getCurrentlyEditedTaskId() {
 bool MainWindow::updateTaskPartial(boost::function<void(getodo::TaskPersistence&)> f) {
 	using namespace getodo;
 	id_t taskId = getCurrentlyEditedTaskId();
-	if (!taskManager->hasTask(taskId)) {
+	if (!taskManager || !taskManager->hasTask(taskId)) {
 		return false;
 	}
 	TaskPersistence& tp = taskManager->getPersistentTask(taskId);
 	f(tp);
-	Task& task = *tp.getTask();
-	pTaskDateLastModifiedLabel->set_text(task.getDateLastModified().toString());
-	taskManager->signal_task_updated(task);
+	Task* task = tp.getTask();
+	if (!task) { return false; }
+	pTaskDateLastModifiedLabel->set_text(task->getDateLastModified().toString());
+	taskManager->signal_task_updated(*task);
 	return true;
 }
