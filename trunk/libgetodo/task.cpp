@@ -572,12 +572,14 @@ void TaskPersistence::setTask(Task* task) {
 
 void TaskPersistence::setDescription(const std::string& description) {
 	if (!task) { return; }
+	if (task->getDescription().compare(description) == 0) { return; } // no change
 	setColumn<std::string>("description", description);
 	task->setDescription(description);
 }
 
 void TaskPersistence::setLongDescription(const std::string& longDescription) {
 	if (!task) { return; }
+	if (task->getLongDescription().compare(longDescription) == 0) { return; } // no change
 	setColumn<std::string>("longDescription", longDescription);
 	task->setLongDescription(longDescription);
 }
@@ -585,6 +587,7 @@ void TaskPersistence::setLongDescription(const std::string& longDescription) {
 void TaskPersistence::addTag(id_t tagId) {
 	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
 	if (!task) { throw new GetodoError("No task in the persistence."); }
+	if (task->hasTag(tagId)) { return; } // task already has this tag
 
 	sqlite3_command cmd(*conn);
 	cmd.prepare("SELECT count(*) FROM Tagged WHERE (taskId = ? AND tagId = ?);");
@@ -603,6 +606,8 @@ void TaskPersistence::addTag(id_t tagId) {
 void TaskPersistence::removeTag(id_t tagId) {
 	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
 	if (!task) { throw new GetodoError("No task in the persistence."); }
+	// TODO: check this out
+	//if (!task->hasTag(tagId) { return; } // nothing to remove
 
 	// check if the task and the tag exist in the database
 	sqlite3_command cmd(*conn);
@@ -625,37 +630,11 @@ void TaskPersistence::setParentId() {
 	// TODO: task->setParent() - we don't have reference to the new parent
 }
 
-//// deprecated
-//void TaskPersistence::addSubtask(id_t taskId) {
-//	// TODO: this method wouldn't be needed
-//	// create setParent method instead
-//	if (!conn || !task) { return; } //TODO: throw
-//	sqlite3_command cmd(*conn);
-//	cmd.prepare("SELECT count(*) FROM Subtask WHERE (sub_taskId = ? AND super_taskId = ?);");
-//	cmd.bind(1, taskId);
-//	cmd.bind(2, task->getTaskId());
-//	int count = cmd.executeint();
-//	if (count <= 0) {
-//		cmd.prepare("INSERT INTO Subtask (sub_taskId, super_taskId) VALUES (?,?);");
-//		cmd.bind(1, taskId);
-//		cmd.bind(2, task-> getTaskId());
-//		cmd.executenonquery();
-//	}
-//	task->addSubtask(taskId);
-//}
-//
-//void TaskPersistence::removeSubtask(id_t taskId) {
-//	if(!conn || !task) { return; } //TODO: throw
-//	sqlite3_command cmd(*conn);
-//	cmd.prepare("DELETE FROM Subtask WHERE (sub_taskId = ? AND super_taskId = ?);");
-//	cmd.bind(1, taskId);
-//	cmd.bind(2, task-> getTaskId());
-//	cmd.executenonquery();
-//	task->removeSubtask(taskId);
-//}
-
 void TaskPersistence::setDateCreated(const DateTime& dateCreated) {
 	if (!task) { return; }
+	// NOTE: this is a poor man's substitute for operator==() on DateTime
+	if (task->getDateCreated().toString().compare(
+		dateCreated.toString()) == 0) { return; } // no change
 	// check if dateCreated is ok
 	setColumn<std::string>("dateCreated", dateCreated.toString());
 	task->setDateCreated(dateCreated);
@@ -663,24 +642,36 @@ void TaskPersistence::setDateCreated(const DateTime& dateCreated) {
 
 void TaskPersistence::setDateLastModified(const DateTime& dateLastModified) {
 	if (!task) { return; }
+	// NOTE: this is a poor man's substitute for operator==() on DateTime
+	if (task->getDateLastModified().toString().compare(
+		dateLastModified.toString()) == 0) { return; } // no change
 	// check if dateLastModified is ok
 	setColumn<std::string>("dateLastModified", dateLastModified.toString());
 	task->setDateLastModified(dateLastModified);
 }
 void TaskPersistence::setDateStarted(const Date& dateStarted) {
 	if (!task) { return; }
+	// NOTE: this is a poor man's substitute for operator==() on Date
+	if (task->getDateStarted().toString().compare(
+		dateStarted.toString()) == 0) { return; } // no change
 	// check if dateStarted is ok
 	setColumn<std::string>("dateStarted", dateStarted.toString());
 	task->setDateStarted(dateStarted);
 }
 void TaskPersistence::setDateDeadline(const Date& dateDeadline) {
 	if (!task) { return; }
+	// NOTE: this is a poor man's substitute for operator==() on Date
+	if (task->getDateDeadline().toString().compare(
+		dateDeadline.toString()) == 0) { return; } // no change
 	// check if dateDeadline is ok
 	setColumn<std::string>("dateDeadline", dateDeadline.toString());
 	task->setDateDeadline(dateDeadline);
 }
 void TaskPersistence::setDateCompleted(const Date& dateCompleted) {
 	if (!task) { return; }
+	// NOTE: this is a poor man's substitute for operator==() on Date
+	if (task->getDateCompleted().toString().compare(
+		dateCompleted.toString()) == 0) { return; } // no change
 	// check if dateCompleted is ok
 	setColumn<std::string>("dateCompleted", dateCompleted.toString());
 	task->setDateCompleted(dateCompleted);
@@ -688,12 +679,17 @@ void TaskPersistence::setDateCompleted(const Date& dateCompleted) {
 
 void TaskPersistence::setRecurrence(const Recurrence& recurrence) {
 	if (!task) { return; }
-	setColumn<std::string>("recurrence", Recurrence::toString(recurrence));
+	std::string newRecurrenceStr = Recurrence::toString(recurrence);
+	// NOTE: this is a poor man's substitute for operator==() on Recurrence
+	if (Recurrence::toString(task->getRecurrence()).compare(
+		newRecurrenceStr) == 0) { return; } // no change
+	setColumn<std::string>("recurrence", newRecurrenceStr);
 	task->setRecurrence(recurrence.clone());
 }
 
 void TaskPersistence::setPriority(int priority) {
 	if (!task) { return; }
+	if (task->getPriority() == priority) { return; } // no change
 	// check if priority is ok
 	setColumn<int>("priority", priority);
 	task->setPriority(priority);
@@ -701,6 +697,7 @@ void TaskPersistence::setPriority(int priority) {
  
 void TaskPersistence::setCompletedPercentage(int completedPercentage) {
 	if (!task) { return; }
+	if (task->getCompletedPercentage() == completedPercentage) { return; } // no change
 	// check if completedPercentage is ok (in interval [0;100])
 	setColumn<int>("completedPercentage", completedPercentage);
 	task->setCompletedPercentage(completedPercentage);
@@ -708,6 +705,7 @@ void TaskPersistence::setCompletedPercentage(int completedPercentage) {
 
 void TaskPersistence::setDone(bool done) {
 	if (!task) { return; }
+	if (task->isDone() == done) { return; } // no change
 	setColumn<bool>("done", done);
 	setCompletedPercentage(task->getCompletedPercentage());
 	task->setDone();

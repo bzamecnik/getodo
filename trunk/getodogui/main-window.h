@@ -82,6 +82,15 @@ protected:
 	void on_taskTreeview_selection_changed();
 
 	bool on_taskDescriptionEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry);
+	bool on_taskLongDescriptionTextview_focus_out_event(GdkEventFocus* event, Gtk::TextView* textview);
+	//bool on_taskTagsEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry);
+	bool on_taskDoneCheckbutton_focus_out_event(GdkEventFocus* event, Gtk::CheckButton* checkbutton);
+	bool on_taskCompletedPercentageSpinbutton_focus_out_event(GdkEventFocus* event, Gtk::SpinButton* spinbutton);
+	bool on_taskPrioritySpinbutton_focus_out_event(GdkEventFocus* event, Gtk::SpinButton* spinbutton);
+	bool on_taskRecurrenceEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry);
+	bool on_taskDateDeadlineEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry);
+	bool on_taskDateStartedEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry);
+	bool on_taskDateCompletedEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry);
 private:
 	getodo::TaskManager* taskManager;
 	//Gtk::TreeModel::iterator getCursorIter(Gtk::TreeView* pTreeView,

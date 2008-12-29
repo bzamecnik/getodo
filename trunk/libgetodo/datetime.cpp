@@ -232,6 +232,8 @@ RecurrenceWeekly::RecurrenceWeekly(std::string s) {
 		if (!ss.fail()) {
 			useWeekdaySelection = true;
 			this->weekdaySelection.insert(weekday);
+		} else {
+			break;
 		}
 	}
 }
@@ -283,7 +285,7 @@ RecurrenceMonthly::RecurrenceMonthly(int _period, boost::gregorian::greg_day _da
 :	period(_period), dayOfMonth(_dayOfMonth), useDayOfMonth(true) {}
 
 RecurrenceMonthly::RecurrenceMonthly(std::string s)
-: dayOfMonth(1) {
+: dayOfMonth(1), useDayOfMonth(false) {
 	std::istringstream ss(s);
 	// period
 	ss >> this->period;
@@ -291,8 +293,17 @@ RecurrenceMonthly::RecurrenceMonthly(std::string s)
 		this->period = 1;
 	}
 	// day of month
-	ss >> dayOfMonth;
+	// NOTE: Direct assignment to dayOfMonth can cause a crash.	
+	unsigned short dayOfMonthInt = 1;
+	ss >> dayOfMonthInt;
 	useDayOfMonth = !ss.fail();
+	if (useDayOfMonth) {
+		try {
+			dayOfMonth = boost::gregorian::greg_day(dayOfMonthInt);
+		} catch(boost::gregorian::bad_day_of_month&) {
+			useDayOfMonth = false;
+		}
+	}	
 }
 
 RecurrenceMonthly::RecurrenceMonthly(const RecurrenceMonthly& r)
