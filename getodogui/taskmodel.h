@@ -35,6 +35,8 @@ public:
 		Gtk::TreeModelColumn<int> completedPercentage;
 		Gtk::TreeModelColumn<bool> done;
 
+		Gtk::TreeModelColumn<bool> visible; // for filtering
+
 		ModelColumns() {
 			add(id);
 			add(description);
@@ -47,6 +49,7 @@ public:
 			add(priority);
 			add(completedPercentage);
 			add(done);
+			add(visible); // for filtering
 		}
 	};
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.3 on Sat Dec 27 11:49:15 2008 -->
+<!--Generated with glade3 3.4.3 on Sun Jan 25 11:43:09 2009 -->
 <glade-interface>
   <widget class="GtkWindow" id="mainWindow">
     <property name="width_request">750</property>
@@ -11,13 +11,14 @@
         <property name="visible">True</property>
         <child>
           <widget class="GtkMenuBar" id="mainMenubar">
+            <property name="visible">True</property>
             <child>
-              <widget class="GtkMenuItem" id="menuitem1">
+              <widget class="GtkMenuItem" id="fileMenuitem">
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">_File</property>
                 <property name="use_underline">True</property>
                 <child>
-                  <widget class="GtkMenu" id="menu1">
+                  <widget class="GtkMenu" id="fileMenu">
                     <property name="visible">True</property>
                     <child>
                       <widget class="GtkImageMenuItem" id="imagemenuitem1">
@@ -69,43 +70,55 @@
               </widget>
             </child>
             <child>
-              <widget class="GtkMenuItem" id="menuitem2">
+              <widget class="GtkMenuItem" id="editMenuitem">
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">_Edit</property>
                 <property name="use_underline">True</property>
                 <child>
-                  <widget class="GtkMenu" id="menu2">
+                  <widget class="GtkMenu" id="editMenu">
                     <property name="visible">True</property>
                     <child>
-                      <widget class="GtkImageMenuItem" id="imagemenuitem6">
+                      <widget class="GtkMenuItem" id="menuitem1">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">gtk-cut</property>
+                        <property name="tooltip" translatable="yes">New task on current level</property>
+                        <property name="label" translatable="yes">New task</property>
                         <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkImageMenuItem" id="imagemenuitem7">
+                      <widget class="GtkMenuItem" id="menuitem2">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">gtk-copy</property>
+                        <property name="label" translatable="yes">New top-level task</property>
                         <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkImageMenuItem" id="imagemenuitem8">
+                      <widget class="GtkMenuItem" id="menuitem3">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">gtk-paste</property>
+                        <property name="tooltip" translatable="yes">New task as a child of current task</property>
+                        <property name="label" translatable="yes">New subtask</property>
                         <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkImageMenuItem" id="imagemenuitem9">
+                      <widget class="GtkMenuItem" id="menuitem4">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">gtk-delete</property>
+                        <property name="label" translatable="yes">Edit task</property>
                         <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkMenuItem" id="menuitem5">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Delete selected task(s)</property>
+                        <property name="use_underline">True</property>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkMenuItem" id="menuitem6">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Delete all tasks</property>
+                        <property name="use_underline">True</property>
                       </widget>
                     </child>
                   </widget>
@@ -113,19 +126,115 @@
               </widget>
             </child>
             <child>
-              <widget class="GtkMenuItem" id="menuitem3">
+              <widget class="GtkMenuItem" id="viewMenuitem">
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">_View</property>
                 <property name="use_underline">True</property>
+                <child>
+                  <widget class="GtkMenu" id="menu1">
+                    <property name="visible">True</property>
+                    <child>
+                      <widget class="GtkMenuItem" id="menuitem7">
+                        <property name="visible">True</property>
+                        <property name="tooltip" translatable="yes">Expand selected task</property>
+                        <property name="label" translatable="yes">Expand</property>
+                        <property name="use_underline">True</property>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkMenuItem" id="menuitem8">
+                        <property name="visible">True</property>
+                        <property name="tooltip" translatable="yes">Collapse selected task</property>
+                        <property name="label" translatable="yes">Collapse</property>
+                        <property name="use_underline">True</property>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkMenuItem" id="menuitem9">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Collapse all</property>
+                        <property name="use_underline">True</property>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkMenuItem" id="menuitem10">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Filter</property>
+                        <property name="use_underline">True</property>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkMenuItem" id="menuitem11">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Sort</property>
+                        <property name="use_underline">True</property>
+                        <child>
+                          <widget class="GtkMenu" id="menu2">
+                            <property name="visible">True</property>
+                            <child>
+                              <widget class="GtkMenuItem" id="menuitem12">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">Description</property>
+                                <property name="use_underline">True</property>
+                              </widget>
+                            </child>
+                            <child>
+                              <widget class="GtkMenuItem" id="menuitem13">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">Done</property>
+                                <property name="use_underline">True</property>
+                              </widget>
+                            </child>
+                            <child>
+                              <widget class="GtkMenuItem" id="menuitem14">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">Completed percentage</property>
+                                <property name="use_underline">True</property>
+                              </widget>
+                            </child>
+                            <child>
+                              <widget class="GtkMenuItem" id="menuitem15">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">Prioroty</property>
+                                <property name="use_underline">True</property>
+                              </widget>
+                            </child>
+                            <child>
+                              <widget class="GtkMenuItem" id="menuitem16">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">Date deadline</property>
+                                <property name="use_underline">True</property>
+                              </widget>
+                            </child>
+                            <child>
+                              <widget class="GtkSeparatorMenuItem" id="">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">menuitem17</property>
+                                <property name="use_underline">True</property>
+                              </widget>
+                            </child>
+                            <child>
+                              <widget class="GtkMenuItem" id="menuitem18">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">Disable sort</property>
+                                <property name="use_underline">True</property>
+                              </widget>
+                            </child>
+                          </widget>
+                        </child>
+                      </widget>
+                    </child>
+                  </widget>
+                </child>
               </widget>
             </child>
             <child>
-              <widget class="GtkMenuItem" id="menuitem4">
+              <widget class="GtkMenuItem" id="helpMenuitem">
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">_Help</property>
                 <property name="use_underline">True</property>
                 <child>
-                  <widget class="GtkMenu" id="menu3">
+                  <widget class="GtkMenu" id="helpMenu">
                     <property name="visible">True</property>
                     <child>
                       <widget class="GtkImageMenuItem" id="imagemenuitem10">
@@ -300,6 +409,8 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="headers_clickable">True</property>
+                        <property name="enable_search">False</property>
+                        <property name="enable_tree_lines">True</property>
                       </widget>
                     </child>
                   </widget>

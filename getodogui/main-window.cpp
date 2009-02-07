@@ -121,8 +121,12 @@ void MainWindow::setTaskManager(getodo::TaskManager* manager) {
 
 	// ---- task treeview ----
 	//refTaskTreeModel = getodo::TaskTreeModel::create(*taskManager);
-	refTaskTreeModel = getodo::TaskTreeStore::create(*taskManager);
-	pTaskTreeView->set_model(refTaskTreeModel);
+	refTaskTreeModelFilter = Gtk::TreeModelFilter::create(refTaskTreeModel);
+	refTaskTreeModelFilter->set_visible_func( sigc::mem_fun(*this,
+		&MainWindow::on_filter_row_visible) );
+	// TODO: think of what will be the default sorting column
+	refTaskTreeModel->set_sort_column(refTaskTreeModel->columns.description, Gtk::SORT_ASCENDING);
+	pTaskTreeView->set_model(refTaskTreeModelFilter);
 	
 	// TODO: Sorting model doesn't work well with my custom models, fix this.
 	// However it works well with TaskTreeStore.
@@ -133,12 +137,25 @@ void MainWindow::setTaskManager(getodo::TaskManager* manager) {
 	// Add TreeView columns when setting a model for the first time.
 	// The model columns don't change, so it's ok to add them only once.
 	if (pTaskTreeView->get_columns().empty()) {
-		pTaskTreeView->append_column("Id", refTaskTreeModel->columns.id);
-		pTaskTreeView->append_column("Description", refTaskTreeModel->columns.description);
-		pTaskTreeView->append_column("Done", refTaskTreeModel->columns.done);
-		pTaskTreeView->append_column("%", refTaskTreeModel->columns.completedPercentage);
-		pTaskTreeView->append_column("!", refTaskTreeModel->columns.priority);
-		pTaskTreeView->append_column("Deadline", refTaskTreeModel->columns.dateDeadline);
+		getodo::TaskTreeStore::ModelColumns& columns = refTaskTreeModel->columns;
+
+		pTaskTreeView->append_column("Id", columns.id);
+		pTaskTreeView->get_column(0)->set_sort_column(columns.id);
+
+		pTaskTreeView->append_column("Description", columns.description);
+		pTaskTreeView->get_column(1)->set_sort_column(columns.description);
+		
+		pTaskTreeView->append_column("Done", columns.done);
+		pTaskTreeView->get_column(2)->set_sort_column(columns.done);
+		
+		pTaskTreeView->append_column("%", columns.completedPercentage);
+		pTaskTreeView->get_column(3)->set_sort_column(columns.completedPercentage);
+		
+		pTaskTreeView->append_column("!", columns.priority);
+		pTaskTreeView->get_column(4)->set_sort_column(columns.priority);
+		
+		pTaskTreeView->append_column("Deadline", columns.dateDeadline);
+		pTaskTreeView->get_column(5)->set_sort_column(columns.dateDeadline);
 	}
 
 	// ---- tag treeview ----
@@ -341,6 +358,21 @@ void MainWindow::on_buttonRecurrence_clicked() {
 	}
 	updateTaskPartial(boost::bind( &TaskPersistence::setRecurrence, _1,
 		boost::ref(dialog.getRecurrence()) ));
+}
+
+bool MainWindow::on_filter_row_visible(const Gtk::TreeModel::const_iterator& iter) {
+  if(iter)
+  {
+    //iter seems to be an iter to the child model:
+    //Gtk::TreeModel::iterator iter_child =
+        //refTaskTreeModelFilter->convert_iter_to_child_iter(iter);
+    //if(iter_child)
+    //{
+    Gtk::TreeModel::Row row = *iter;
+    return row[refTaskTreeModel->columns.visible];
+    //}
+  }
+  return true;
 }
 
 void MainWindow::fillEditingPanel(getodo::Task& task) {

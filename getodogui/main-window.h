@@ -29,6 +29,7 @@ protected:
 	//Glib::RefPtr<getodo::TaskTreeModel> refTaskTreeModel;
 	Glib::RefPtr<getodo::TaskTreeStore> refTaskTreeModel;
 	//Glib::RefPtr<Gtk::TreeModelSort> refTaskTreeModelSort;
+	Glib::RefPtr<Gtk::TreeModelFilter> refTaskTreeModelFilter;
 
 	// task editing panel
 	// TODO:
@@ -80,6 +81,7 @@ protected:
 	void on_buttonRecurrence_clicked();
 
 	void on_taskTreeview_selection_changed();
+	bool on_filter_row_visible(const Gtk::TreeModel::const_iterator& iter);
 
 	bool on_taskDescriptionEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry);
 	bool on_taskLongDescriptionTextview_focus_out_event(GdkEventFocus* event, Gtk::TextView* textview);
