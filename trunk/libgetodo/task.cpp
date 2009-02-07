@@ -549,7 +549,7 @@ void TaskPersistence::erase() {
 	//if (Task::isValidId(task->getParentId())) {
 	//	cmd.bind(1, task->getParentId());
 	//} else {
-	//	cmd.bind(1, Task::INVALID_ID); // make it a root level task
+	//	cmd.bind(1, Task::INVALID_ID); // make it a top level task
 	//}
 	//cmd.bind(2, task->getTaskId());
 	//cmd.executenonquery();

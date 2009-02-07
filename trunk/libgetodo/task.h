@@ -23,23 +23,34 @@ namespace getodo {
 // ----- class Task --------------------
 
 /** %Task.
- * Representation of a task.
+ * Representation of a task. Object of class Task are data objects with
+ * no reference to the database. TaskPersistence is used to communicate
+ * with the database (insert, load, update, delete).
  */ 
 class Task {
 private:
-	id_t taskId; // -1, if not already in database
-	id_t parentId; // -1, if the task has no parent task
-	// Reverse relationship computed from parentId.
-	// Using sets of id_t here is better than Task& because of possible
-	// cycles in Subtask relation while loading from database.
+	/** Id of the task. INVALID_ID, if not already in database */
+	id_t taskId;
+	/** Id of parent task. INVALID_ID, if the task has no parent task.
+	 * Ie. it is a top level task.
+	 */
+	id_t parentId;
+	/** Subtasks.
+	 * Reverse relationship computed from parentId.
+	 * Using sets of id_t here is better than Task& because of possible
+	 * cycles in Subtask relation while loading from database.
+	 */
 	std::set<id_t> subtasks;
 
+	/** Tags by which the task is tagged. */
 	std::set<id_t> tags;
 
+	/** Title of the task or short description. */
 	std::string description;
-	std::string longDescription; // including links, attachments, etc.
+	/** Longer description, possibly including links, attachments, etc. */
+	std::string longDescription;
 
-	// these dates might be variant in future, let's have it private
+	// these dates might be variant in future, let's have them private
 	DateTime dateCreated;
 	DateTime dateLastModified;
 	Date dateStarted;
@@ -59,24 +70,36 @@ public:
 	Task(const Task& t); // copy constructor
 	virtual ~Task();
 
+	/** Generic id of task which is not already in the database. */
 	static const id_t INVALID_ID = -1;
 
+	/** Check if task of such an id could be stored in the database. */
 	static bool isValidId(id_t id);
 
 	// ----- Access member functions -----
 
+	/* Get id of the task. Could be INVALID_ID, if the task is not already in the database.*/ 
 	id_t getTaskId() const;
+	/* Set id of the task. */ 
 	void setTaskId(id_t taskId);
+	/** Check if task has such an id, so it should be stored in the database. */
 	bool hasValidId() const;
 
+	/** Get id of the parent task */
 	id_t getParentId() const;
 	//void setParentId(id_t parentId); // not needed
 	
+	/** Set parent task. A reference to TaskManager is given to tell the old
+	 * and new parents of the change. Passing task manager is not a clean solution.
+	 */
 	void setParent(id_t newParentId, TaskManager& manager);
-	// we need a reference to 
-	// passing task manager is not a clean solution
-	void unsetParent(TaskManager& manager); // make this task a root level task
-	bool hasParent() const; // false if root
+	/* Unset parent. Ie. make the task a top level one.
+	 * A reference to TaskManager is given to tell the old
+	 * and new parents of the change. Passing task manager is not a clean solution.
+	 */
+	void unsetParent(TaskManager& manager);
+	/** Check if the task has a parent task, ie. it is not a top level task. */
+	bool hasParent() const;
 
 	std::string getDescription() const;
 	void setDescription(const std::string& description);
@@ -87,8 +110,13 @@ public:
 	void addTag(id_t tagId); //should throw an exception on failure (?)
 	bool hasTag(id_t tagId) const;
 	void removeTag(id_t tagId); //should throw an exception on failure
+	/** Get a list of tag ids which belong to the task. */
 	std::vector<id_t>& getTagIds() const;
+	/** Get a list of tag names separated by a space. */
 	std::string getTagsAsString(TaskManager& manager) const;
+	/** Set tags from a string of tag names separated by whitespace. 
+	 * Try to synchronize old and new tags to minimize database queries.
+	*/
 	void setTagsFromString(TaskManager& manager, const std::string& tagsString);
 
 	// only update subtasks set. these two should be private!
@@ -96,6 +124,7 @@ public:
 	void removeSubtask(id_t taskId); //should throw an exception on failure
 	bool hasSubtask(id_t taskId) const;
 
+	/** Get a list of subtask ids. */
 	std::vector<id_t>& getSubtaskIds() const;
 
 	DateTime getDateCreated() const;
@@ -126,13 +155,23 @@ public:
 	void setDone(bool done = true);
 
 	// ----- object-relation representation conversion -----
+	/** Make a database row reprezenting the task.
+	 * All fields except subtasks and tags are serialized.
+	 * Subtasks are only another view to parent relation.
+	 * Tags need to be stored separately.
+	 */
 	databaseRow_t& toDatabaseRow() const;
+	/** Create a task from a database row. Factory method. */
 	static Task* fromDatabaseRow(databaseRow_t& row);
 
 	// ----- text I/O -----
+	/** String reprezentation. For debugging purposes. For database
+	 * serializaiton use toDatabaseRow().
+	 */
 	std::string toString() const;
 	friend std::ostream& operator<< (std::ostream& o, const Task& task);
 private:
+	/** Convert set to vector. Utility function. */
 	template<typename T>
 	std::vector<T>& convertSetToVector(std::set<T> s) const {
 		std::vector<T>& vector = *(new std::vector<T>());
@@ -148,33 +187,39 @@ private:
 
 /** %Task persistence.
  * Object-relation mapping of Task objects.
+ * TODO:
+ * Persistence should contain a reference to TaskManager,
+ * not only to a database connection in order to call signals!
  */
-// TODO:
-// Persistence should contain a reference to TaskManager,
-// not only to a database connection in order to call signals!
 class TaskPersistence {
 private:
+	/** Database connection. */
 	sqlite3x::sqlite3_connection* conn;
+	/** Task being persisted. */
 	Task* task;
 public:
-	// Constructor for loading new Tasks
+	/** Constructor for loading new tasks from database. */
 	TaskPersistence(sqlite3x::sqlite3_connection* conn);
-	// Constructor for modifying particular things in a Task
+	/** Constructor for modifying particular things in a task */
 	TaskPersistence(sqlite3x::sqlite3_connection* conn, Task* task);
 	~TaskPersistence();
 	
-	// save Task to database and assign an id
-	// true, if really inserted
+	/** Save Task to database and assign an id.
+	 * Return true, if successfully inserted.
+	 */
 	bool insert();
-	// update existing Task (with valid taskId)
+	/** Update an existing task (with valid taskId) */
 	void update();
 
-	// load Task from database
+	/** Load Task from database. */
 	Task* load(id_t taskId);
 
+	/** Delete the task from database. */
 	void erase();
 
+	/** Get the task being persited. */
 	Task* getTask() const;
+	/** Set the task being persited. */
 	void setTask(Task* task);
 
 	// Wrappers of member functions from Task that modify the Task
@@ -210,7 +255,7 @@ public:
 	bool isDone();
 	void setDone(bool done = true);
 private:
-	// update a single column and also last modified date
+	/** Update a single column and also last modified date. */
 	template<typename T>
 	void setColumn(std::string columnName, T value) {
 		if (!conn) {
@@ -234,7 +279,7 @@ private:
 
 	void saveTags();
 
-	// common code to insert() and update()
+	/** Common code to insert() and update() */
 	databaseRow_t& prepareRowToSave();
 };
 

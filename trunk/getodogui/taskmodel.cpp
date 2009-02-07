@@ -139,6 +139,7 @@ void TaskTreeStore::setRowFromTask(Gtk::TreeModel::iterator& iter, Task& task) {
 	row[columns.priority] = task.getPriority();
 	row[columns.completedPercentage] = task.getCompletedPercentage();
 	row[columns.done] = task.isDone();
+	row[columns.visible] = true;
 }
 
 void TaskTreeStore::copyRow(Gtk::TreeModel::iterator& src, Gtk::TreeModel::iterator& dest) {
@@ -150,6 +151,7 @@ void TaskTreeStore::copyRow(Gtk::TreeModel::iterator& src, Gtk::TreeModel::itera
 	destRow[columns.priority] = int(srcRow[columns.priority]);
 	destRow[columns.completedPercentage] = int(srcRow[columns.completedPercentage]);
 	destRow[columns.done] = bool(srcRow[columns.done]);
+	destRow[columns.visible] = bool(srcRow[columns.visible]);
 }
 
 // insert all tasks from task manager to tree store

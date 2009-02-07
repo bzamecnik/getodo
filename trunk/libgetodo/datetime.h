@@ -32,7 +32,10 @@ namespace getodo {
 //	 It would be useful in TaskPersistence.
 
 /** %Date and time.
- * Representaion of date and time.
+ * Representaion of date and time. We have own DateTime class instead of
+ * using boost::posix_time::ptime because of serialization to own string 
+ * format. In future DateTime, Date and possibly FuzzyDate could have
+ * a common abstract base.
  */
 class DateTime {
 public:
@@ -46,7 +49,9 @@ public:
 	
 	static DateTime now();
 
+	/** Serialization */
 	std::string toString() const;
+	/** Deserialization */
 	friend std::ostream& operator<< (std::ostream& o, const DateTime& date);
 private:
 	// format for string representation
@@ -55,7 +60,9 @@ private:
 };
 
 /** %Date.
- * Representaion of date.
+ * Representaion of date. We have own DateTime class instead of
+ * using boost::posix_time::ptime because of serialization to own string 
+ * format.
  */
 class Date {
 public:
@@ -68,10 +75,12 @@ public:
 
 	static Date now();
 	
-	// Format: YYYY-MM-DD
+	/** Serialization */
 	std::string toString() const;
+	/** Deserialization */
 	friend std::ostream& operator<< (std::ostream& o, const Date& date);
 private:
+	// Format: YYYY-MM-DD
 	static std::string format;
 };
 
@@ -88,36 +97,47 @@ private:
 /** %Recurrence.
  * Representation of repeating date events.
  * Abstract base for various recurrence types.
+ * Recurrence types:
+ * * once - no recurrence - default
+ * * every Nth day
+ * * every Nth week - optionally given selected weekdays
+ * * every Nth month - optionally given a day of month
+ * * every Nth year - optionally given a day and month
+ * * every day in an interval between two days
  */
 class Recurrence {
-	// Recurrence types:
-	//   * once - no recurrence - default
-	//   * every Nth day
-	//   * every Nth week - optionally given selected weekdays
-	//   * every Nth month - optionally given a day of month
-	//   * every Nth year - optionally given a day and month
-	//   * every day in an interval between two days
 public:
 	virtual ~Recurrence();
+	/* Cloning. Used as a virtual copy constructor. */
 	virtual Recurrence* clone() const = 0;
 
 	// Maybe use boost::gregorian::date_iterator inside and return date
 	// or make a custom iterator
+	/** Return next occurence of the event after given date. */
 	virtual Date next(Date start)=0;
 	
-	// Prepend correct recurrence type identifier
+	/** Serialization.
+	 * Note: this function adds a correct recurrence type identifier as a prefix.
+	 */
 	static std::string toString(const Recurrence& r);
-	// Without type identifier
+	/** Serialization. Without any type identifier. */
 	std::string toString() const;
-	// Given a string create proper Recurrence* object using
-	// recurrence type identifier.
-	// This is a kind of Factory Method (hope).
+	/** Deserialization.
+	 * Given a string create proper Recurrence* object using
+	 * recurrence type identifier.
+	 * This is a kind of Factory Method.
+	 */
 	static Recurrence* fromString(std::string str);
 
 	friend std::ostream& operator<< (std::ostream& o, const Recurrence& r);
+	/** Recurrence type name. Used in user interface. */
 	virtual std::string getTypeLongName() const = 0;
 protected:
+	/** Type identifier for serialization. */
 	virtual std::string getTypeId() const = 0;
+	/** Serialization to an output stream. operator<< cannot be virtual, so
+	 * the core code is pseparated into printOn().
+	 */
 	virtual void printOn(std::ostream& o) const = 0;
 };
 
@@ -134,7 +154,8 @@ public:
 	virtual std::string getTypeLongName() const;
 protected:
 	virtual std::string getTypeId() const;
-	virtual void printOn(std::ostream& o) const; // eg. ""
+	/** Serialization. Eg. "" */
+	virtual void printOn(std::ostream& o) const;
 };
 
 /** Daily recurrence.
@@ -151,12 +172,14 @@ public:
 	virtual RecurrenceDaily* clone() const;
 	virtual Date next(Date start);
 
+	/* Period in days. */
 	int getPeriod() const;
 
 	virtual std::string getTypeLongName() const;
 protected:
 	virtual std::string getTypeId() const;
-	virtual void printOn(std::ostream& o) const; // eg. "2"
+	/** Serialization. Eg. "2" */
+	virtual void printOn(std::ostream& o) const;
 };
 
 /** Weelky recurrence.
@@ -182,13 +205,17 @@ public:
 	virtual RecurrenceWeekly* clone() const;
 	virtual Date next(Date start);
 
+	/* Period in weeks. */
 	int getPeriod() const;
+	/* On which days of week the event can happen. If empty the recurrence
+	 * is computed on that weekday as in the date given. */
 	weekdaySet_t getWeekdaySelection() const;
 
 	virtual std::string getTypeLongName() const;
 protected:
 	virtual std::string getTypeId() const;
-	virtual void printOn(std::ostream& o) const; // eg. "1 Mon Tue"
+	/** Serialization. Eg. "1 Mon Tue" */
+	virtual void printOn(std::ostream& o) const;
 };
 
 /** Monthly recurrence.
@@ -219,7 +246,8 @@ public:
 	virtual std::string getTypeLongName() const;
 protected:
 	virtual std::string getTypeId() const;
-	virtual void printOn(std::ostream& o) const; // eg. "3 14"
+	/** Serialization. Eg. "3 14" */
+	virtual void printOn(std::ostream& o) const;
 };
 
 /** Yearly recurrence.
@@ -229,9 +257,10 @@ protected:
 class RecurrenceYearly : public Recurrence {
 private:
 	boost::gregorian::partial_date dayAndMonth;
-	// Switch for optionally specified day and month:
-	// true - next date will be on useDayAndMonth next year
-	// false - next date will be a year after date given in next()
+	/** A switch for optionally specified day and month:
+	 *  * true - next date will be on useDayAndMonth next year
+	 *  * false - next date will be a year after date given in next()
+	 */
 	bool useDayAndMonth;
 public:
 	RecurrenceYearly();
@@ -248,19 +277,20 @@ public:
 	virtual std::string getTypeLongName() const;
 protected:
 	virtual std::string getTypeId() const;
-	virtual void printOn(std::ostream& o) const; // eg. "25 Dec"
+	/** Serialization. Eg. "25 Dec" */
+	virtual void printOn(std::ostream& o) const;
 };
 
 /** %Recurrence on interval of days.
  * Occurs every day between two dates.
+ * If input is bad, next() will return not_a_date_time,
+ * just like RecurrenceOnce::next().
+ * Period will be invalid, eg. of zero length.
  */
 class RecurrenceIntervalDays : public Recurrence {
 private:
 	boost::gregorian::date_period interval;
 public:
-	// If input is bad, next() will return not_a_date_time,
-	// just like RecurrenceOnce::next().
-	// Period will be invalid, eg. of zero length.
 	RecurrenceIntervalDays(boost::gregorian::date_period datePeriod);
 	explicit RecurrenceIntervalDays(std::string s);
 	RecurrenceIntervalDays(const RecurrenceIntervalDays& r);
