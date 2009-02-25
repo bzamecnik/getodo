@@ -28,7 +28,7 @@ protected:
 	Gtk::TreeView* pTaskTreeView;
 	//Glib::RefPtr<getodo::TaskTreeModel> refTaskTreeModel;
 	Glib::RefPtr<getodo::TaskTreeStore> refTaskTreeModel;
-	//Glib::RefPtr<Gtk::TreeModelSort> refTaskTreeModelSort;
+	Glib::RefPtr<Gtk::TreeModelSort> refTaskTreeModelSort;
 	Glib::RefPtr<Gtk::TreeModelFilter> refTaskTreeModelFilter;
 
 	// task editing panel

@@ -120,19 +120,17 @@ void MainWindow::setTaskManager(getodo::TaskManager* manager) {
 	taskManager = manager;
 
 	// ---- task treeview ----
-	//refTaskTreeModel = getodo::TaskTreeModel::create(*taskManager);
+	// a custom tree store
+	refTaskTreeModel = getodo::TaskTreeStore::create(*taskManager);
+	// treestore packed into a filter model
 	refTaskTreeModelFilter = Gtk::TreeModelFilter::create(refTaskTreeModel);
 	refTaskTreeModelFilter->set_visible_func( sigc::mem_fun(*this,
 		&MainWindow::on_filter_row_visible) );
+	// need to pack the filter model inside a sort model
+	refTaskTreeModelSort = Gtk::TreeModelSort::create(refTaskTreeModelFilter);
 	// TODO: think of what will be the default sorting column
-	refTaskTreeModel->set_sort_column(refTaskTreeModel->columns.description, Gtk::SORT_ASCENDING);
-	pTaskTreeView->set_model(refTaskTreeModelFilter);
-	
-	// TODO: Sorting model doesn't work well with my custom models, fix this.
-	// However it works well with TaskTreeStore.
-	//refTaskTreeModelSort = Gtk::TreeModelSort::create(refTaskTreeModel);
-	//refTaskTreeModelSort->set_sort_column(refTaskTreeModel->columns.id, Gtk::SORT_ASCENDING);
-	//pTaskTreeView->set_model(refTaskTreeModelSort);
+	refTaskTreeModelSort->set_sort_column(refTaskTreeModel->columns.dateDeadline, Gtk::SORT_DESCENDING);
+	pTaskTreeView->set_model(refTaskTreeModelSort);
 	
 	// Add TreeView columns when setting a model for the first time.
 	// The model columns don't change, so it's ok to add them only once.
