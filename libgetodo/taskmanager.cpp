@@ -22,7 +22,7 @@ using namespace sqlite3x;
 // ----- Constructors & destructor -----
 
 TaskManager::TaskManager(std::string dbname)
-: conn(0) {
+: conn(0), activeFilterRule(0) {
 	try {
 		conn = new sqlite3_connection(dbname);
 	} catch(database_error) {
@@ -36,7 +36,8 @@ TaskManager::TaskManager(std::string dbname)
 	}
 }
 
-TaskManager::TaskManager(sqlite3_connection* c) : conn(c) {}
+TaskManager::TaskManager(sqlite3_connection* c)
+: conn(c), activeFilterRule(0) {}
 
 TaskManager::~TaskManager() {
     if(conn) {
@@ -297,7 +298,7 @@ bool TaskManager::hasFilterRule(std::string filterRuleName) {
 
 FilterRule& TaskManager::getFilterRule(id_t filterRuleId) {
     if (!hasFilterRule(filterRuleId)) {
-		throw new std::invalid_argument("No such a filter rule.");
+		throw new GetodoError("No such a filter rule.");
 	}
     return *(filters[filterRuleId]);
 }
@@ -337,6 +338,40 @@ void TaskManager::deleteFilterRule(id_t filterRuleId) {
 
 std::vector<FilterRule*>& TaskManager::getFilterRules() {
     return convertMapToVector<id_t, FilterRule>(filters);
+}
+
+void TaskManager::setActiveFilterRule(FilterRule& filter) {
+	activeFilterRule = &filter;
+	try { 
+		visibleTasksCache = filterTasks(*activeFilterRule);
+	} catch (GetodoError& ex) {
+		resetActiveFilterRule();
+		// TODO: rethrow the exception
+	}
+	std::cout << "active filter: " << (activeFilterRule ? *activeFilterRule : FilterRule()) << std::endl;
+}
+
+void TaskManager::resetActiveFilterRule() {
+	activeFilterRule = 0;
+	visibleTasksCache.clear();
+	std::cout << "active filter: " << (activeFilterRule ? *activeFilterRule : FilterRule()) << std::endl;
+}
+
+FilterRule* TaskManager::getActiveFilterRule() {
+	return activeFilterRule;
+}
+
+bool TaskManager::isTaskVisible(id_t taskId) {
+	return visibleTasksCache.find(taskId) != visibleTasksCache.end();
+}
+
+idset_t TaskManager::getFilteredTasks() {
+	return visibleTasksCache;
+}
+
+idset_t& TaskManager::filterTasks(FilterRule& filterRule) {
+	// TODO: rethrow the expception
+	return filterRule.filter();
 }
 
 // ----- Other things -----

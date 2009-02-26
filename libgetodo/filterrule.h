@@ -35,6 +35,10 @@ public:
 	FilterRule(id_t id, std::string name, std::string rule);
 	virtual ~FilterRule();
 
+	idset_t& filter();
+
+	// rule operators - AND, OR, NOT
+
 	std::string toString() const;
 	friend std::ostream& operator<< (std::ostream& o, const FilterRule& rule);
 

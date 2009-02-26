@@ -73,15 +73,21 @@ protected:
 
 	// toolbar
 
+	Gtk::ToggleToolButton* pTaskFilterToggletoolbutton;
+
 	// ----- signal handlers -----
+	void on_buttonTaskNewToplevel_clicked();
 	void on_buttonTaskNew_clicked();
 	void on_buttonTaskNewSubtask_clicked();
 	void on_buttonTaskDelete_clicked();
 	void on_buttonTaskUpdate_clicked();
+	void on_buttonTaskFilter_toggled();
 	void on_buttonRecurrence_clicked();
 
 	void on_taskTreeview_selection_changed();
-	bool on_filter_row_visible(const Gtk::TreeModel::const_iterator& iter);
+	bool on_taskTreeview_filter_row_visible(const Gtk::TreeModel::const_iterator& iter);
+
+	void on_filterTreeview_selection_changed();
 
 	bool on_taskDescriptionEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry);
 	bool on_taskLongDescriptionTextview_focus_out_event(GdkEventFocus* event, Gtk::TextView* textview);
@@ -98,11 +104,19 @@ private:
 	//Gtk::TreeModel::iterator getCursorIter(Gtk::TreeView* pTreeView,
 	//	Glib::RefPtr<Gtk::TreeModel> refTreeModel);
 
+	bool filteringActive;
+
 	void fillEditingPanel(getodo::Task& task);
 	void clearEditingPanel();
 	void saveEditingPanelToTask(getodo::Task& task);
 	getodo::id_t getCurrentlyEditedTaskId();
 	bool updateTaskPartial(boost::function<void(getodo::TaskPersistence&)> f);
+
+	void setTaskFilterRule(getodo::FilterRule& filter); // set the rule and enable filtering
+	void resetTaskFilterRule(); // unset the rule and disable filtering
+	void setFilterRuleFromSelection();
+
+	//void toggleFiltering(bool on); // enable filtering on true
 };
 
 #endif // GETODOGUI_MAIN_WINDOW_H
