@@ -27,6 +27,14 @@ FilterRule::FilterRule(id_t id, std::string n, std::string r)
 	: id(id), name(n), rule(r) {}
 FilterRule::~FilterRule() {}
 
+
+idset_t& FilterRule::filter() {
+	// TODO: filter using a SQL query
+	// throw an exception if the query is broken
+	return *(new idset_t());
+}
+
+
 std::string FilterRule::toString() const {
 	return boost::lexical_cast<std::string, FilterRule>(*this);
 }

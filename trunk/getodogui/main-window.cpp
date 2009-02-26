@@ -8,13 +8,14 @@
 MainWindow::MainWindow(BaseObjectType* cobject,
 	const Glib::RefPtr<Gnome::Glade::Xml>& refGlade)
 : Gtk::Window(cobject), refXml(refGlade),
-  taskManager(0)
+  taskManager(0), filteringActive(false)
 // TODO: initialize all widget pointers to 0
 {
-	Gtk::ToolButton* pTaskNewToolbutton;
-	Gtk::ToolButton* pTaskNewSubtaskToolbutton;
-	Gtk::ToolButton* pTaskDeleteToolbutton;
-	Gtk::ToolButton* pTaskUpdateToolbutton;
+	Gtk::ToolButton* pTaskNewToplevelToolbutton = 0;
+	Gtk::ToolButton* pTaskNewToolbutton = 0;
+	Gtk::ToolButton* pTaskNewSubtaskToolbutton = 0;
+	Gtk::ToolButton* pTaskDeleteToolbutton = 0;
+	Gtk::ToolButton* pTaskUpdateToolbutton = 0;
 	try {
 		// child widgets
 		refXml->get_widget("taskTreeview", pTaskTreeView);
@@ -37,12 +38,17 @@ MainWindow::MainWindow(BaseObjectType* cobject,
 		refXml->get_widget("taskDateCreatedLabel", pTaskDateCreatedLabel);
 		refXml->get_widget("taskDateLastModifiedLabel", pTaskDateLastModifiedLabel);
 
+		refXml->get_widget("taskNewToplevelToolbutton", pTaskNewToplevelToolbutton);
 		refXml->get_widget("taskNewToolbutton", pTaskNewToolbutton);
 		refXml->get_widget("taskNewSubtaskToolbutton", pTaskNewSubtaskToolbutton);
 		refXml->get_widget("taskDeleteToolbutton", pTaskDeleteToolbutton);
 		refXml->get_widget("taskUpdateToolbutton", pTaskUpdateToolbutton);
+		refXml->get_widget("taskUpdateToolbutton", pTaskUpdateToolbutton);
+		refXml->get_widget("taskFilterToggletoolbutton", pTaskFilterToggletoolbutton);
 
 		// signals
+		pTaskNewToplevelToolbutton->signal_clicked().connect(
+			sigc::mem_fun(*this, &MainWindow::on_buttonTaskNewToplevel_clicked) );
 		pTaskNewToolbutton->signal_clicked().connect(
 			sigc::mem_fun(*this, &MainWindow::on_buttonTaskNew_clicked) );
 		pTaskNewSubtaskToolbutton->signal_clicked().connect(
@@ -51,6 +57,8 @@ MainWindow::MainWindow(BaseObjectType* cobject,
 			sigc::mem_fun(*this, &MainWindow::on_buttonTaskDelete_clicked) );
 		pTaskUpdateToolbutton->signal_clicked().connect(
 			sigc::mem_fun(*this, &MainWindow::on_buttonTaskUpdate_clicked) );
+		pTaskFilterToggletoolbutton->signal_toggled().connect(
+			sigc::mem_fun(*this, &MainWindow::on_buttonTaskFilter_toggled) );
 
 		refXml->connect_clicked("taskRecurrenceButton",
 			sigc::mem_fun(*this, &MainWindow::on_buttonRecurrence_clicked) );
@@ -110,6 +118,8 @@ MainWindow::MainWindow(BaseObjectType* cobject,
 	}
 	pTaskTreeView->get_selection()->signal_changed().connect(sigc::mem_fun(*this,
 		&MainWindow::on_taskTreeview_selection_changed) );
+	pFilterTreeView->get_selection()->signal_changed().connect(sigc::mem_fun(*this,
+		&MainWindow::on_filterTreeview_selection_changed) );
 }
 
 MainWindow::~MainWindow() {}
@@ -122,14 +132,19 @@ void MainWindow::setTaskManager(getodo::TaskManager* manager) {
 	// ---- task treeview ----
 	// a custom tree store
 	refTaskTreeModel = getodo::TaskTreeStore::create(*taskManager);
+	
 	// treestore packed into a filter model
 	refTaskTreeModelFilter = Gtk::TreeModelFilter::create(refTaskTreeModel);
-	refTaskTreeModelFilter->set_visible_func( sigc::mem_fun(*this,
-		&MainWindow::on_filter_row_visible) );
+
+	// TODO: default should be unfiltered
+	//refTaskTreeModelFilter->set_visible_func( sigc::mem_fun(*this,
+	//	&MainWindow::on_taskTreeview_filter_row_visible) );
 	// need to pack the filter model inside a sort model
+
 	refTaskTreeModelSort = Gtk::TreeModelSort::create(refTaskTreeModelFilter);
 	// TODO: think of what will be the default sorting column
 	refTaskTreeModelSort->set_sort_column(refTaskTreeModel->columns.dateDeadline, Gtk::SORT_DESCENDING);
+
 	pTaskTreeView->set_model(refTaskTreeModelSort);
 	
 	// Add TreeView columns when setting a model for the first time.
@@ -186,10 +201,20 @@ void MainWindow::setTaskManager(getodo::TaskManager* manager) {
 	}
 
 	// sample data:
-	Gtk::TreeModel::Row row = *(refFilterTreeModel->append());
-	row[filterColumns.id] = 42;
-	row[filterColumns.name] = "dummy filter";
-	row[filterColumns.rule] = "priority > 5";
+	//Gtk::TreeModel::Row row = *(refFilterTreeModel->append());
+	//row[filterColumns.id] = 42;
+	//row[filterColumns.name] = "dummy filter";
+	//row[filterColumns.rule] = "priority > 5";
+
+	std::vector<getodo::FilterRule*>& filters = taskManager->getFilterRules();
+	for(std::vector<getodo::FilterRule*>::iterator it = filters.begin();
+		it != filters.end(); ++it)
+	{
+		Gtk::TreeModel::Row row = *(refFilterTreeModel->append());
+		row[filterColumns.id] = (*it)->id;
+		row[filterColumns.name] = Glib::ustring((*it)->name);
+		row[filterColumns.rule] = Glib::ustring((*it)->rule);
+	}
 }
 
 void MainWindow::on_taskTreeview_selection_changed() {
@@ -207,7 +232,11 @@ void MainWindow::on_taskTreeview_selection_changed() {
 	}
 }
 
-void MainWindow::on_buttonTaskNew_clicked() {
+void MainWindow::on_filterTreeview_selection_changed() {
+	setFilterRuleFromSelection();
+}
+
+void MainWindow::on_buttonTaskNewToplevel_clicked() {
 	// Create a new top level task and start editing it.
 	if (!taskManager) { return; }
 
@@ -221,6 +250,10 @@ void MainWindow::on_buttonTaskNew_clicked() {
 	pTaskTreeView->get_selection()->select(refTaskTreeModel->get_path(iter));
 
 	pTaskDescriptionEntry->grab_focus();
+}
+
+void MainWindow::on_buttonTaskNew_clicked() {
+	// TODO: add a task on the same level as selected task
 }
 
 void MainWindow::on_buttonTaskNewSubtask_clicked() {
@@ -272,6 +305,18 @@ void MainWindow::on_buttonTaskUpdate_clicked() {
 	if (updatedTask) {
 		saveEditingPanelToTask(*updatedTask);
 		taskManager->editTask(taskId, *updatedTask);
+	}
+}
+
+void MainWindow::on_buttonTaskFilter_toggled() {
+	std::cout << "on_buttonTaskFilter_toggled" << std::endl;
+	filteringActive = pTaskFilterToggletoolbutton->get_active();
+	//toggleFiltering(active);
+	if (filteringActive) {
+		setFilterRuleFromSelection();
+	} else {
+		resetTaskFilterRule();
+		//pFilterTreeView->get_selection()->unselect_all();
 	}
 }
 
@@ -358,19 +403,23 @@ void MainWindow::on_buttonRecurrence_clicked() {
 		boost::ref(dialog.getRecurrence()) ));
 }
 
-bool MainWindow::on_filter_row_visible(const Gtk::TreeModel::const_iterator& iter) {
-  if(iter)
-  {
-    //iter seems to be an iter to the child model:
-    //Gtk::TreeModel::iterator iter_child =
-        //refTaskTreeModelFilter->convert_iter_to_child_iter(iter);
-    //if(iter_child)
-    //{
-    Gtk::TreeModel::Row row = *iter;
-    return row[refTaskTreeModel->columns.visible];
-    //}
-  }
-  return true;
+bool MainWindow::on_taskTreeview_filter_row_visible(const Gtk::TreeModel::const_iterator& iter) {
+	if (!filteringActive) {
+		return true;
+	}
+	if(iter)
+	{
+		//iter seems to be an iter to the child model:
+		//Gtk::TreeModel::iterator iter_child =
+			//refTaskTreeModelFilter->convert_iter_to_child_iter(iter);
+		//if(iter_child)
+		//{
+		Gtk::TreeModel::Row row = *iter;
+		return taskManager->isTaskVisible(row[refTaskTreeModel->columns.id]);
+		//return row[refTaskTreeModel->columns.visible];
+		//}
+	}
+	return true;
 }
 
 void MainWindow::fillEditingPanel(getodo::Task& task) {
@@ -451,3 +500,61 @@ bool MainWindow::updateTaskPartial(boost::function<void(getodo::TaskPersistence&
 	taskManager->signal_task_updated(*task);
 	return true;
 }
+
+
+void MainWindow::setTaskFilterRule(getodo::FilterRule& filter) {
+	try {
+		taskManager->setActiveFilterRule(filter);
+	} catch (getodo::GetodoError&) {
+		//toggleFiltering(false);
+		filteringActive = false;
+	}
+	refTaskTreeModelFilter->refilter();
+}
+
+void MainWindow::resetTaskFilterRule() {
+	taskManager->resetActiveFilterRule();
+	refTaskTreeModelFilter->refilter();
+}
+
+void MainWindow::setFilterRuleFromSelection() {
+	// set the selected filter rule as active
+	using namespace getodo;
+	Gtk::TreeModel::iterator iter = pFilterTreeView->get_selection()->get_selected();
+	Gtk::TreeModel::Row row = *iter;
+	id_t filterId = getodo::FilterRule::INVALID_ID;
+	if (iter) {
+		filterId = row[filterColumns.id];
+	}
+	std::cout << "filter id: " << filterId << std::endl;
+	getodo::FilterRule* activeRule = taskManager->getActiveFilterRule();
+	if (activeRule && (activeRule->id == filterId)) {
+		return; // nothing changes, the selected rule is already active
+	}
+//	try {
+	// TODO: possible exception from getFilterRule() should be handled
+	// The problem is that throwing exception in signal handler kills the app.
+	if (taskManager->hasFilterRule(filterId)) {
+		FilterRule& filterRule = taskManager->getFilterRule(filterId);
+		setTaskFilterRule(filterRule);
+		pTaskFilterToggletoolbutton->set_active();
+	}
+//	} catch (GetodoError&) {
+	else {
+		resetTaskFilterRule();
+		pTaskFilterToggletoolbutton->set_active(false);
+	}
+	//	//setTaskFilterRule(FilterRule(std::string(Glib::ustring(row[filterColumns.name])),
+	//	//	std::string(Glib::ustring(row[filterColumns.rule]))));
+//	}
+}
+
+//void MainWindow::toggleFiltering(bool on) {
+//	if (on) {
+//		refTaskTreeModelFilter->set_visible_func( sigc::mem_fun(*this,
+//				&MainWindow::on_taskTreeview_filter_row_visible) );
+//	} else {
+//		// TODO: doesn't work...
+//		refTaskTreeModelFilter->set_visible_func( sigc::hide(sigc::_1(true)) );
+//	}
+//}

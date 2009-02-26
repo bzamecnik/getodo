@@ -35,6 +35,9 @@ private:
     std::map<id_t,FilterRule*> filters;
 
     sqlite3_connection* conn;
+
+	FilterRule* activeFilterRule; // active filtering rule, 0 if none
+	idset_t visibleTasksCache; // task id's which have passed the filter
 public:
     // TaskManager(); // for in-memory database (sqlite filename :memory:)
     TaskManager(std::string dbname);
@@ -82,11 +85,12 @@ public:
     void deleteFilterRule(id_t filterRuleId); //should throw an exception on failure
     std::vector<FilterRule*>& getFilterRules();
 
-    // TODO:
-    // - specify a format for FilterRules
-    // - parse it, convert it to SQL query (WHERE)
-    taskset_t filterTasks(id_t filterRuleId); // TODO
-    taskset_t filterTasks(const FilterRule& filterRule); // TODO
+	void setActiveFilterRule(FilterRule& filter); // enable filtering and set the rule
+	void resetActiveFilterRule(); // deactivate filtering
+	FilterRule* getActiveFilterRule();
+
+	bool isTaskVisible(id_t taskId); // true, if taskId passed the filter
+	idset_t getFilteredTasks();
 
 	// ----- signals for models -----
 	sigc::signal1<void, Task&> signal_task_inserted;
@@ -123,6 +127,12 @@ private:
         }
         return vector;
     }
+
+	// TODO:
+    // - specify a format for FilterRules
+    // - parse it, convert it to SQL query (WHERE)
+    //idset_t filterTasks(id_t filterRuleId); // TODO
+    idset_t& filterTasks(FilterRule& filterRule);
 };
 
 } // namespace getodo
