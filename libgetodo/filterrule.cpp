@@ -28,10 +28,26 @@ FilterRule::FilterRule(id_t id, std::string n, std::string r)
 FilterRule::~FilterRule() {}
 
 
-idset_t& FilterRule::filter() {
+idset_t& FilterRule::filter(sqlite3_connection& conn) {
 	// TODO: filter using a SQL query
 	// throw an exception if the query is broken
-	return *(new idset_t());
+
+	idset_t& tasksOk = *(new idset_t());
+
+	std::ostringstream ss;
+	ss << "SELECT taskId FROM Task ";
+	// TODO: check the rule and quote it
+	ss << rule; // <-- There is a possible security hole!
+	ss << ";";
+
+	sqlite3_command cmd(conn, ss.str());
+	sqlite3_cursor cursor = cmd.executecursor();
+	while (cursor.step()) {
+		tasksOk.insert(tasksOk.end(), cursor.getint(0));
+	}
+	cursor.close();
+
+	return tasksOk;
 }
 
 
@@ -151,6 +167,37 @@ void FilterRulePersistence::setColumn(id_t id, const std::string value, const st
 	cmd.bind(1, value);
 	cmd.bind(2, id);
 	cmd.executenonquery();
+}
+
+//FilterRule FilterBuilder::createAllTagsFilter(idset_t& tags) {
+//	// TODO: find out tag names, put them into the name
+//	// name: "all tags: tag1, tag2, tag3, ..."
+//	// rule: "NATURAL JOIN Tagged WHERE tagId = 1 AND tagId = 2 AND tagId = 3"
+//	
+//	std::ostringstream ss;
+//
+//	join(std::cout, tags.begin(), tags.end(), ", ");
+//	std::cout << std::endl;
+//
+//	std::vector<std::string> tagRules(tags.size());
+//	int i = 0;
+//	BOOST_FOREACH(id_t tagId, tags) {
+//		tagRules[i] = std::string("tagId = "
+//			+ boost::lexical_cast<std::string, id_t>(tagId));
+//		std::cout << "DEBUG: tagRules[" << i << "] = "  << tagRules[i] << std::endl;
+//		i++;
+//	}
+//	ss << "NATURAL JOIN Tagged WHERE ";
+//	join(ss, tagRules.begin(), tagRules.end(), " AND ");
+//	return FilterRule("tags", ss.str());
+//}
+
+FilterRule FilterBuilder::createTagFilter(id_t tagId) {
+	std::string tagIdStr = boost::lexical_cast<std::string, id_t>(tagId);
+	return FilterRule(
+		"tag " + tagIdStr,
+		"NATURAL JOIN Tagged WHERE tagId = " + tagIdStr
+	);
 }
 
 } // namespace getodo

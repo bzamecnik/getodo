@@ -35,7 +35,7 @@ public:
 	FilterRule(id_t id, std::string name, std::string rule);
 	virtual ~FilterRule();
 
-	idset_t& filter();
+	idset_t& filter(sqlite3_connection& conn);
 
 	// rule operators - AND, OR, NOT
 
@@ -70,6 +70,18 @@ public:
 	void setRule(FilterRule& filter, const std::string rule);
 private:
 	void setColumn(id_t id, const std::string value, const std::string column);
+};
+
+// TODO: Filter Builder
+// A class to support creating correct filtering rules via a set
+// of functions.
+// Maybe support rule operators (AND, OR, NOT) here.
+
+class FilterBuilder {
+public:
+	//static FilterRule createAllTagsFilter(idset_t& tags);
+	//static FilterRule createAnyTagsFilter(idset_t& tags);
+	static FilterRule createTagFilter(id_t tagId);
 };
 
 } // namespace getodo
