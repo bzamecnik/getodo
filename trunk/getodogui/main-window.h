@@ -92,7 +92,7 @@ protected:
 	bool on_taskDescriptionEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry);
 	bool on_taskLongDescriptionTextview_focus_out_event(GdkEventFocus* event, Gtk::TextView* textview);
 	//bool on_taskTagsEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry);
-	bool on_taskDoneCheckbutton_focus_out_event(GdkEventFocus* event, Gtk::CheckButton* checkbutton);
+	void on_taskDoneCheckbutton_toggled();
 	bool on_taskCompletedPercentageSpinbutton_focus_out_event(GdkEventFocus* event, Gtk::SpinButton* spinbutton);
 	bool on_taskPrioritySpinbutton_focus_out_event(GdkEventFocus* event, Gtk::SpinButton* spinbutton);
 	bool on_taskRecurrenceEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry);
@@ -106,6 +106,10 @@ private:
 
 	bool filteringActive;
 
+	// true, if signal handler should respond to event from this panel
+	// false, if there is some batch filling or cleaning of the panel
+	bool editingPanelActive;
+
 	void fillEditingPanel(getodo::Task& task);
 	void clearEditingPanel();
 	void saveEditingPanelToTask(getodo::Task& task);
@@ -114,7 +118,7 @@ private:
 
 	void setTaskFilterRule(getodo::FilterRule& filter); // set the rule and enable filtering
 	void resetTaskFilterRule(); // unset the rule and disable filtering
-	void setFilterRuleFromSelection();
+	void setFilterRuleFromSelection(); // true if a rule set, false if reset
 
 	//void toggleFiltering(bool on); // enable filtering on true
 };

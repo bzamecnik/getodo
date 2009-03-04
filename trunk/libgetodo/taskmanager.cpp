@@ -348,13 +348,19 @@ void TaskManager::setActiveFilterRule(FilterRule& filter) {
 		resetActiveFilterRule();
 		// TODO: rethrow the exception
 	}
-	std::cout << "active filter: " << (activeFilterRule ? *activeFilterRule : FilterRule()) << std::endl;
+	// DEBUG:
+	//std::cout << "visibleTasksCache: ";
+	//for (idset_t::iterator it = visibleTasksCache.begin();
+	//	it != visibleTasksCache.end(); ++it)
+	//{
+	//		std::cout << *it << ", ";
+	//}
+	//std::cout << std::endl;
 }
 
 void TaskManager::resetActiveFilterRule() {
 	activeFilterRule = 0;
 	visibleTasksCache.clear();
-	std::cout << "active filter: " << (activeFilterRule ? *activeFilterRule : FilterRule()) << std::endl;
 }
 
 FilterRule* TaskManager::getActiveFilterRule() {
@@ -362,7 +368,8 @@ FilterRule* TaskManager::getActiveFilterRule() {
 }
 
 bool TaskManager::isTaskVisible(id_t taskId) {
-	return visibleTasksCache.find(taskId) != visibleTasksCache.end();
+	return (activeFilterRule == 0)
+		|| (visibleTasksCache.find(taskId) != visibleTasksCache.end());
 }
 
 idset_t TaskManager::getFilteredTasks() {
@@ -370,8 +377,8 @@ idset_t TaskManager::getFilteredTasks() {
 }
 
 idset_t& TaskManager::filterTasks(FilterRule& filterRule) {
-	// TODO: rethrow the expception
-	return filterRule.filter();
+	// TODO: rethrow the exception
+	return filterRule.filter(*conn);
 }
 
 // ----- Other things -----

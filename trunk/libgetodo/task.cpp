@@ -281,7 +281,9 @@ void Task::setCompletedPercentage(int completedPercentage) {
 bool Task::isDone() { return done; }
 void Task::setDone(bool done) {
 	this->done = done;
-	setCompletedPercentage(100);  // TODO: ugly constant here
+	if (done) {
+		setCompletedPercentage(100);  // TODO: ugly constant here
+	}
 }
 
 // ----- object-relation representation conversion ----------
@@ -707,8 +709,8 @@ void TaskPersistence::setDone(bool done) {
 	if (!task) { return; }
 	if (task->isDone() == done) { return; } // no change
 	setColumn<bool>("done", done);
+	task->setDone(done);
 	setCompletedPercentage(task->getCompletedPercentage());
-	task->setDone();
 }
 
 void TaskPersistence::saveTags() {

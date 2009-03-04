@@ -77,11 +77,9 @@ MainWindow::MainWindow(BaseObjectType* cobject,
 				sigc::mem_fun(*this, &MainWindow::on_taskLongDescriptionTextview_focus_out_event),
 				pTaskLongDescriptionTextView
 			));
-		pTaskDoneCheckbutton->signal_focus_out_event().connect(
-			sigc::bind(
-				sigc::mem_fun(*this, &MainWindow::on_taskDoneCheckbutton_focus_out_event),
-				pTaskDoneCheckbutton
-			));
+		pTaskDoneCheckbutton->signal_toggled().connect(
+			sigc::mem_fun(*this, &MainWindow::on_taskDoneCheckbutton_toggled)
+			);
 		pTaskCompletedPercentageSpinbutton->signal_focus_out_event().connect(
 			sigc::bind(
 				sigc::mem_fun(*this, &MainWindow::on_taskCompletedPercentageSpinbutton_focus_out_event),
@@ -137,8 +135,8 @@ void MainWindow::setTaskManager(getodo::TaskManager* manager) {
 	refTaskTreeModelFilter = Gtk::TreeModelFilter::create(refTaskTreeModel);
 
 	// TODO: default should be unfiltered
-	//refTaskTreeModelFilter->set_visible_func( sigc::mem_fun(*this,
-	//	&MainWindow::on_taskTreeview_filter_row_visible) );
+	refTaskTreeModelFilter->set_visible_func( sigc::mem_fun(*this,
+		&MainWindow::on_taskTreeview_filter_row_visible) );
 	// need to pack the filter model inside a sort model
 
 	refTaskTreeModelSort = Gtk::TreeModelSort::create(refTaskTreeModelFilter);
@@ -181,6 +179,9 @@ void MainWindow::setTaskManager(getodo::TaskManager* manager) {
 		//pTagTreeView->append_column("Active", refTagTreeModel->columns.active);
 		pTagTreeView->append_column("Name", refTagTreeModel->columns.name);
 	}
+
+	// TODO: uncomment this, when rules for multiple tags work
+	//pTagTreeView->get_selection()->set_mode(Gtk::SELECTION_MULTIPLE);
 	
 	//refTagTreeModelSort = Gtk::TreeModelSort::create(refTagTreeModel);
 	//refTagTreeModelSort->set_sort_column(refTagTreeModel->columns.id, Gtk::SORT_ASCENDING);
@@ -233,7 +234,13 @@ void MainWindow::on_taskTreeview_selection_changed() {
 }
 
 void MainWindow::on_filterTreeview_selection_changed() {
-	setFilterRuleFromSelection();
+	Gtk::TreeModel::iterator iter = pFilterTreeView->get_selection()->get_selected();
+	// enable the toggle button if anything selected, disable if nothing
+	// this will activate the selected filter rule
+	if (iter != 0) {
+		setFilterRuleFromSelection();
+	}
+	pTaskFilterToggletoolbutton->set_active(iter != 0);
 }
 
 void MainWindow::on_buttonTaskNewToplevel_clicked() {
@@ -246,14 +253,45 @@ void MainWindow::on_buttonTaskNewToplevel_clicked() {
 	fillEditingPanel(newTask);
 	
 	// select newly created task's row in treeview
+	// TODO: avoid code duplication
 	Gtk::TreeModel::iterator iter = refTaskTreeModel->getIterByTask(newTask);
-	pTaskTreeView->get_selection()->select(refTaskTreeModel->get_path(iter));
+	Gtk::TreeModel::iterator filterIter = refTaskTreeModelFilter->convert_child_iter_to_iter(iter);
+	Gtk::TreeModel::iterator sortIter = refTaskTreeModelSort->convert_child_iter_to_iter(filterIter);
+	Gtk::TreeModel::Path path = refTaskTreeModelSort->get_path(sortIter);
+	pTaskTreeView->get_selection()->select(path);
+	pTaskTreeView->scroll_to_row(path);
 
 	pTaskDescriptionEntry->grab_focus();
 }
 
 void MainWindow::on_buttonTaskNew_clicked() {
-	// TODO: add a task on the same level as selected task
+	// Create a task on the same level as selected task
+	if (!taskManager) { return; }
+	using namespace getodo;
+
+	// - find out currently selected task
+	id_t selectedTaskId = getCurrentlyEditedTaskId();
+	Task* selectedTask = taskManager->getTask(selectedTaskId);
+	if (!selectedTask) { return; } // TODO: make a new top level task instead
+	// - get its parent task
+	id_t parentTaskId = selectedTask->getParentId();
+	
+	// - make a new task and select it
+	id_t newTaskId = taskManager->addTask(*(new Task()));
+	Task& newTask = *taskManager->getTask(newTaskId);
+	fillEditingPanel(newTask);
+	// - make this new task a child of that parent
+	newTask.setParent(parentTaskId, *taskManager);
+
+	// - select it
+	Gtk::TreeModel::iterator iter = refTaskTreeModel->getIterByTask(newTask);
+	Gtk::TreeModel::iterator filterIter = refTaskTreeModelFilter->convert_child_iter_to_iter(iter);
+	Gtk::TreeModel::iterator sortIter = refTaskTreeModelSort->convert_child_iter_to_iter(filterIter);
+	Gtk::TreeModel::Path path = refTaskTreeModelSort->get_path(sortIter);
+	pTaskTreeView->get_selection()->select(path);
+	pTaskTreeView->scroll_to_row(path);
+	
+	pTaskDescriptionEntry->grab_focus();
 }
 
 void MainWindow::on_buttonTaskNewSubtask_clicked() {
@@ -277,9 +315,12 @@ void MainWindow::on_buttonTaskNewSubtask_clicked() {
 	
 	// select newly created task's row in treeview
 	Gtk::TreeModel::iterator iter = refTaskTreeModel->getIterByTask(newTask);
-	Gtk::TreeModel::Path path = refTaskTreeModel->get_path(iter);
+	Gtk::TreeModel::iterator filterIter = refTaskTreeModelFilter->convert_child_iter_to_iter(iter);
+	Gtk::TreeModel::iterator sortIter = refTaskTreeModelSort->convert_child_iter_to_iter(filterIter);
+	Gtk::TreeModel::Path path = refTaskTreeModelSort->get_path(sortIter);
 	pTaskTreeView->expand_to_path(path);
 	pTaskTreeView->get_selection()->select(path);
+	pTaskTreeView->scroll_to_row(path);
 
 	pTaskDescriptionEntry->grab_focus();
 }
@@ -309,7 +350,7 @@ void MainWindow::on_buttonTaskUpdate_clicked() {
 }
 
 void MainWindow::on_buttonTaskFilter_toggled() {
-	std::cout << "on_buttonTaskFilter_toggled" << std::endl;
+	//std::cout << "on_buttonTaskFilter_toggled" << std::endl; // DEBUG
 	filteringActive = pTaskFilterToggletoolbutton->get_active();
 	//toggleFiltering(active);
 	if (filteringActive) {
@@ -324,14 +365,14 @@ void MainWindow::on_buttonTaskFilter_toggled() {
 
 bool MainWindow::on_taskDescriptionEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry) {
 	using namespace getodo;
-	if (!entry) { return false; }
+	if (!entry || !editingPanelActive) { return false; }
 	return updateTaskPartial(boost::bind( &TaskPersistence::setDescription, _1,
 		boost::ref(entry->get_text()) ));
 }
 
 bool MainWindow::on_taskLongDescriptionTextview_focus_out_event(GdkEventFocus* event, Gtk::TextView* textview) {
 	using namespace getodo;
-	if (!textview) { return false; }
+	if (!textview || !editingPanelActive) { return false; }
 	return updateTaskPartial(boost::bind( &TaskPersistence::setLongDescription, _1,
 		boost::ref(textview->get_buffer()->get_text()) ));
 }
@@ -340,51 +381,58 @@ bool MainWindow::on_taskLongDescriptionTextview_focus_out_event(GdkEventFocus* e
 // //TODO: we need TaskPersistence.setTagsFromString()
 //}
 
-bool MainWindow::on_taskDoneCheckbutton_focus_out_event(GdkEventFocus* event, Gtk::CheckButton* checkbutton) {
+void MainWindow::on_taskDoneCheckbutton_toggled() {
 	using namespace getodo;
-	if (!checkbutton) { return false; }
-	return updateTaskPartial(boost::bind( &TaskPersistence::setDone, _1,
-		checkbutton->get_active() ));
+	if (!editingPanelActive) { return; }
+
+	updateTaskPartial(boost::bind( &TaskPersistence::setDone, _1,
+		pTaskDoneCheckbutton->get_active() ));
+	// TODO: this is not nice
+	id_t taskId = getCurrentlyEditedTaskId();
+	Task* task = taskManager->getTask(taskId);
+	if (task) {
+		pTaskCompletedPercentageSpinbutton->set_value(task->getCompletedPercentage());
+	}
 }
 
 bool MainWindow::on_taskCompletedPercentageSpinbutton_focus_out_event(GdkEventFocus* event, Gtk::SpinButton* spinbutton) {
 	using namespace getodo;
-	if (!spinbutton) { return false; }
+	if (!spinbutton || !editingPanelActive) { return false; }
 	return updateTaskPartial(boost::bind( &TaskPersistence::setCompletedPercentage, _1,
 		spinbutton->get_value_as_int() ));
 }
 
 bool MainWindow::on_taskPrioritySpinbutton_focus_out_event(GdkEventFocus* event, Gtk::SpinButton* spinbutton) {
 	using namespace getodo;
-	if (!spinbutton) { return false; }
+	if (!spinbutton || !editingPanelActive) { return false; }
 	return updateTaskPartial(boost::bind( &TaskPersistence::setPriority, _1,
 		spinbutton->get_value_as_int() ));
 }
 
 bool MainWindow::on_taskRecurrenceEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry) {
 	using namespace getodo;
-	if (!entry) { return false; }
+	if (!entry || !editingPanelActive) { return false; }
 	return updateTaskPartial(boost::bind( &TaskPersistence::setRecurrence, _1,
 		boost::ref(*Recurrence::fromString(entry->get_text())) ));
 }
 
 bool MainWindow::on_taskDateDeadlineEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry) {
 	using namespace getodo;
-	if (!entry) { return false; }
+	if (!entry || !editingPanelActive) { return false; }
 	return updateTaskPartial(boost::bind( &TaskPersistence::setDateDeadline, _1,
 		boost::ref(Date(entry->get_text())) ));
 }
 
 bool MainWindow::on_taskDateStartedEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry) {
 	using namespace getodo;
-	if (!entry) { return false; }
+	if (!entry || !editingPanelActive) { return false; }
 	return updateTaskPartial(boost::bind( &TaskPersistence::setDateStarted, _1,
 		boost::ref(Date(entry->get_text())) ));
 }
 
 bool MainWindow::on_taskDateCompletedEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry) {
 	using namespace getodo;
-	if (!entry) { return false; }
+	if (!entry || !editingPanelActive) { return false; }
 	return updateTaskPartial(boost::bind( &TaskPersistence::setDateCompleted, _1,
 		boost::ref(Date(entry->get_text())) ));
 }
@@ -405,6 +453,8 @@ void MainWindow::on_buttonRecurrence_clicked() {
 
 bool MainWindow::on_taskTreeview_filter_row_visible(const Gtk::TreeModel::const_iterator& iter) {
 	if (!filteringActive) {
+		//std::cout << "visible: " << ((*iter)[refTaskTreeModel->columns.id]); // DEBUG
+		//std::cout << "yes (filtering not active)" << std::endl; // DEBUG
 		return true;
 	}
 	if(iter)
@@ -416,7 +466,12 @@ bool MainWindow::on_taskTreeview_filter_row_visible(const Gtk::TreeModel::const_
 		//{
 		Gtk::TreeModel::Row row = *iter;
 		return taskManager->isTaskVisible(row[refTaskTreeModel->columns.id]);
-		//return row[refTaskTreeModel->columns.visible];
+		// DEBUG:
+		//getodo::id_t taskId = row[refTaskTreeModel->columns.id];
+		//bool visible = taskManager->isTaskVisible(taskId);
+		// std::cout << "visible: " << taskId << " - " << visible << std::endl;
+		//return visible;
+		
 		//}
 	}
 	return true;
@@ -424,6 +479,8 @@ bool MainWindow::on_taskTreeview_filter_row_visible(const Gtk::TreeModel::const_
 
 void MainWindow::fillEditingPanel(getodo::Task& task) {
 	if (!taskManager) { return; }
+	
+	editingPanelActive = false;
 
 	pTaskDescriptionEntry->set_text(task.getDescription());
 	//refTaskLongDescriptionTextBuffer->set_text(task.getLongDescription());
@@ -442,9 +499,13 @@ void MainWindow::fillEditingPanel(getodo::Task& task) {
 	pTaskDateCompletedEntry->set_text(task.getDateCompleted().toString());
 	pTaskDateCreatedLabel->set_text(task.getDateCreated().toString());
 	pTaskDateLastModifiedLabel->set_text(task.getDateLastModified().toString());
+
+	editingPanelActive = true;
 }
 
 void MainWindow::clearEditingPanel() {
+	editingPanelActive = false;
+
 	pTaskDescriptionEntry->set_text("");
 	pTaskLongDescriptionTextView->get_buffer()->set_text("");
 	pTaskTagsEntry->set_text("");
@@ -458,6 +519,8 @@ void MainWindow::clearEditingPanel() {
 	pTaskDateCompletedEntry->set_text("");
 	pTaskDateCreatedLabel->set_text("");
 	pTaskDateLastModifiedLabel->set_text("");
+
+	editingPanelActive = true;
 }
 
 void MainWindow::saveEditingPanelToTask(getodo::Task& task) {
@@ -475,6 +538,8 @@ void MainWindow::saveEditingPanelToTask(getodo::Task& task) {
 	task.setDateDeadline(Date(pTaskDateDeadlineEntry->get_text()));
 	task.setDateStarted(Date(pTaskDateStartedEntry->get_text()));
 	task.setDateCompleted(Date(pTaskDateCompletedEntry->get_text()));
+	
+	refTaskTreeModelFilter->refilter();
 }
 
 getodo::id_t MainWindow::getCurrentlyEditedTaskId() {
@@ -505,15 +570,20 @@ bool MainWindow::updateTaskPartial(boost::function<void(getodo::TaskPersistence&
 void MainWindow::setTaskFilterRule(getodo::FilterRule& filter) {
 	try {
 		taskManager->setActiveFilterRule(filter);
+		filteringActive = true;
+		// std::cout << "setTaskFilterRule: refilter" << std::endl; // DEBUG
+		refTaskTreeModelFilter->refilter();
 	} catch (getodo::GetodoError&) {
 		//toggleFiltering(false);
-		filteringActive = false;
+		//filteringActive = false;
+		pTaskFilterToggletoolbutton->set_active(false);
 	}
-	refTaskTreeModelFilter->refilter();
 }
 
 void MainWindow::resetTaskFilterRule() {
+	filteringActive = false;
 	taskManager->resetActiveFilterRule();
+	// std::cout << "resetTaskFilterRule: refilter" << std::endl; // DEBUG
 	refTaskTreeModelFilter->refilter();
 }
 
@@ -526,7 +596,7 @@ void MainWindow::setFilterRuleFromSelection() {
 	if (iter) {
 		filterId = row[filterColumns.id];
 	}
-	std::cout << "filter id: " << filterId << std::endl;
+	// std::cout << "filter id: " << filterId << std::endl; // DEBUG
 	getodo::FilterRule* activeRule = taskManager->getActiveFilterRule();
 	if (activeRule && (activeRule->id == filterId)) {
 		return; // nothing changes, the selected rule is already active
@@ -537,11 +607,9 @@ void MainWindow::setFilterRuleFromSelection() {
 	if (taskManager->hasFilterRule(filterId)) {
 		FilterRule& filterRule = taskManager->getFilterRule(filterId);
 		setTaskFilterRule(filterRule);
-		pTaskFilterToggletoolbutton->set_active();
 	}
 //	} catch (GetodoError&) {
 	else {
-		resetTaskFilterRule();
 		pTaskFilterToggletoolbutton->set_active(false);
 	}
 	//	//setTaskFilterRule(FilterRule(std::string(Glib::ustring(row[filterColumns.name])),

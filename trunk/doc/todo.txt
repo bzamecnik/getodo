@@ -3,11 +3,50 @@
 ====  Long term goals ====
 
 - prepare final Year Project release (2008/11-12)
-- extend the Year Project to the Bachelor Thesis
-	- specify the subject and register it (until 14.11.2008)
-	- implement (summer 2009)
+x- extend the Year Project to the Bachelor Thesis
+	x- specify the subject and register it (until 14.11.2008)
+	x- implement (summer 2009)
 
 ==== Tasks ====
+
+- Filtering
+	*- implement filtering throught SQL queries in FilterRule::filter()
+	- support combining rule via AND, OR, NOT operations
+		- this can be made at two different levels:
+			- combine the SQL queries
+				-> this could be hard...
+					- combining WHERE part is easy, but combining JOINs...?
+			- combine the result sets
+				-> this is easy but only for non-hierarchical combining
+	- prapare ListStore based model for filters
+	- selected tags -> add rules to contain selected tags via OR and bound
+		with selected rule via AND: (filter AND (tag1 OR tag2 OR tag3)
+	- make a dialog for filter rule editing and saving
+	- support renaming and deleting rules
+	- clicking on a selected rule should unselect it
+	- left clicking on a rule should not select it, but show a popup menu
+	- F2 on a rule -> rename
+	- double-clicking a rule should open an editing dialog
+	- sort rules - by name, [by popularity?]
+	- refilter on editing
+	- fix bugs in filtering (GTK)
+
+- Tags
+	- support renaming tags
+	- support purging unused tags
+	- support multiple selection
+	- clicking on selected tag should unselect it
+	- prepare ListStore based model for tags
+	- sort tags - by name, [by popularity?]
+	- F2 on a tag -> rename
+
+- Task editing
+	- synchronize done & percentage values in the panel and the tree
+
+- new subtask should select the newly created task
+
+- put TreeModelFilter and TreeModelSort inside the TaskTreeModel
+	- make an interface to control these wrapper models
 
 - Task (database)
 	- rename: description -> title, longDescription -> description
@@ -54,6 +93,11 @@
 - use Boost Test facilities for the testing code
 - use SQL transactions
 - apply advices from book Sutter, Alexandrescu: C++ 101 Programming Techniques
+
+==== Would be nice ====
+
+- use BOOST_FOREACH (or defined as "#define foreach BOOST_FOREACH")
+	- file:///C:/Program%20Files/boost/boost_1_34_1/doc/html/foreach.html
 
 ==== Think of ====
 
