@@ -10,16 +10,16 @@
 <autor xsi:null="1"/>
 <verze xsi:null="1"/>
 <vytvoreno id="ref-6">2.5.2008 17:16</vytvoreno>
-<zmeneno id="ref-7">2.5.2008 17:42</zmeneno>
-<pocetEntit>3</pocetEntit>
+<zmeneno id="ref-7">5.3.2009 15:13</zmeneno>
+<pocetEntit>5</pocetEntit>
 <pocetVztahu>6</pocetVztahu>
 <zrozmery href="#ref-8"/>
 <krozmery href="#ref-9"/>
 </a1:ER>
 <a2:ArrayList id="ref-3" xmlns:a2="http://schemas.microsoft.com/clr/ns/System.Collections">
 <_items href="#ref-10"/>
-<_size>4</_size>
-<_version>14</_version>
+<_size>5</_size>
+<_version>17</_version>
 </a2:ArrayList>
 <a2:ArrayList id="ref-4" xmlns:a2="http://schemas.microsoft.com/clr/ns/System.Collections">
 <_items href="#ref-11"/>
@@ -39,20 +39,21 @@
 <item href="#ref-13"/>
 <item href="#ref-14"/>
 <item href="#ref-15"/>
+<item href="#ref-16"/>
 </SOAP-ENC:Array>
 <SOAP-ENC:Array id="ref-11" SOAP-ENC:arrayType="xsd:anyType[16]">
-<item href="#ref-16"/>
 <item href="#ref-17"/>
 <item href="#ref-18"/>
 <item href="#ref-19"/>
+<item href="#ref-20"/>
 </SOAP-ENC:Array>
 <a1:Entita id="ref-12" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
-<ciziID href="#ref-22"/>
-<nazev href="#ref-23"/>
-<nazevDb href="#ref-24"/>
-<sour href="#ref-25"/>
-<rozmery href="#ref-26"/>
-<atributy href="#ref-27"/>
+<ciziID href="#ref-23"/>
+<nazev href="#ref-24"/>
+<nazevDb href="#ref-25"/>
+<sour href="#ref-26"/>
+<rozmery href="#ref-27"/>
+<atributy href="#ref-28"/>
 <barva>
 <value>0</value>
 <knownColor>0</knownColor>
@@ -63,11 +64,11 @@
 <doplnky xsi:null="1"/>
 </a1:Entita>
 <a1:Vztah id="ref-13" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
-<nazev href="#ref-28"/>
-<nazevDb href="#ref-29"/>
-<sour href="#ref-30"/>
-<rozmery href="#ref-31"/>
-<atributy href="#ref-32"/>
+<nazev href="#ref-29"/>
+<nazevDb href="#ref-30"/>
+<sour href="#ref-31"/>
+<rozmery href="#ref-32"/>
+<atributy href="#ref-33"/>
 <barva>
 <value>0</value>
 <knownColor>0</knownColor>
@@ -78,12 +79,12 @@
 <doplnky xsi:null="1"/>
 </a1:Vztah>
 <a1:Entita id="ref-14" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
-<ciziID href="#ref-33"/>
-<nazev href="#ref-34"/>
-<nazevDb href="#ref-35"/>
-<sour href="#ref-36"/>
-<rozmery href="#ref-37"/>
-<atributy href="#ref-38"/>
+<ciziID href="#ref-34"/>
+<nazev href="#ref-35"/>
+<nazevDb href="#ref-36"/>
+<sour href="#ref-37"/>
+<rozmery href="#ref-38"/>
+<atributy href="#ref-39"/>
 <barva>
 <value>0</value>
 <knownColor>0</knownColor>
@@ -94,11 +95,11 @@
 <doplnky xsi:null="1"/>
 </a1:Entita>
 <a1:Vztah id="ref-15" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
-<nazev href="#ref-39"/>
-<nazevDb href="#ref-40"/>
-<sour href="#ref-41"/>
-<rozmery href="#ref-42"/>
-<atributy href="#ref-43"/>
+<nazev href="#ref-40"/>
+<nazevDb href="#ref-41"/>
+<sour href="#ref-42"/>
+<rozmery href="#ref-43"/>
+<atributy href="#ref-44"/>
 <barva>
 <value>0</value>
 <knownColor>0</knownColor>
@@ -108,55 +109,71 @@
 <komentar xsi:null="1"/>
 <doplnky xsi:null="1"/>
 </a1:Vztah>
-<a1:Dvojice id="ref-16" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
-<e href="#ref-12"/>
-<role id="ref-44">supertask</role>
-<v href="#ref-13"/>
-<typ>3</typ>
-<kardinalita href="#ref-45"/>
-</a1:Dvojice>
+<a1:Entita id="ref-16" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
+<ciziID href="#ref-45"/>
+<nazev href="#ref-46"/>
+<nazevDb href="#ref-47"/>
+<sour href="#ref-48"/>
+<rozmery href="#ref-49"/>
+<atributy href="#ref-50"/>
+<barva>
+<value>0</value>
+<knownColor>0</knownColor>
+<state>0</state>
+<name xsi:null="1"/>
+</barva>
+<komentar xsi:null="1"/>
+<doplnky xsi:null="1"/>
+</a1:Entita>
 <a1:Dvojice id="ref-17" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
 <e href="#ref-12"/>
-<role id="ref-46">subtask</role>
+<role id="ref-51">parent</role>
 <v href="#ref-13"/>
-<typ>4</typ>
-<kardinalita href="#ref-47"/>
+<typ>3</typ>
+<kardinalita href="#ref-52"/>
 </a1:Dvojice>
 <a1:Dvojice id="ref-18" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
-<e href="#ref-14"/>
-<role id="ref-48">tagging</role>
-<v href="#ref-15"/>
-<typ>1</typ>
-<kardinalita href="#ref-49"/>
+<e href="#ref-12"/>
+<role id="ref-53">subtask</role>
+<v href="#ref-13"/>
+<typ>4</typ>
+<kardinalita href="#ref-54"/>
 </a1:Dvojice>
 <a1:Dvojice id="ref-19" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
-<e href="#ref-12"/>
-<role id="ref-50">tagged</role>
+<e href="#ref-14"/>
+<role id="ref-55">tagging</role>
 <v href="#ref-15"/>
 <typ>1</typ>
-<kardinalita href="#ref-51"/>
+<kardinalita href="#ref-56"/>
 </a1:Dvojice>
-<a2:ArrayList id="ref-22" xmlns:a2="http://schemas.microsoft.com/clr/ns/System.Collections">
-<_items href="#ref-52"/>
+<a1:Dvojice id="ref-20" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
+<e href="#ref-12"/>
+<role id="ref-57">tagged</role>
+<v href="#ref-15"/>
+<typ>1</typ>
+<kardinalita href="#ref-58"/>
+</a1:Dvojice>
+<a2:ArrayList id="ref-23" xmlns:a2="http://schemas.microsoft.com/clr/ns/System.Collections">
+<_items href="#ref-59"/>
 <_size>0</_size>
 <_version>0</_version>
 </a2:ArrayList>
-<a1:Str id="ref-23" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
-<s id="ref-53">Task</s>
-</a1:Str>
 <a1:Str id="ref-24" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
-<s id="ref-54">Task</s>
+<s id="ref-60">Task</s>
 </a1:Str>
-<a1:Souradnice id="ref-25" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
+<a1:Str id="ref-25" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
+<s id="ref-61">Task</s>
+</a1:Str>
+<a1:Souradnice id="ref-26" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
 <x>-410</x>
 <y>-238</y>
 </a1:Souradnice>
-<a1:Rozmery id="ref-26" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
+<a1:Rozmery id="ref-27" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
 <sirka>60</sirka>
 <vyska>36</vyska>
 </a1:Rozmery>
-<a4:DataTable id="ref-27" xmlns:a4="http://schemas.microsoft.com/clr/nsassem/System.Data/System.Data%2C%20Version%3D1.0.5000.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Db77a5c561934e089">
-<XmlSchema id="ref-55">&#60;?xml version=&#34;1.0&#34; encoding=&#34;utf-16&#34;?&#62;
+<a4:DataTable id="ref-28" xmlns:a4="http://schemas.microsoft.com/clr/nsassem/System.Data/System.Data%2C%20Version%3D1.0.5000.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Db77a5c561934e089">
+<XmlSchema id="ref-62">&#60;?xml version=&#34;1.0&#34; encoding=&#34;utf-16&#34;?&#62;
 &#60;xs:schema id=&#34;tmpDataSet&#34; xmlns=&#34;&#34; xmlns:xs=&#34;http://www.w3.org/2001/XMLSchema&#34; xmlns:msdata=&#34;urn:schemas-microsoft-com:xml-msdata&#34; xmlns:msprop=&#34;urn:schemas-microsoft-com:xml-msprop&#34;&#62;
   &#60;xs:element name=&#34;Atributy&#34; msprop:majitel=&#34;Task&#34;&#62;
     &#60;xs:complexType&#62;
@@ -198,10 +215,10 @@
     &#60;/xs:complexType&#62;
   &#60;/xs:element&#62;
 &#60;/xs:schema&#62;</XmlSchema>
-<XmlDiffGram id="ref-56">&#60;diffgr:diffgram xmlns:msdata=&#34;urn:schemas-microsoft-com:xml-msdata&#34; xmlns:diffgr=&#34;urn:schemas-microsoft-com:xml-diffgram-v1&#34;&#62;
+<XmlDiffGram id="ref-63">&#60;diffgr:diffgram xmlns:msdata=&#34;urn:schemas-microsoft-com:xml-msdata&#34; xmlns:diffgr=&#34;urn:schemas-microsoft-com:xml-diffgram-v1&#34;&#62;
   &#60;tmpDataSet&#62;
     &#60;Atributy diffgr:id=&#34;Atributy1&#34; msdata:rowOrder=&#34;0&#34; diffgr:hasChanges=&#34;inserted&#34;&#62;
-      &#60;cNazev&#62;TaskID&#60;/cNazev&#62;
+      &#60;cNazev&#62;taskId&#60;/cNazev&#62;
       &#60;cDat&#62;Integer&#60;/cDat&#62;
       &#60;cNull&#62;true&#60;/cNull&#62;
       &#60;cUnique&#62;false&#60;/cUnique&#62;
@@ -272,7 +289,7 @@
     &#60;/Atributy&#62;
     &#60;Atributy diffgr:id=&#34;Atributy8&#34; msdata:rowOrder=&#34;7&#34; diffgr:hasChanges=&#34;inserted&#34;&#62;
       &#60;cNazev&#62;recurrence&#60;/cNazev&#62;
-      &#60;cDat&#62;Integer&#60;/cDat&#62;
+      &#60;cDat&#62;Date&#60;/cDat&#62;
       &#60;cNull&#62;true&#60;/cNull&#62;
       &#60;cUnique&#62;false&#60;/cUnique&#62;
       &#60;cDefault /&#62;
@@ -300,27 +317,57 @@
       &#60;cMulti&#62;false&#60;/cMulti&#62;
       &#60;cOwn&#62;false&#60;/cOwn&#62;
     &#60;/Atributy&#62;
+    &#60;Atributy diffgr:id=&#34;Atributy11&#34; msdata:rowOrder=&#34;10&#34; diffgr:hasChanges=&#34;inserted&#34;&#62;
+      &#60;cNazev&#62;dateLastModified&#60;/cNazev&#62;
+      &#60;cDat&#62;Varchar(255)&#60;/cDat&#62;
+      &#60;cNull&#62;true&#60;/cNull&#62;
+      &#60;cUnique&#62;false&#60;/cUnique&#62;
+      &#60;cDefault /&#62;
+      &#60;cID&#62;false&#60;/cID&#62;
+      &#60;cMulti&#62;false&#60;/cMulti&#62;
+      &#60;cOwn&#62;false&#60;/cOwn&#62;
+    &#60;/Atributy&#62;
+    &#60;Atributy diffgr:id=&#34;Atributy12&#34; msdata:rowOrder=&#34;11&#34; diffgr:hasChanges=&#34;inserted&#34;&#62;
+      &#60;cNazev&#62;longDescription&#60;/cNazev&#62;
+      &#60;cDat&#62;Varchar(255)&#60;/cDat&#62;
+      &#60;cNull&#62;false&#60;/cNull&#62;
+      &#60;cUnique&#62;false&#60;/cUnique&#62;
+      &#60;cDefault /&#62;
+      &#60;cID&#62;false&#60;/cID&#62;
+      &#60;cMulti&#62;false&#60;/cMulti&#62;
+      &#60;cOwn&#62;false&#60;/cOwn&#62;
+    &#60;/Atributy&#62;
+    &#60;Atributy diffgr:id=&#34;Atributy13&#34; msdata:rowOrder=&#34;12&#34; diffgr:hasChanges=&#34;inserted&#34;&#62;
+      &#60;cNazev&#62;done&#60;/cNazev&#62;
+      &#60;cDat&#62;Integer&#60;/cDat&#62;
+      &#60;cNull&#62;false&#60;/cNull&#62;
+      &#60;cUnique&#62;false&#60;/cUnique&#62;
+      &#60;cDefault /&#62;
+      &#60;cID&#62;false&#60;/cID&#62;
+      &#60;cMulti&#62;false&#60;/cMulti&#62;
+      &#60;cOwn&#62;false&#60;/cOwn&#62;
+    &#60;/Atributy&#62;
   &#60;/tmpDataSet&#62;
 &#60;/diffgr:diffgram&#62;</XmlDiffGram>
 </a4:DataTable>
-<a1:Str id="ref-28" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
-<s id="ref-57">Subtask</s>
-</a1:Str>
 <a1:Str id="ref-29" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
-<s id="ref-58">Subtask</s>
+<s id="ref-64">parent</s>
 </a1:Str>
-<a1:Souradnice id="ref-30" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
-<x>-595</x>
+<a1:Str id="ref-30" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
+<s id="ref-65">parent</s>
+</a1:Str>
+<a1:Souradnice id="ref-31" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
+<x>-590</x>
 <y>-85</y>
 </a1:Souradnice>
-<a1:Rozmery id="ref-31" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
-<sirka>110</sirka>
+<a1:Rozmery id="ref-32" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
+<sirka>100</sirka>
 <vyska>50</vyska>
 </a1:Rozmery>
-<a4:DataTable id="ref-32" xmlns:a4="http://schemas.microsoft.com/clr/nsassem/System.Data/System.Data%2C%20Version%3D1.0.5000.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Db77a5c561934e089">
-<XmlSchema id="ref-59">&#60;?xml version=&#34;1.0&#34; encoding=&#34;utf-16&#34;?&#62;
+<a4:DataTable id="ref-33" xmlns:a4="http://schemas.microsoft.com/clr/nsassem/System.Data/System.Data%2C%20Version%3D1.0.5000.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Db77a5c561934e089">
+<XmlSchema id="ref-66">&#60;?xml version=&#34;1.0&#34; encoding=&#34;utf-16&#34;?&#62;
 &#60;xs:schema id=&#34;tmpDataSet&#34; xmlns=&#34;&#34; xmlns:xs=&#34;http://www.w3.org/2001/XMLSchema&#34; xmlns:msdata=&#34;urn:schemas-microsoft-com:xml-msdata&#34; xmlns:msprop=&#34;urn:schemas-microsoft-com:xml-msprop&#34;&#62;
-  &#60;xs:element name=&#34;Atributy&#34; msprop:majitel=&#34;Subtask&#34;&#62;
+  &#60;xs:element name=&#34;Atributy&#34; msprop:majitel=&#34;parent&#34;&#62;
     &#60;xs:complexType&#62;
       &#60;xs:sequence&#62;
         &#60;xs:element name=&#34;cNazev&#34; msdata:Caption=&#34;Název&#34; default=&#34;&#34; msdata:targetNamespace=&#34;&#34; minOccurs=&#34;0&#34;&#62;
@@ -360,29 +407,29 @@
     &#60;/xs:complexType&#62;
   &#60;/xs:element&#62;
 &#60;/xs:schema&#62;</XmlSchema>
-<XmlDiffGram id="ref-60">&#60;diffgr:diffgram xmlns:msdata=&#34;urn:schemas-microsoft-com:xml-msdata&#34; xmlns:diffgr=&#34;urn:schemas-microsoft-com:xml-diffgram-v1&#34; /&#62;</XmlDiffGram>
+<XmlDiffGram id="ref-67">&#60;diffgr:diffgram xmlns:msdata=&#34;urn:schemas-microsoft-com:xml-msdata&#34; xmlns:diffgr=&#34;urn:schemas-microsoft-com:xml-diffgram-v1&#34; /&#62;</XmlDiffGram>
 </a4:DataTable>
-<a2:ArrayList id="ref-33" xmlns:a2="http://schemas.microsoft.com/clr/ns/System.Collections">
-<_items href="#ref-61"/>
+<a2:ArrayList id="ref-34" xmlns:a2="http://schemas.microsoft.com/clr/ns/System.Collections">
+<_items href="#ref-68"/>
 <_size>0</_size>
 <_version>0</_version>
 </a2:ArrayList>
-<a1:Str id="ref-34" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
-<s id="ref-62">Tag</s>
-</a1:Str>
 <a1:Str id="ref-35" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
-<s id="ref-63">Tag</s>
+<s id="ref-69">Tag</s>
 </a1:Str>
-<a1:Souradnice id="ref-36" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
-<x>-90</x>
-<y>-238</y>
+<a1:Str id="ref-36" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
+<s id="ref-70">Tag</s>
+</a1:Str>
+<a1:Souradnice id="ref-37" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
+<x>-110</x>
+<y>-158</y>
 </a1:Souradnice>
-<a1:Rozmery id="ref-37" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
+<a1:Rozmery id="ref-38" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
 <sirka>60</sirka>
 <vyska>36</vyska>
 </a1:Rozmery>
-<a4:DataTable id="ref-38" xmlns:a4="http://schemas.microsoft.com/clr/nsassem/System.Data/System.Data%2C%20Version%3D1.0.5000.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Db77a5c561934e089">
-<XmlSchema id="ref-64">&#60;?xml version=&#34;1.0&#34; encoding=&#34;utf-16&#34;?&#62;
+<a4:DataTable id="ref-39" xmlns:a4="http://schemas.microsoft.com/clr/nsassem/System.Data/System.Data%2C%20Version%3D1.0.5000.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Db77a5c561934e089">
+<XmlSchema id="ref-71">&#60;?xml version=&#34;1.0&#34; encoding=&#34;utf-16&#34;?&#62;
 &#60;xs:schema id=&#34;tmpDataSet&#34; xmlns=&#34;&#34; xmlns:xs=&#34;http://www.w3.org/2001/XMLSchema&#34; xmlns:msdata=&#34;urn:schemas-microsoft-com:xml-msdata&#34; xmlns:msprop=&#34;urn:schemas-microsoft-com:xml-msprop&#34;&#62;
   &#60;xs:element name=&#34;Atributy&#34; msprop:majitel=&#34;Tag&#34;&#62;
     &#60;xs:complexType&#62;
@@ -424,7 +471,7 @@
     &#60;/xs:complexType&#62;
   &#60;/xs:element&#62;
 &#60;/xs:schema&#62;</XmlSchema>
-<XmlDiffGram id="ref-65">&#60;diffgr:diffgram xmlns:msdata=&#34;urn:schemas-microsoft-com:xml-msdata&#34; xmlns:diffgr=&#34;urn:schemas-microsoft-com:xml-diffgram-v1&#34;&#62;
+<XmlDiffGram id="ref-72">&#60;diffgr:diffgram xmlns:msdata=&#34;urn:schemas-microsoft-com:xml-msdata&#34; xmlns:diffgr=&#34;urn:schemas-microsoft-com:xml-diffgram-v1&#34;&#62;
   &#60;tmpDataSet&#62;
     &#60;Atributy diffgr:id=&#34;Atributy1&#34; msdata:rowOrder=&#34;0&#34; diffgr:hasChanges=&#34;inserted&#34;&#62;
       &#60;cNazev&#62;tagID&#60;/cNazev&#62;
@@ -449,22 +496,22 @@
   &#60;/tmpDataSet&#62;
 &#60;/diffgr:diffgram&#62;</XmlDiffGram>
 </a4:DataTable>
-<a1:Str id="ref-39" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
-<s id="ref-66">Tagged</s>
-</a1:Str>
 <a1:Str id="ref-40" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
-<s id="ref-67">Tagged</s>
+<s id="ref-73">Tagged</s>
 </a1:Str>
-<a1:Souradnice id="ref-41" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
+<a1:Str id="ref-41" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
+<s id="ref-74">Tagged</s>
+</a1:Str>
+<a1:Souradnice id="ref-42" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
 <x>-232</x>
 <y>-85</y>
 </a1:Souradnice>
-<a1:Rozmery id="ref-42" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
+<a1:Rozmery id="ref-43" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
 <sirka>104</sirka>
 <vyska>50</vyska>
 </a1:Rozmery>
-<a4:DataTable id="ref-43" xmlns:a4="http://schemas.microsoft.com/clr/nsassem/System.Data/System.Data%2C%20Version%3D1.0.5000.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Db77a5c561934e089">
-<XmlSchema id="ref-68">&#60;?xml version=&#34;1.0&#34; encoding=&#34;utf-16&#34;?&#62;
+<a4:DataTable id="ref-44" xmlns:a4="http://schemas.microsoft.com/clr/nsassem/System.Data/System.Data%2C%20Version%3D1.0.5000.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Db77a5c561934e089">
+<XmlSchema id="ref-75">&#60;?xml version=&#34;1.0&#34; encoding=&#34;utf-16&#34;?&#62;
 &#60;xs:schema id=&#34;tmpDataSet&#34; xmlns=&#34;&#34; xmlns:xs=&#34;http://www.w3.org/2001/XMLSchema&#34; xmlns:msdata=&#34;urn:schemas-microsoft-com:xml-msdata&#34; xmlns:msprop=&#34;urn:schemas-microsoft-com:xml-msprop&#34;&#62;
   &#60;xs:element name=&#34;Atributy&#34; msprop:majitel=&#34;Tagged&#34;&#62;
     &#60;xs:complexType&#62;
@@ -506,27 +553,126 @@
     &#60;/xs:complexType&#62;
   &#60;/xs:element&#62;
 &#60;/xs:schema&#62;</XmlSchema>
-<XmlDiffGram id="ref-69">&#60;diffgr:diffgram xmlns:msdata=&#34;urn:schemas-microsoft-com:xml-msdata&#34; xmlns:diffgr=&#34;urn:schemas-microsoft-com:xml-diffgram-v1&#34; /&#62;</XmlDiffGram>
+<XmlDiffGram id="ref-76">&#60;diffgr:diffgram xmlns:msdata=&#34;urn:schemas-microsoft-com:xml-msdata&#34; xmlns:diffgr=&#34;urn:schemas-microsoft-com:xml-diffgram-v1&#34; /&#62;</XmlDiffGram>
 </a4:DataTable>
-<SOAP-ENC:Array id="ref-45" SOAP-ENC:arrayType="a3:Char[2]" xmlns:a3="http://schemas.microsoft.com/clr/ns/System">
+<a2:ArrayList id="ref-45" xmlns:a2="http://schemas.microsoft.com/clr/ns/System.Collections">
+<_items href="#ref-77"/>
+<_size>0</_size>
+<_version>0</_version>
+</a2:ArrayList>
+<a1:Str id="ref-46" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
+<s id="ref-78">FilterRule</s>
+</a1:Str>
+<a1:Str id="ref-47" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
+<s id="ref-79">FilterRule</s>
+</a1:Str>
+<a1:Souradnice id="ref-48" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
+<x>-342</x>
+<y>-18</y>
+</a1:Souradnice>
+<a1:Rozmery id="ref-49" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/ERTOS/ERTOS%2C%20Version%3D1.0.2384.24692%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
+<sirka>84</sirka>
+<vyska>36</vyska>
+</a1:Rozmery>
+<a4:DataTable id="ref-50" xmlns:a4="http://schemas.microsoft.com/clr/nsassem/System.Data/System.Data%2C%20Version%3D1.0.5000.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Db77a5c561934e089">
+<XmlSchema id="ref-80">&#60;?xml version=&#34;1.0&#34; encoding=&#34;utf-16&#34;?&#62;
+&#60;xs:schema id=&#34;tmpDataSet&#34; xmlns=&#34;&#34; xmlns:xs=&#34;http://www.w3.org/2001/XMLSchema&#34; xmlns:msdata=&#34;urn:schemas-microsoft-com:xml-msdata&#34; xmlns:msprop=&#34;urn:schemas-microsoft-com:xml-msprop&#34;&#62;
+  &#60;xs:element name=&#34;Atributy&#34; msprop:majitel=&#34;FilterRule&#34;&#62;
+    &#60;xs:complexType&#62;
+      &#60;xs:sequence&#62;
+        &#60;xs:element name=&#34;cNazev&#34; msdata:Caption=&#34;Název&#34; default=&#34;&#34; msdata:targetNamespace=&#34;&#34; minOccurs=&#34;0&#34;&#62;
+          &#60;xs:simpleType&#62;
+            &#60;xs:restriction base=&#34;xs:string&#34;&#62;
+              &#60;xs:maxLength value=&#34;120&#34; /&#62;
+            &#60;/xs:restriction&#62;
+          &#60;/xs:simpleType&#62;
+        &#60;/xs:element&#62;
+        &#60;xs:element name=&#34;cDat&#34; msdata:Caption=&#34;Datový typ&#34; default=&#34;Integer&#34; msdata:targetNamespace=&#34;&#34; minOccurs=&#34;0&#34;&#62;
+          &#60;xs:simpleType&#62;
+            &#60;xs:restriction base=&#34;xs:string&#34;&#62;
+              &#60;xs:maxLength value=&#34;40&#34; /&#62;
+            &#60;/xs:restriction&#62;
+          &#60;/xs:simpleType&#62;
+        &#60;/xs:element&#62;
+        &#60;xs:element name=&#34;cNull&#34; msdata:Caption=&#34;Not NULL&#34; type=&#34;xs:boolean&#34; default=&#34;true&#34; msdata:targetNamespace=&#34;&#34; /&#62;
+        &#60;xs:element name=&#34;cUnique&#34; msdata:Caption=&#34;Unique&#34; type=&#34;xs:boolean&#34; default=&#34;false&#34; msdata:targetNamespace=&#34;&#34; /&#62;
+        &#60;xs:element name=&#34;cDefault&#34; default=&#34;&#34; msdata:targetNamespace=&#34;&#34; minOccurs=&#34;0&#34;&#62;
+          &#60;xs:simpleType&#62;
+            &#60;xs:restriction base=&#34;xs:string&#34;&#62;
+              &#60;xs:maxLength value=&#34;120&#34; /&#62;
+            &#60;/xs:restriction&#62;
+          &#60;/xs:simpleType&#62;
+        &#60;/xs:element&#62;
+        &#60;xs:element name=&#34;cID&#34; msdata:Caption=&#34;ID&#34; type=&#34;xs:boolean&#34; default=&#34;false&#34; msdata:targetNamespace=&#34;&#34; /&#62;
+        &#60;xs:element name=&#34;cMulti&#34; type=&#34;xs:boolean&#34; default=&#34;false&#34; msdata:targetNamespace=&#34;&#34; /&#62;
+        &#60;xs:element name=&#34;cOwn&#34; type=&#34;xs:boolean&#34; default=&#34;false&#34; msdata:targetNamespace=&#34;&#34; /&#62;
+        &#60;xs:element name=&#34;Column9&#34; type=&#34;xs:string&#34; msdata:targetNamespace=&#34;&#34; minOccurs=&#34;0&#34; /&#62;
+        &#60;xs:element name=&#34;Column10&#34; type=&#34;xs:string&#34; msdata:targetNamespace=&#34;&#34; minOccurs=&#34;0&#34; /&#62;
+      &#60;/xs:sequence&#62;
+    &#60;/xs:complexType&#62;
+  &#60;/xs:element&#62;
+  &#60;xs:element name=&#34;tmpDataSet&#34; msdata:IsDataSet=&#34;true&#34; msdata:Locale=&#34;cs-CZ&#34;&#62;
+    &#60;xs:complexType&#62;
+      &#60;xs:choice maxOccurs=&#34;unbounded&#34; /&#62;
+    &#60;/xs:complexType&#62;
+  &#60;/xs:element&#62;
+&#60;/xs:schema&#62;</XmlSchema>
+<XmlDiffGram id="ref-81">&#60;diffgr:diffgram xmlns:msdata=&#34;urn:schemas-microsoft-com:xml-msdata&#34; xmlns:diffgr=&#34;urn:schemas-microsoft-com:xml-diffgram-v1&#34;&#62;
+  &#60;tmpDataSet&#62;
+    &#60;Atributy diffgr:id=&#34;Atributy1&#34; msdata:rowOrder=&#34;0&#34; diffgr:hasChanges=&#34;inserted&#34;&#62;
+      &#60;cNazev&#62;filterRuleId&#60;/cNazev&#62;
+      &#60;cDat&#62;Integer&#60;/cDat&#62;
+      &#60;cNull&#62;true&#60;/cNull&#62;
+      &#60;cUnique&#62;false&#60;/cUnique&#62;
+      &#60;cDefault /&#62;
+      &#60;cID&#62;true&#60;/cID&#62;
+      &#60;cMulti&#62;false&#60;/cMulti&#62;
+      &#60;cOwn&#62;false&#60;/cOwn&#62;
+    &#60;/Atributy&#62;
+    &#60;Atributy diffgr:id=&#34;Atributy2&#34; msdata:rowOrder=&#34;1&#34; diffgr:hasChanges=&#34;inserted&#34;&#62;
+      &#60;cNazev&#62;name&#60;/cNazev&#62;
+      &#60;cDat&#62;Varchar(255)&#60;/cDat&#62;
+      &#60;cNull&#62;true&#60;/cNull&#62;
+      &#60;cUnique&#62;false&#60;/cUnique&#62;
+      &#60;cDefault /&#62;
+      &#60;cID&#62;false&#60;/cID&#62;
+      &#60;cMulti&#62;false&#60;/cMulti&#62;
+      &#60;cOwn&#62;false&#60;/cOwn&#62;
+    &#60;/Atributy&#62;
+    &#60;Atributy diffgr:id=&#34;Atributy3&#34; msdata:rowOrder=&#34;2&#34; diffgr:hasChanges=&#34;inserted&#34;&#62;
+      &#60;cNazev&#62;rule&#60;/cNazev&#62;
+      &#60;cDat&#62;Varchar(255)&#60;/cDat&#62;
+      &#60;cNull&#62;true&#60;/cNull&#62;
+      &#60;cUnique&#62;false&#60;/cUnique&#62;
+      &#60;cDefault /&#62;
+      &#60;cID&#62;false&#60;/cID&#62;
+      &#60;cMulti&#62;false&#60;/cMulti&#62;
+      &#60;cOwn&#62;false&#60;/cOwn&#62;
+    &#60;/Atributy&#62;
+  &#60;/tmpDataSet&#62;
+&#60;/diffgr:diffgram&#62;</XmlDiffGram>
+</a4:DataTable>
+<SOAP-ENC:Array id="ref-52" SOAP-ENC:arrayType="a3:Char[2]" xmlns:a3="http://schemas.microsoft.com/clr/ns/System">
 <item>0</item>
+<item>n</item>
+</SOAP-ENC:Array>
+<SOAP-ENC:Array id="ref-54" SOAP-ENC:arrayType="a3:Char[2]" xmlns:a3="http://schemas.microsoft.com/clr/ns/System">
+<item>1</item>
 <item>1</item>
 </SOAP-ENC:Array>
-<SOAP-ENC:Array id="ref-47" SOAP-ENC:arrayType="a3:Char[2]" xmlns:a3="http://schemas.microsoft.com/clr/ns/System">
+<SOAP-ENC:Array id="ref-56" SOAP-ENC:arrayType="a3:Char[2]" xmlns:a3="http://schemas.microsoft.com/clr/ns/System">
 <item>0</item>
 <item>n</item>
 </SOAP-ENC:Array>
-<SOAP-ENC:Array id="ref-49" SOAP-ENC:arrayType="a3:Char[2]" xmlns:a3="http://schemas.microsoft.com/clr/ns/System">
+<SOAP-ENC:Array id="ref-58" SOAP-ENC:arrayType="a3:Char[2]" xmlns:a3="http://schemas.microsoft.com/clr/ns/System">
 <item>0</item>
 <item>n</item>
 </SOAP-ENC:Array>
-<SOAP-ENC:Array id="ref-51" SOAP-ENC:arrayType="a3:Char[2]" xmlns:a3="http://schemas.microsoft.com/clr/ns/System">
-<item>0</item>
-<item>n</item>
+<SOAP-ENC:Array id="ref-59" SOAP-ENC:arrayType="xsd:anyType[16]">
 </SOAP-ENC:Array>
-<SOAP-ENC:Array id="ref-52" SOAP-ENC:arrayType="xsd:anyType[16]">
+<SOAP-ENC:Array id="ref-68" SOAP-ENC:arrayType="xsd:anyType[16]">
 </SOAP-ENC:Array>
-<SOAP-ENC:Array id="ref-61" SOAP-ENC:arrayType="xsd:anyType[16]">
+<SOAP-ENC:Array id="ref-77" SOAP-ENC:arrayType="xsd:anyType[16]">
 </SOAP-ENC:Array>
 </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
