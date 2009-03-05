@@ -192,29 +192,12 @@ void MainWindow::setTaskManager(getodo::TaskManager* manager) {
 
 	// ---- filters treeview ----
 
-	// filter TreeView is now using a dummy ListStore
-	refFilterTreeModel = Gtk::ListStore::create(filterColumns);
-	pFilterTreeView->set_model(refFilterTreeModel);
+	refFilterListModel = getodo::FilterListStore::create(*taskManager);
+	pFilterTreeView->set_model(refFilterListModel);
+
 	if (pFilterTreeView->get_columns().empty()) {
-		pFilterTreeView->append_column("Id", filterColumns.id);
-		pFilterTreeView->append_column("Name", filterColumns.name);
-		pFilterTreeView->append_column("Rule", filterColumns.rule);
-	}
-
-	// sample data:
-	//Gtk::TreeModel::Row row = *(refFilterTreeModel->append());
-	//row[filterColumns.id] = 42;
-	//row[filterColumns.name] = "dummy filter";
-	//row[filterColumns.rule] = "priority > 5";
-
-	std::vector<getodo::FilterRule*>& filters = taskManager->getFilterRules();
-	for(std::vector<getodo::FilterRule*>::iterator it = filters.begin();
-		it != filters.end(); ++it)
-	{
-		Gtk::TreeModel::Row row = *(refFilterTreeModel->append());
-		row[filterColumns.id] = (*it)->id;
-		row[filterColumns.name] = Glib::ustring((*it)->name);
-		row[filterColumns.rule] = Glib::ustring((*it)->rule);
+		getodo::FilterListStore::ModelColumns& columns = refFilterListModel->columns;
+		pFilterTreeView->append_column("Filter name", columns.name);
 	}
 }
 
@@ -594,7 +577,7 @@ void MainWindow::setFilterRuleFromSelection() {
 	Gtk::TreeModel::Row row = *iter;
 	id_t filterId = getodo::FilterRule::INVALID_ID;
 	if (iter) {
-		filterId = row[filterColumns.id];
+		filterId = row[refFilterListModel->columns.id];
 	}
 	// std::cout << "filter id: " << filterId << std::endl; // DEBUG
 	getodo::FilterRule* activeRule = taskManager->getActiveFilterRule();

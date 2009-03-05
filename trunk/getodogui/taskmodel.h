@@ -68,7 +68,7 @@ protected:
 	void on_task_moved(Task& task, id_t oldParentId);
 
 	void setRowFromTask(Gtk::TreeModel::iterator& iter, Task& task);
-	void TaskTreeStore::copyRow(Gtk::TreeModel::iterator& src, Gtk::TreeModel::iterator& dest);
+	void copyRow(Gtk::TreeModel::iterator& src, Gtk::TreeModel::iterator& dest);
 	void insertTask(Task& task);
 	void eraseTask(Task& task);
 	void refresh();
