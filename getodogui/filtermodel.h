@@ -7,7 +7,7 @@
 
 namespace getodo {
 
-/** Custom %FilterRule TreeStore.
+/** Custom %FilterRule ListStore.
  * 
  */
 class FilterListStore : public Gtk::ListStore {
@@ -45,6 +45,6 @@ private:
 	TaskManager& manager;
 };
 
-}
+} // namespace getodo
 
-#endif FILTER_MODEL_H
+#endif // FILTER_MODEL_H

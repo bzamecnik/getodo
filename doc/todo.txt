@@ -43,7 +43,9 @@ x- extend the Year Project to the Bachelor Thesis
 	- prepare ListStore based model for tags
 	- sort tags - by name, [by popularity?]
 	- F2 on a tag -> rename
-	- write a custom ListStore
+	*- write a custom ListStore
+		- use a common generic ListStore for tags and filter rules
+			- tags might need an additional column for count of tasks tagged with particular tag	
 
 - Task editing
 	- synchronize done & percentage values in the panel and the tree

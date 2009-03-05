@@ -171,26 +171,23 @@ void MainWindow::setTaskManager(getodo::TaskManager* manager) {
 
 	// ---- tag treeview ----
 	if (!pTagTreeView) { return; }
-	refTagTreeModel = getodo::TagTreeModel::create(*taskManager);
-	pTagTreeView->set_model(refTagTreeModel);
-
-	if (pTagTreeView->get_columns().empty()) {
-		pTagTreeView->append_column("Id", refTagTreeModel->columns.id); // future: hidden
-		//pTagTreeView->append_column("Active", refTagTreeModel->columns.active);
-		pTagTreeView->append_column("Name", refTagTreeModel->columns.name);
-	}
+	refTagListStore = getodo::TagListStore::create(*taskManager);
+	//pTagTreeView->set_model(refTagListStore);
 
 	// TODO: uncomment this, when rules for multiple tags work
 	//pTagTreeView->get_selection()->set_mode(Gtk::SELECTION_MULTIPLE);
 	
-	//refTagTreeModelSort = Gtk::TreeModelSort::create(refTagTreeModel);
-	//refTagTreeModelSort->set_sort_column(refTagTreeModel->columns.id, Gtk::SORT_ASCENDING);
-	//pTagTreeView->set_model(refTagTreeModelSort);
+	refTagListModelSort = Gtk::TreeModelSort::create(refTagListStore);
+	refTagListModelSort->set_sort_column(refTagListStore->columns.name, Gtk::SORT_ASCENDING);
+	pTagTreeView->set_model(refTagListModelSort);
 
-	// task long description textview
-	pTaskLongDescriptionTextView->set_buffer(refTaskLongDescriptionTextBuffer);
+	if (pTagTreeView->get_columns().empty()) {
+		//pTagTreeView->append_column("Id", refTagListStore->columns.id); // future: hidden
+		//pTagTreeView->append_column("Active", refTagListStore->columns.active);
+		pTagTreeView->append_column("Name", refTagListStore->columns.name);
+	}
 
-	// ---- filters treeview ----
+	// ---- filter treeview ----
 
 	// filter model
 	refFilterListModel = getodo::FilterListStore::create(*taskManager);
@@ -204,6 +201,9 @@ void MainWindow::setTaskManager(getodo::TaskManager* manager) {
 		getodo::FilterListStore::ModelColumns& columns = refFilterListModel->columns;
 		pFilterTreeView->append_column("Filter name", columns.name);
 	}
+
+	// ---- task long description textview ----
+	pTaskLongDescriptionTextView->set_buffer(refTaskLongDescriptionTextBuffer);
 }
 
 void MainWindow::on_taskTreeview_selection_changed() {

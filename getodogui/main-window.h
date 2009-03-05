@@ -51,12 +51,13 @@ protected:
 	Gtk::Label* pTaskDateCreatedLabel;
 	Gtk::Label* pTaskDateLastModifiedLabel;
 
-	// filtering panel
+	// filtering panel - tags
 	Gtk::TreeView* pTagTreeView;
+	Glib::RefPtr<getodo::TagListStore> refTagListStore;
+	Glib::RefPtr<Gtk::TreeModelSort> refTagListModelSort;
+	
+	// filtering panel - filter rules
 	Gtk::TreeView* pFilterTreeView;
-
-	Glib::RefPtr<getodo::TagTreeModel> refTagTreeModel;
-	//Glib::RefPtr<Gtk::TreeModelSort> refTagTreeModelSort;
 	Glib::RefPtr<getodo::FilterListStore> refFilterListModel;
 	Glib::RefPtr<Gtk::TreeModelSort> refFilterListModelSort;
 
