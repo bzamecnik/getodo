@@ -62,7 +62,7 @@ void FilterListStore::setRowFromFilterRule(Gtk::TreeModel::iterator& iter, Filte
 	row[columns.name] = filter.name;
 }
 
-// insert all filter rules from the task manager to the tree store
+// insert all filter rules from the task manager to the list store
 void FilterListStore::refresh() {
 	clear();
 	std::vector<FilterRule*>& filters = manager.getFilterRules();
@@ -72,4 +72,4 @@ void FilterListStore::refresh() {
 	}
 }
 
-}
+} // namespace getodo
