@@ -58,6 +58,7 @@ protected:
 	Glib::RefPtr<getodo::TagTreeModel> refTagTreeModel;
 	//Glib::RefPtr<Gtk::TreeModelSort> refTagTreeModelSort;
 	Glib::RefPtr<getodo::FilterListStore> refFilterListModel;
+	Glib::RefPtr<Gtk::TreeModelSort> refFilterListModelSort;
 
 
 	// menubar

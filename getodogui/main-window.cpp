@@ -192,8 +192,13 @@ void MainWindow::setTaskManager(getodo::TaskManager* manager) {
 
 	// ---- filters treeview ----
 
+	// filter model
 	refFilterListModel = getodo::FilterListStore::create(*taskManager);
-	pFilterTreeView->set_model(refFilterListModel);
+	// sorting
+	refFilterListModelSort = Gtk::TreeModelSort::create(refFilterListModel);
+	refFilterListModelSort->set_sort_column(refFilterListModel->columns.name, Gtk::SORT_ASCENDING);
+	
+	pFilterTreeView->set_model(refFilterListModelSort);
 
 	if (pFilterTreeView->get_columns().empty()) {
 		getodo::FilterListStore::ModelColumns& columns = refFilterListModel->columns;
