@@ -1,0 +1,24 @@
+- startup argument:
+	- a file:
+		- valid db file: open
+		- else: report error, open :memory:
+	- nothing -> make :memory: db
+
+- new
+	- close
+	- open :memory:
+
+- open
+	- close current document
+	- open selected file
+		- valid db file: open
+		- else: report error, open :memory:
+
+- save
+	- if in :memory: prompt for name first
+
+- save as
+
+- close
+	- clean some stuff
+	- open :memory:

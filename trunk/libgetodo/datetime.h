@@ -60,8 +60,8 @@ private:
 };
 
 /** %Date.
- * Representaion of date. We have own DateTime class instead of
- * using boost::posix_time::ptime because of serialization to own string 
+ * Representaion of date. We have own Date class instead of
+ * using boost::gregorian::date because of serialization to own string 
  * format.
  */
 class Date {
@@ -136,7 +136,7 @@ protected:
 	/** Type identifier for serialization. */
 	virtual std::string getTypeId() const = 0;
 	/** Serialization to an output stream. operator<< cannot be virtual, so
-	 * the core code is pseparated into printOn().
+	 * the core code is separated into printOn().
 	 */
 	virtual void printOn(std::ostream& o) const = 0;
 };

@@ -11,7 +11,7 @@
 
 CREATE TABLE Task (
 taskId      INTEGER      NOT NULL,
-parentId      INTEGER DEFAULT '-1' NOT NULL,
+parentId      INTEGER DEFAULT '-1' NOT NULL, -- -1 -> Task::INVALID_ID
 description      STRING      NOT NULL,
 longDescription      STRING,
 dateCreated      STRING      NOT NULL,
@@ -28,7 +28,7 @@ CONSTRAINT pk_Task PRIMARY KEY (taskId));
 
 CREATE TABLE Tag (
 tagId      INTEGER      NOT NULL,
-tagName      STRING      NOT NULL  UNIQUE,
+tagName      STRING      NOT NULL, -- +UNIQUE
 CONSTRAINT pk_Tag PRIMARY KEY (tagId));
 
 CREATE TABLE Tagged (
@@ -40,6 +40,6 @@ CONSTRAINT fk_Tagged_Tag FOREIGN KEY (tagId) REFERENCES Tag(tagId));
 
 CREATE TABLE FilterRule (
 filterRuleId      INTEGER      NOT NULL,
-name      STRING      NOT NULL  UNIQUE,
+name      STRING      NOT NULL, -- +UNIQUE (?)
 rule      STRING      NOT NULL,
 CONSTRAINT pk_FilterRule PRIMARY KEY (filterRuleId));
