@@ -13,9 +13,9 @@ x- extend the Year Project to the Bachelor Thesis
 	*- implement filtering throught SQL queries in FilterRule::filter()
 	- support combining rule via AND, OR, NOT operations
 		- this can be made at two different levels:
-			- combine the SQL queries
-				-> this could be hard...
-					- combining WHERE part is easy, but combining JOINs...?
+			- combine the SQL queries - this is ok!
+					- SELECT ... UNION SELECT ... UNION SELECT ...
+					- SELECT ... INTERSECT SELECT ... INTERSECT SELECT ...
 			- combine the result sets
 				-> this is easy but only for non-hierarchical combining
 	- prapare ListStore based model for filters
@@ -56,6 +56,12 @@ x- extend the Year Project to the Bachelor Thesis
 - doxygen docs - try it, make it working
 - TaskPersistence, FilterRulePersistence - split save() into insert() and update()
 - use operator= for copying Tasks and Tags
+
+- fix ER diagram in doc/sql/diagram.png
+	- refresh according to SQL file
+	- add FilterRule table
+
+- finish architecture documentation in doc/architecture-cs.txt!
 
 - improve GUI design in Glade
 	- editing panel, menu, toolbar...	

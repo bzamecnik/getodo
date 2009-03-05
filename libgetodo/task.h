@@ -155,7 +155,7 @@ public:
 	void setDone(bool done = true);
 
 	// ----- object-relation representation conversion -----
-	/** Make a database row reprezenting the task.
+	/** Make a database row representing the task.
 	 * All fields except subtasks and tags are serialized.
 	 * Subtasks are only another view to parent relation.
 	 * Tags need to be stored separately.
@@ -165,7 +165,7 @@ public:
 	static Task* fromDatabaseRow(databaseRow_t& row);
 
 	// ----- text I/O -----
-	/** String reprezentation. For debugging purposes. For database
+	/** String representation. For debugging purposes. For database
 	 * serializaiton use toDatabaseRow().
 	 */
 	std::string toString() const;
