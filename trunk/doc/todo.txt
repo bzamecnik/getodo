@@ -57,9 +57,7 @@ x- extend the Year Project to the Bachelor Thesis
 - TaskPersistence, FilterRulePersistence - split save() into insert() and update()
 - use operator= for copying Tasks and Tags
 
-- fix ER diagram in doc/sql/diagram.png
-	- refresh according to SQL file
-	- add FilterRule table
+- profile what happens in GUI (TaskTreeStore) - why it is so slow?
 
 - finish architecture documentation in doc/architecture-cs.txt!
 
