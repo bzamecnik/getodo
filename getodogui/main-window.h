@@ -58,7 +58,7 @@ protected:
 	
 	// filtering panel - filter rules
 	Gtk::TreeView* pFilterTreeView;
-	Glib::RefPtr<getodo::FilterListStore> refFilterListModel;
+	Glib::RefPtr<getodo::FilterListStore> refFilterListStore;
 	Glib::RefPtr<Gtk::TreeModelSort> refFilterListModelSort;
 
 
@@ -82,6 +82,8 @@ protected:
 
 	void on_filterTreeview_selection_changed();
 
+	void on_tagTreeview_selection_changed();
+
 	bool on_taskDescriptionEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry);
 	bool on_taskLongDescriptionTextview_focus_out_event(GdkEventFocus* event, Gtk::TextView* textview);
 	//bool on_taskTagsEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry);
@@ -99,9 +101,15 @@ private:
 
 	bool filteringActive;
 
+	getodo::FilterRule* activeTagFilter;
+	getodo::FilterRule* activeRuleFilter;
+
 	// true, if signal handler should respond to event from this panel
 	// false, if there is some batch filling or cleaning of the panel
 	bool editingPanelActive;
+
+	// return a join (INTERSECT) of activeTagFilter and activeRuleFilter
+	void setActiveFilter();
 
 	void fillEditingPanel(getodo::Task& task);
 	void clearEditingPanel();

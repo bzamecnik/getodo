@@ -8,7 +8,8 @@
 MainWindow::MainWindow(BaseObjectType* cobject,
 	const Glib::RefPtr<Gnome::Glade::Xml>& refGlade)
 : Gtk::Window(cobject), refXml(refGlade),
-  taskManager(0), filteringActive(false)
+  taskManager(0), filteringActive(false),
+  activeRuleFilter(0), activeTagFilter(0)
 // TODO: initialize all widget pointers to 0
 {
 	Gtk::ToolButton* pTaskNewToplevelToolbutton = 0;
@@ -118,6 +119,8 @@ MainWindow::MainWindow(BaseObjectType* cobject,
 		&MainWindow::on_taskTreeview_selection_changed) );
 	pFilterTreeView->get_selection()->signal_changed().connect(sigc::mem_fun(*this,
 		&MainWindow::on_filterTreeview_selection_changed) );
+	pTagTreeView->get_selection()->signal_changed().connect(sigc::mem_fun(*this,
+		&MainWindow::on_tagTreeview_selection_changed) );
 }
 
 MainWindow::~MainWindow() {}
@@ -175,7 +178,7 @@ void MainWindow::setTaskManager(getodo::TaskManager* manager) {
 	//pTagTreeView->set_model(refTagListStore);
 
 	// TODO: uncomment this, when rules for multiple tags work
-	//pTagTreeView->get_selection()->set_mode(Gtk::SELECTION_MULTIPLE);
+	pTagTreeView->get_selection()->set_mode(Gtk::SELECTION_MULTIPLE);
 	
 	refTagListModelSort = Gtk::TreeModelSort::create(refTagListStore);
 	refTagListModelSort->set_sort_column(refTagListStore->columns.name, Gtk::SORT_ASCENDING);
@@ -190,15 +193,15 @@ void MainWindow::setTaskManager(getodo::TaskManager* manager) {
 	// ---- filter treeview ----
 
 	// filter model
-	refFilterListModel = getodo::FilterListStore::create(*taskManager);
+	refFilterListStore = getodo::FilterListStore::create(*taskManager);
 	// sorting
-	refFilterListModelSort = Gtk::TreeModelSort::create(refFilterListModel);
-	refFilterListModelSort->set_sort_column(refFilterListModel->columns.name, Gtk::SORT_ASCENDING);
+	refFilterListModelSort = Gtk::TreeModelSort::create(refFilterListStore);
+	refFilterListModelSort->set_sort_column(refFilterListStore->columns.name, Gtk::SORT_ASCENDING);
 	
 	pFilterTreeView->set_model(refFilterListModelSort);
 
 	if (pFilterTreeView->get_columns().empty()) {
-		getodo::FilterListStore::ModelColumns& columns = refFilterListModel->columns;
+		getodo::FilterListStore::ModelColumns& columns = refFilterListStore->columns;
 		pFilterTreeView->append_column("Filter name", columns.name);
 	}
 
@@ -222,13 +225,80 @@ void MainWindow::on_taskTreeview_selection_changed() {
 }
 
 void MainWindow::on_filterTreeview_selection_changed() {
-	Gtk::TreeModel::iterator iter = pFilterTreeView->get_selection()->get_selected();
-	// enable the toggle button if anything selected, disable if nothing
-	// this will activate the selected filter rule
-	if (iter != 0) {
-		setFilterRuleFromSelection();
+	using namespace getodo;
+	//Gtk::TreeModel::iterator iter = pFilterTreeView->get_selection()->get_selected();
+	//// enable the toggle button if anything selected, disable if nothing
+	//// this will activate the selected filter rule
+	//if (iter != 0) {
+	//	setFilterRuleFromSelection();
+	//}
+	//pTaskFilterToggletoolbutton->set_active(iter != 0);
+	
+// for multiple selection
+	std::vector<FilterRule> ruleFilters;
+
+	Gtk::TreeSelection::ListHandle_Path selectedRows = pFilterTreeView->get_selection()->get_selected_rows();
+	BOOST_FOREACH(Gtk::TreePath path, selectedRows) {
+		Gtk::TreeIter sortIter = refFilterListModelSort->get_iter(path);
+		Gtk::TreeIter iter = refFilterListModelSort->convert_iter_to_child_iter(sortIter);
+		id_t filterId = getodo::FilterRule::INVALID_ID;
+		if (iter) {
+			filterId = (*iter)[refFilterListStore->columns.id];
+		}
+		if (taskManager->hasFilterRule(filterId)) {
+			ruleFilters.push_back(taskManager->getFilterRule(filterId));
+		}
 	}
-	pTaskFilterToggletoolbutton->set_active(iter != 0);
+	if (!ruleFilters.empty()) {
+		// join it using UNION or INTERSECT according to 'All' and 'Any' buttons
+		activeRuleFilter = new FilterRule(FilterBuilder::intersectFilters(ruleFilters));		
+	} else {
+		activeRuleFilter = 0;
+	}
+	setActiveFilter();
+}
+
+void MainWindow::on_tagTreeview_selection_changed() {
+	using namespace getodo;
+	//Gtk::TreeModel::iterator iter = pTagTreeView->get_selection()->get_selected();
+	//
+	//Gtk::TreeModel::Row row = *iter;
+	//id_t tagId = getodo::FilterRule::INVALID_ID;
+	//if (iter) {
+	//	tagId = row[refTagListStore->columns.id];
+	//}
+	////std::cout << "tag id: " << tagId << std::endl; // DEBUG
+	//if (taskManager->hasTag(tagId)) {
+	//	FilterRule filter = FilterBuilder::createTagFilter(tagId);
+	//	taskManager->setActiveFilterRule(filter);
+	//	filteringActive = true;
+	//	//std::cout << "tag filter: " << filter << std::endl; // DEBUG
+	//	refTaskTreeModelFilter->refilter();
+	//}
+
+	// for multiple selection
+	std::vector<FilterRule> tagFilters;
+
+	Gtk::TreeSelection::ListHandle_Path selectedRows = pTagTreeView->get_selection()->get_selected_rows();
+	BOOST_FOREACH(Gtk::TreePath path, selectedRows) {
+		Gtk::TreeIter sortIter = refTagListModelSort->get_iter(path);
+		Gtk::TreeIter iter = refTagListModelSort->convert_iter_to_child_iter(sortIter);
+		id_t tagId = getodo::FilterRule::INVALID_ID;
+		if (iter) {
+			tagId = (*iter)[refTagListStore->columns.id];
+		}
+		if (taskManager->hasTag(tagId)) {
+			FilterRule filter = FilterBuilder::createTagFilter(tagId);
+			tagFilters.push_back(filter);
+		}
+	}
+	if (!tagFilters.empty()) {
+		// join it using UNION or INTERSECT according to 'All' and 'Any' buttons
+		activeTagFilter = new FilterRule(FilterBuilder::intersectFilters(tagFilters));
+	} else {
+		activeTagFilter = 0;
+	}
+	setActiveFilter();
 }
 
 void MainWindow::on_buttonTaskNewToplevel_clicked() {
@@ -465,6 +535,32 @@ bool MainWindow::on_taskTreeview_filter_row_visible(const Gtk::TreeModel::const_
 	return true;
 }
 
+void MainWindow::setActiveFilter() {
+	std::vector<getodo::FilterRule> activeFilters;
+	
+	if ((activeTagFilter == 0) && (activeRuleFilter == 0)) {
+		filteringActive = false;
+		taskManager->resetActiveFilterRule();
+	} else {
+		if (activeTagFilter != 0) {
+		activeFilters.push_back(*activeTagFilter);
+		}
+		if (activeRuleFilter != 0) {
+			activeFilters.push_back(*activeRuleFilter);
+		}
+		filteringActive = true;
+		getodo::FilterRule* activefilter = new getodo::FilterRule(
+			getodo::FilterBuilder::intersectFilters(activeFilters)
+		);
+		try {
+			taskManager->setActiveFilterRule(*activefilter);
+		} catch (getodo::GetodoError& ex) {
+			filteringActive = false;
+		}
+	}
+	refTaskTreeModelFilter->refilter();
+}
+
 void MainWindow::fillEditingPanel(getodo::Task& task) {
 	if (!taskManager) { return; }
 	
@@ -582,7 +678,7 @@ void MainWindow::setFilterRuleFromSelection() {
 	Gtk::TreeModel::Row row = *iter;
 	id_t filterId = getodo::FilterRule::INVALID_ID;
 	if (iter) {
-		filterId = row[refFilterListModel->columns.id];
+		filterId = row[refFilterListStore->columns.id];
 	}
 	// std::cout << "filter id: " << filterId << std::endl; // DEBUG
 	getodo::FilterRule* activeRule = taskManager->getActiveFilterRule();

@@ -143,8 +143,9 @@ void Task::removeTag(id_t tagId) {
 	// when the tagId is bad, it might be reported
 	tags.erase(tagId);
 }
-std::vector<id_t>& Task::getTagIds() const {
-	return convertSetToVector<id_t>(tags);
+idset_t& Task::getTagIds() const {
+	return *(new idset_t(tags));
+	//return convertSetToVector<id_t>(tags);
 }
 
 std::string Task::getTagsAsString(TaskManager& manager) const {
@@ -372,7 +373,7 @@ std::ostream& operator<< (std::ostream& o, const Task& task) {
 		o << "  " << it->first << " => " << it->second << std::endl;
 	}
 
-	std::vector<id_t>& tags = task.getTagIds();
+	idset_t tags = task.getTagIds();
 	o << "  tags [";
 	join(o, tags.begin(), tags.end(), ",");
 	o << "]" << std::endl;
@@ -440,6 +441,7 @@ bool TaskPersistence::insert() {
 
 void TaskPersistence::update() {
 	databaseRow_t& row = prepareRowToSave();
+	id_t taskId = task->getTaskId();
 
 	// NOTE: if there is no row with such an id in the db,
 	// nothing bad happens
@@ -459,7 +461,73 @@ void TaskPersistence::update() {
 	}
 	ss << "WHERE taskId = " << row["taskId"] << ";";
 	sqlite3_command cmd(*conn, ss.str());
-	cmd.executenonquery();
+	try {
+		cmd.executenonquery();
+	} catch (sqlite3x::database_error ex) {
+		std::cout << "SQL error: " << ex.what() << std::endl;
+	}
+
+	// we need to synchronize the tags:
+	
+	// delete all tags not present in the updated task
+	idset_t newTags = task->getTagIds();
+	if (!newTags.empty()) {
+		ss.str(""); // clear the stream
+		ss << "DELETE FROM Tagged WHERE taskID = ? AND ";
+		std::vector<std::string> tagParts;
+		BOOST_FOREACH(id_t tagId, newTags) {
+			tagParts.push_back("NOT tagId = " + boost::lexical_cast<std::string, id_t>(tagId));
+		}
+		join(ss, tagParts.begin(), tagParts.end(), " AND ");
+		ss << ";";
+		try {
+			cmd.prepare(ss.str());
+			cmd.bind(1, taskId);
+			cmd.executenonquery();
+		} catch (sqlite3x::database_error ex) {
+			std::cout << "SQL error: " << ex.what() << std::endl;
+		}
+	}
+
+	// get the remaining tags
+
+	idset_t remainingTags;
+	try {
+		cmd.prepare("SELECT tagId FROM Tagged WHERE taskId = ?;");
+		cmd.bind(1, taskId);
+		sqlite3_cursor cursor = cmd.executecursor();
+		while (cursor.step()) {
+			int id = cursor.getint(0);
+			remainingTags.insert(id);
+		}
+		cursor.close();
+	} catch (sqlite3x::database_error ex) {
+		std::cout << "SQL error: " << ex.what() << std::endl;
+	}
+
+	// insert new tags that are not yet in the database
+	std::vector<id_t> tagsToInsert_(newTags.size()); // let it have enough capacity
+	std::vector<id_t>::iterator tagsToInsert_end = std::set_difference(
+		newTags.begin(), newTags.end(),
+		remainingTags.begin(), remainingTags.end(),
+		tagsToInsert_.begin()
+	);
+	// copy only what std::set_difference inserted
+	std::vector<id_t> tagsToInsert(tagsToInsert_.begin(), tagsToInsert_end);
+
+	if (!tagsToInsert.empty()) {
+		ss.str("");
+		ss << "INSERT INTO Tagged (taskId, tagId) VALUES (" << taskId << ",?);";
+		try {
+			BOOST_FOREACH(id_t tagId, tagsToInsert) {
+				cmd.prepare(ss.str());
+				cmd.bind(1, tagId);
+				cmd.executenonquery();
+			}
+		} catch (sqlite3x::database_error ex) {
+			std::cout << "SQL error: " << ex.what() << std::endl;
+		}
+	}
 }
 
 databaseRow_t& TaskPersistence::prepareRowToSave() {
@@ -717,10 +785,9 @@ void TaskPersistence::saveTags() {
 	if (!task) { throw new GetodoError("No task in the persistence."); }
 	
 	// TODO: remove unused tags (ie. the ones deleted in Task but not yet in db)
-	std::vector<id_t>& tags = task->getTagIds();
-	std::vector<id_t>::const_iterator tag;
-	for (tag = tags.begin(); tag != tags.end(); tag++) {
-		addTag(*tag);
+	idset_t tags = task->getTagIds();
+	BOOST_FOREACH(id_t tagId, tags) {
+		addTag(tagId);
 	}
 }
 

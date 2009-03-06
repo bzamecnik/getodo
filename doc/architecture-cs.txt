@@ -112,8 +112,6 @@ Singleton tøída reprezentující aplikaci GeToDo. Zpracovává argumenty z pøíkazové
 
 Hlavní okno aplikace, potomek Gtk::Window. Asi nejdùležitìjšími prvky jsou TreeView pro úkoly, jedno ListView pro filtry a druhé pro tagy. Každý tento view má pod sebou ještì model. Modely jsou propojeny s TaskManagerem právì pomocí výše zmínìných signálù. Praxi to vypadá tak, že když se nìco zmìní v TaskManageru, ten vyšle signál, který pak zpracuje model. Ten zase automaticky vyšle signál pohledu, tj. TreeView nebo ListView.
 
-=== MainWindow::FilterModelColumns ===
-
 === RecurrenceDialog ===
 
 Dialog pro editaci rekurencí.
@@ -124,4 +122,10 @@ Dialog pro editaci rekurencí.
 
 Model pro widget taskTreeView. Jedná se o podìdìný TreeStore. Tuto možnost jsem zvolil, jednak abych mohl zpracovávat signály z TaskManageru, ale abych mohl mít k dispozici i další funkce. Pùvodnì myšlená vlastní implementace rozhraní TreeModel, kde by byla optimalizována manipulace s tasky v modelu, se ukázala být pøíliš složitá, tìkžopádná.
 
-=== TaskTreeStore::ModelColumns  ===
+=== FilterListStore ===
+
+Jednoduchý obal nad ListStore. Funguje podobnì jako TaskTreeStore, jen je jednodušší, protože nemusí øešit stromovou strukturu.
+
+=== TagListStore ===
+
+Skoro to samé jako FilterListStore.

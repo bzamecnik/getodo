@@ -34,13 +34,7 @@ idset_t& FilterRule::filter(sqlite3_connection& conn) {
 
 	idset_t& tasksOk = *(new idset_t());
 
-	std::ostringstream ss;
-	ss << "SELECT taskId FROM Task ";
-	// TODO: check the rule and quote it
-	ss << rule; // <-- There is a possible security hole!
-	ss << ";";
-
-	sqlite3_command cmd(conn, ss.str());
+	sqlite3_command cmd(conn, rule + ";");
 	sqlite3_cursor cursor = cmd.executecursor();
 	while (cursor.step()) {
 		tasksOk.insert(tasksOk.end(), cursor.getint(0));
@@ -196,8 +190,26 @@ FilterRule FilterBuilder::createTagFilter(id_t tagId) {
 	std::string tagIdStr = boost::lexical_cast<std::string, id_t>(tagId);
 	return FilterRule(
 		"tag " + tagIdStr,
-		"NATURAL JOIN Tagged WHERE tagId = " + tagIdStr
+		"SELECT taskId FROM Tagged WHERE tagId = " + tagIdStr
 	);
+}
+
+FilterRule FilterBuilder::unionFilters(const std::vector<FilterRule>& filters) {
+	return joinFilters(filters, " UNION ");
+}
+
+FilterRule FilterBuilder::intersectFilters(const std::vector<FilterRule>& filters) {
+	return joinFilters(filters, " INTERSECT ");
+}
+
+FilterRule FilterBuilder::joinFilters(const std::vector<FilterRule>& filters, std::string command) {
+	std::ostringstream ss;
+	std::vector<std::string> filterStrings;
+	BOOST_FOREACH(FilterRule filter, filters) {
+		filterStrings.push_back(filter.rule);
+	}
+	join(ss, filterStrings.begin(), filterStrings.end(), command.c_str());
+	return FilterRule("joined rule", ss.str());
 }
 
 } // namespace getodo
