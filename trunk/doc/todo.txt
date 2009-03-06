@@ -9,16 +9,18 @@ x- extend the Year Project to the Bachelor Thesis
 
 ==== Tasks ====
 
+- fix a bug in tag synchronization in TaskPersistence::update()
+
 - Filtering
 	*- implement filtering throught SQL queries in FilterRule::filter()
-	- support combining rule via AND, OR, NOT operations
+	*- support combining rule via AND, OR, NOT operations
 		- this can be made at two different levels:
 			- combine the SQL queries - this is ok!
 					- SELECT ... UNION SELECT ... UNION SELECT ...
 					- SELECT ... INTERSECT SELECT ... INTERSECT SELECT ...
 			- combine the result sets
 				-> this is easy but only for non-hierarchical combining
-	*- prapare ListStore based model for filters
+	*- prepare ListStore based model for filters
 		- write doxygen docs
 	- selected tags -> add rules to contain selected tags via OR and bound
 		with selected rule via AND: (filter AND (tag1 OR tag2 OR tag3)
@@ -36,16 +38,19 @@ x- extend the Year Project to the Bachelor Thesis
 	- fix bugs in filtering (GTK)
 
 - Tags
-	- support renaming tags
+	- support renaming tags (eg. on the F2 key)
 	- support purging unused tags
-	- support multiple selection
+	*- support multiple selection
+		- additional columns with checkboxes
 	- clicking on selected tag should unselect it
-	- prepare ListStore based model for tags
-	- sort tags - by name, [by popularity?]
-	- F2 on a tag -> rename
+	*- prepare ListStore based model for tags
+	*- sort tags - by name, [by popularity?]
+	- tags might need an additional column for count of tasks tagged with particular tag
 	*- write a custom ListStore
 		- use a common generic ListStore for tags and filter rules
-			- tags might need an additional column for count of tasks tagged with particular tag	
+			- additional columns, eg. 'active', 'count tasks'
+
+- fix support for (de)activating tag filters and rule filters separately
 
 - Task editing
 	- synchronize done & percentage values in the panel and the tree

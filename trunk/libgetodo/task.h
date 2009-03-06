@@ -111,7 +111,7 @@ public:
 	bool hasTag(id_t tagId) const;
 	void removeTag(id_t tagId); //should throw an exception on failure
 	/** Get a list of tag ids which belong to the task. */
-	std::vector<id_t>& getTagIds() const;
+	idset_t& getTagIds() const;
 	/** Get a list of tag names separated by a space. */
 	std::string getTagsAsString(TaskManager& manager) const;
 	/** Set tags from a string of tag names separated by whitespace. 

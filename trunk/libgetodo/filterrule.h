@@ -79,9 +79,18 @@ private:
 
 class FilterBuilder {
 public:
-	//static FilterRule createAllTagsFilter(idset_t& tags);
-	//static FilterRule createAnyTagsFilter(idset_t& tags);
+	static FilterRule createAllTagsFilter(idset_t& tags);
+	static FilterRule createAnyTagsFilter(idset_t& tags);
+	
 	static FilterRule createTagFilter(id_t tagId);
+	
+	// join SQL queries using UNION command
+	static FilterRule unionFilters(const std::vector<FilterRule>& filters);
+
+	// join SQL queries using INTERSECT command
+	static FilterRule intersectFilters(const std::vector<FilterRule>& filters);
+private:
+	static FilterRule joinFilters(const std::vector<FilterRule>& filters, std::string command);
 };
 
 } // namespace getodo
