@@ -29,17 +29,19 @@ FilterRule::~FilterRule() {}
 
 
 idset_t& FilterRule::filter(sqlite3_connection& conn) {
-	// TODO: filter using a SQL query
-	// throw an exception if the query is broken
-
+	// filter using a SQL query
 	idset_t& tasksOk = *(new idset_t());
 
-	sqlite3_command cmd(conn, rule + ";");
-	sqlite3_cursor cursor = cmd.executecursor();
-	while (cursor.step()) {
-		tasksOk.insert(tasksOk.end(), cursor.getint(0));
+	try {
+		sqlite3_command cmd(conn, rule + ";");
+		sqlite3_cursor cursor = cmd.executecursor();
+		while (cursor.step()) {
+			tasksOk.insert(tasksOk.end(), cursor.getint(0));
+		}
+		cursor.close();
+	} catch (sqlite3x::database_error&) {
+		// throw an exception if the query is broken
 	}
-	cursor.close();
 
 	return tasksOk;
 }
@@ -62,6 +64,10 @@ bool FilterRule::isValidId(id_t id) {
 
 bool FilterRule::hasValidId() const {
 	return FilterRule::isValidId(id);
+}
+
+bool FilterRule::isEmpty() const {
+	return rule.empty();
 }
 
 // ----- class FilterRulePersistence --------------------
@@ -195,18 +201,41 @@ FilterRule FilterBuilder::createTagFilter(id_t tagId) {
 }
 
 FilterRule FilterBuilder::unionFilters(const std::vector<FilterRule>& filters) {
-	return joinFilters(filters, " UNION ");
+	return joinFilters(filters, " UNION ", "INTERSECT");
 }
 
 FilterRule FilterBuilder::intersectFilters(const std::vector<FilterRule>& filters) {
-	return joinFilters(filters, " INTERSECT ");
+	return joinFilters(filters, " INTERSECT ", "UNION");
 }
 
-FilterRule FilterBuilder::joinFilters(const std::vector<FilterRule>& filters, std::string command) {
+FilterRule FilterBuilder::joinFilters(
+		const std::vector<FilterRule>& filters,
+		std::string command,
+		std::string dualCommand
+	) {
+	bool simple = true;
+	BOOST_FOREACH(FilterRule filter, filters) {
+		if (filter.rule.find(dualCommand, 0) != std::string::npos) {
+			simple = false;
+			break;
+		}
+	}
+	return joinFiltersImpl(filters, command, simple);
+}
+
+FilterRule FilterBuilder::joinFiltersImpl(
+		const std::vector<FilterRule>& filters,
+		std::string command,
+		bool simple
+	) {
 	std::ostringstream ss;
 	std::vector<std::string> filterStrings;
 	BOOST_FOREACH(FilterRule filter, filters) {
-		filterStrings.push_back(filter.rule);
+		if (simple) {
+			filterStrings.push_back(filter.rule);
+		} else {
+			filterStrings.push_back("SELECT * FROM (" + filter.rule + ")");
+		}
 	}
 	join(ss, filterStrings.begin(), filterStrings.end(), command.c_str());
 	return FilterRule("joined rule", ss.str());
