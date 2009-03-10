@@ -36,7 +36,7 @@ private:
 
     sqlite3_connection* conn;
 
-	FilterRule* activeFilterRule; // active filtering rule, 0 if none
+	FilterRule activeFilterRule;
 	idset_t visibleTasksCache; // task id's which have passed the filter
 public:
     // TaskManager(); // for in-memory database (sqlite filename :memory:)
@@ -85,9 +85,10 @@ public:
     void deleteFilterRule(id_t filterRuleId); //should throw an exception on failure
     std::vector<FilterRule*>& getFilterRules();
 
-	void setActiveFilterRule(FilterRule& filter); // enable filtering and set the rule
+	void setActiveFilterRule(const FilterRule& filter); // enable filtering and set the rule
 	void resetActiveFilterRule(); // deactivate filtering
-	FilterRule* getActiveFilterRule();
+	//FilterRule* getActiveFilterRule() const;
+	bool hasActiveFilterRule() const;
 
 	bool isTaskVisible(id_t taskId); // true, if taskId passed the filter
 	idset_t getFilteredTasks();

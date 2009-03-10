@@ -22,7 +22,7 @@ using namespace sqlite3x;
 // ----- Constructors & destructor -----
 
 TaskManager::TaskManager(std::string dbname)
-: conn(0), activeFilterRule(0) {
+: conn(0) {
 	try {
 		conn = new sqlite3_connection(dbname);
 	} catch(database_error) {
@@ -37,7 +37,7 @@ TaskManager::TaskManager(std::string dbname)
 }
 
 TaskManager::TaskManager(sqlite3_connection* c)
-: conn(c), activeFilterRule(0) {}
+: conn(c) {}
 
 TaskManager::~TaskManager() {
     if(conn) {
@@ -340,10 +340,10 @@ std::vector<FilterRule*>& TaskManager::getFilterRules() {
     return convertMapToVector<id_t, FilterRule>(filters);
 }
 
-void TaskManager::setActiveFilterRule(FilterRule& filter) {
-	activeFilterRule = &filter;
+void TaskManager::setActiveFilterRule(const FilterRule& filter) {
+	activeFilterRule = filter;
 	try { 
-		visibleTasksCache = filterTasks(*activeFilterRule);
+		visibleTasksCache = filterTasks(activeFilterRule);
 	} catch (GetodoError& ex) {
 		resetActiveFilterRule();
 		// TODO: rethrow the exception
@@ -359,16 +359,20 @@ void TaskManager::setActiveFilterRule(FilterRule& filter) {
 }
 
 void TaskManager::resetActiveFilterRule() {
-	activeFilterRule = 0;
+	activeFilterRule = FilterRule();
 	visibleTasksCache.clear();
 }
 
-FilterRule* TaskManager::getActiveFilterRule() {
-	return activeFilterRule;
+//FilterRule* TaskManager::getActiveFilterRule() const {
+//	return activeFilterRule;
+//}
+
+bool TaskManager::hasActiveFilterRule() const {
+	return !activeFilterRule.isEmpty();
 }
 
 bool TaskManager::isTaskVisible(id_t taskId) {
-	return (activeFilterRule == 0)
+	return !hasActiveFilterRule()
 		|| (visibleTasksCache.find(taskId) != visibleTasksCache.end());
 }
 

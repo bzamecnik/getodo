@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.3 on Fri Mar 06 12:06:56 2009 -->
+<!--Generated with glade3 3.4.3 on Tue Mar 10 15:09:44 2009 -->
 <glade-interface>
   <widget class="GtkWindow" id="mainWindow">
     <property name="width_request">750</property>
@@ -323,19 +323,8 @@
             <child>
               <widget class="GtkToggleToolButton" id="taskFilterToggletoolbutton">
                 <property name="visible">True</property>
-                <property name="tooltip" translatable="yes">Toggle filtering by rules</property>
+                <property name="tooltip" translatable="yes">Toggle filtering</property>
                 <property name="label" translatable="yes">Filter</property>
-                <property name="stock_id">gtk-execute</property>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkToggleToolButton" id="taskTagFilterToggletoolbutton">
-                <property name="visible">True</property>
-                <property name="tooltip" translatable="yes">Toggle filtering by tags</property>
-                <property name="label" translatable="yes">Tag Filter</property>
                 <property name="stock_id">gtk-execute</property>
               </widget>
               <packing>
@@ -358,10 +347,64 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <child>
-                  <widget class="GtkFrame" id="tagFilteringFrame">
+                  <widget class="GtkVBox" id="filteringTagsVbox">
                     <property name="visible">True</property>
-                    <property name="label_xalign">0</property>
-                    <property name="shadow_type">GTK_SHADOW_NONE</property>
+                    <child>
+                      <widget class="GtkToggleButton" id="tagFilterTogglebutton">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="tooltip" translatable="yes">Toggle filtering by tags</property>
+                        <property name="label" translatable="yes">Filter by tags</property>
+                        <property name="response_id">0</property>
+                      </widget>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkHBox" id="tagFilterToolbarHbox">
+                        <property name="visible">True</property>
+                        <property name="spacing">10</property>
+                        <child>
+                          <widget class="GtkRadioButton" id="tagFilterAllRadiobutton">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="tooltip" translatable="yes">Filter by all tags selected (join with AND)</property>
+                            <property name="label" translatable="yes">All</property>
+                            <property name="response_id">0</property>
+                            <property name="active">True</property>
+                            <property name="draw_indicator">True</property>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkRadioButton" id="tagFilterAnyRadiobutton">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="tooltip" translatable="yes">Filter by any tag selected (join with OR)</property>
+                            <property name="label" translatable="yes">Any</property>
+                            <property name="response_id">0</property>
+                            <property name="draw_indicator">True</property>
+                            <property name="group">tagFilterAllRadiobutton</property>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </widget>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
                     <child>
                       <widget class="GtkScrolledWindow" id="tagsScrolledwindow">
                         <property name="visible">True</property>
@@ -377,50 +420,8 @@
                           </widget>
                         </child>
                       </widget>
-                    </child>
-                    <child>
-                      <widget class="GtkHBox" id="tagFilterToolbarHbox">
-                        <property name="visible">True</property>
-                        <child>
-                          <widget class="GtkLabel" id="tagFilterToolbarLabel">
-                            <property name="visible">True</property>
-                            <property name="label" translatable="yes">Filter by tags</property>
-                            <property name="use_markup">True</property>
-                          </widget>
-                        </child>
-                        <child>
-                          <widget class="GtkToggleButton" id="tagsAllTogglebutton">
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">True</property>
-                            <property name="tooltip" translatable="yes">Filter by all tags selected (join with AND)</property>
-                            <property name="label" translatable="yes">All</property>
-                            <property name="response_id">0</property>
-                          </widget>
-                          <packing>
-                            <property name="fill">False</property>
-                            <property name="pack_type">GTK_PACK_END</property>
-                            <property name="position">2</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkToggleButton" id="tagsAnyTogglebutton">
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">True</property>
-                            <property name="tooltip" translatable="yes">Filter by any tag selected (join with OR)</property>
-                            <property name="label" translatable="yes">Any</property>
-                            <property name="response_id">0</property>
-                          </widget>
-                          <packing>
-                            <property name="fill">False</property>
-                            <property name="pack_type">GTK_PACK_END</property>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                      </widget>
                       <packing>
-                        <property name="type">label_item</property>
+                        <property name="position">2</property>
                       </packing>
                     </child>
                   </widget>
@@ -430,10 +431,64 @@
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkFrame" id="ruleFilteringFrame">
+                  <widget class="GtkVBox" id="filteringRulesVbox">
                     <property name="visible">True</property>
-                    <property name="label_xalign">0</property>
-                    <property name="shadow_type">GTK_SHADOW_NONE</property>
+                    <child>
+                      <widget class="GtkToggleButton" id="ruleFilterTogglebutton">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="tooltip" translatable="yes">Toggle filtering by rules</property>
+                        <property name="label" translatable="yes">Filter by rules</property>
+                        <property name="response_id">0</property>
+                      </widget>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkHBox" id="tagFilterToolbarHbox2">
+                        <property name="visible">True</property>
+                        <property name="spacing">10</property>
+                        <child>
+                          <widget class="GtkRadioButton" id="ruleFilterAllRadiobutton">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="tooltip" translatable="yes">Filter by all rules selected (join with AND)</property>
+                            <property name="label" translatable="yes">All</property>
+                            <property name="response_id">0</property>
+                            <property name="active">True</property>
+                            <property name="draw_indicator">True</property>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkRadioButton" id="ruleFilterAnyRadiobutton">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="tooltip" translatable="yes">Filter by any rule selected (join with OR)</property>
+                            <property name="label" translatable="yes">Any</property>
+                            <property name="response_id">0</property>
+                            <property name="draw_indicator">True</property>
+                            <property name="group">ruleFilterAllRadiobutton</property>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </widget>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
                     <child>
                       <widget class="GtkScrolledWindow" id="filtersScrolledwindow">
                         <property name="visible">True</property>
@@ -448,50 +503,8 @@
                           </widget>
                         </child>
                       </widget>
-                    </child>
-                    <child>
-                      <widget class="GtkHBox" id="ruleFilterToolbarHbox">
-                        <property name="visible">True</property>
-                        <child>
-                          <widget class="GtkLabel" id="ruleFilterToolbarLabel">
-                            <property name="visible">True</property>
-                            <property name="label" translatable="yes">Filter by rules</property>
-                            <property name="use_markup">True</property>
-                          </widget>
-                        </child>
-                        <child>
-                          <widget class="GtkToggleButton" id="rulesAllTogglebutton">
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">True</property>
-                            <property name="tooltip" translatable="yes">Filter by all rules selected (join with AND)</property>
-                            <property name="label" translatable="yes">All</property>
-                            <property name="response_id">0</property>
-                          </widget>
-                          <packing>
-                            <property name="fill">False</property>
-                            <property name="pack_type">GTK_PACK_END</property>
-                            <property name="position">2</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkToggleButton" id="ruleAnyTogglebutton">
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">True</property>
-                            <property name="tooltip" translatable="yes">Filter by any rule selected (join with OR)</property>
-                            <property name="label" translatable="yes">Any</property>
-                            <property name="response_id">0</property>
-                          </widget>
-                          <packing>
-                            <property name="fill">False</property>
-                            <property name="pack_type">GTK_PACK_END</property>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                      </widget>
                       <packing>
-                        <property name="type">label_item</property>
+                        <property name="position">2</property>
                       </packing>
                     </child>
                   </widget>

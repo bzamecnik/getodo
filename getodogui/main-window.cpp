@@ -8,8 +8,8 @@
 MainWindow::MainWindow(BaseObjectType* cobject,
 	const Glib::RefPtr<Gnome::Glade::Xml>& refGlade)
 : Gtk::Window(cobject), refXml(refGlade),
-  taskManager(0), filteringActive(false),
-  activeRuleFilter(0), activeTagFilter(0)
+  taskManager(0),
+  filteringActive(false), tagFilterActive(false), ruleFilterActive(false)
 // TODO: initialize all widget pointers to 0
 {
 	Gtk::ToolButton* pTaskNewToplevelToolbutton = 0;
@@ -17,6 +17,7 @@ MainWindow::MainWindow(BaseObjectType* cobject,
 	Gtk::ToolButton* pTaskNewSubtaskToolbutton = 0;
 	Gtk::ToolButton* pTaskDeleteToolbutton = 0;
 	Gtk::ToolButton* pTaskUpdateToolbutton = 0;
+
 	try {
 		// child widgets
 		refXml->get_widget("taskTreeview", pTaskTreeView);
@@ -47,6 +48,11 @@ MainWindow::MainWindow(BaseObjectType* cobject,
 		refXml->get_widget("taskUpdateToolbutton", pTaskUpdateToolbutton);
 		refXml->get_widget("taskFilterToggletoolbutton", pTaskFilterToggletoolbutton);
 
+		refXml->get_widget("tagFilterTogglebutton", pTagFilterToggleButton);
+		refXml->get_widget("ruleFilterAllRadiobutton", pRuleFilterAllRadiobutton);
+		refXml->get_widget("ruleFilterTogglebutton", pRuleFilterToggleButton);
+		refXml->get_widget("tagFilterAllRadiobutton", pTagFilterAllRadiobutton);
+
 		// signals
 		pTaskNewToplevelToolbutton->signal_clicked().connect(
 			sigc::mem_fun(*this, &MainWindow::on_buttonTaskNewToplevel_clicked) );
@@ -60,6 +66,16 @@ MainWindow::MainWindow(BaseObjectType* cobject,
 			sigc::mem_fun(*this, &MainWindow::on_buttonTaskUpdate_clicked) );
 		pTaskFilterToggletoolbutton->signal_toggled().connect(
 			sigc::mem_fun(*this, &MainWindow::on_buttonTaskFilter_toggled) );
+		
+		pTagFilterToggleButton->signal_toggled().connect(
+			sigc::mem_fun(*this, &MainWindow::on_buttonTagFilter_toggled) );
+		pRuleFilterToggleButton->signal_toggled().connect(
+			sigc::mem_fun(*this, &MainWindow::on_buttonRuleFilter_toggled) );
+
+		pTagFilterAllRadiobutton->signal_toggled().connect(
+			sigc::mem_fun(*this, &MainWindow::on_radioTagFilterAll_toggled) );
+		pRuleFilterAllRadiobutton->signal_toggled().connect(
+			sigc::mem_fun(*this, &MainWindow::on_radioRuleFilterAll_toggled) );
 
 		refXml->connect_clicked("taskRecurrenceButton",
 			sigc::mem_fun(*this, &MainWindow::on_buttonRecurrence_clicked) );
@@ -177,7 +193,6 @@ void MainWindow::setTaskManager(getodo::TaskManager* manager) {
 	refTagListStore = getodo::TagListStore::create(*taskManager);
 	//pTagTreeView->set_model(refTagListStore);
 
-	// TODO: uncomment this, when rules for multiple tags work
 	pTagTreeView->get_selection()->set_mode(Gtk::SELECTION_MULTIPLE);
 	
 	refTagListModelSort = Gtk::TreeModelSort::create(refTagListStore);
@@ -198,6 +213,8 @@ void MainWindow::setTaskManager(getodo::TaskManager* manager) {
 	refFilterListModelSort = Gtk::TreeModelSort::create(refFilterListStore);
 	refFilterListModelSort->set_sort_column(refFilterListStore->columns.name, Gtk::SORT_ASCENDING);
 	
+	pFilterTreeView->get_selection()->set_mode(Gtk::SELECTION_MULTIPLE);
+
 	pFilterTreeView->set_model(refFilterListModelSort);
 
 	if (pFilterTreeView->get_columns().empty()) {
@@ -225,80 +242,11 @@ void MainWindow::on_taskTreeview_selection_changed() {
 }
 
 void MainWindow::on_filterTreeview_selection_changed() {
-	using namespace getodo;
-	//Gtk::TreeModel::iterator iter = pFilterTreeView->get_selection()->get_selected();
-	//// enable the toggle button if anything selected, disable if nothing
-	//// this will activate the selected filter rule
-	//if (iter != 0) {
-	//	setFilterRuleFromSelection();
-	//}
-	//pTaskFilterToggletoolbutton->set_active(iter != 0);
-	
-// for multiple selection
-	std::vector<FilterRule> ruleFilters;
-
-	Gtk::TreeSelection::ListHandle_Path selectedRows = pFilterTreeView->get_selection()->get_selected_rows();
-	BOOST_FOREACH(Gtk::TreePath path, selectedRows) {
-		Gtk::TreeIter sortIter = refFilterListModelSort->get_iter(path);
-		Gtk::TreeIter iter = refFilterListModelSort->convert_iter_to_child_iter(sortIter);
-		id_t filterId = getodo::FilterRule::INVALID_ID;
-		if (iter) {
-			filterId = (*iter)[refFilterListStore->columns.id];
-		}
-		if (taskManager->hasFilterRule(filterId)) {
-			ruleFilters.push_back(taskManager->getFilterRule(filterId));
-		}
-	}
-	if (!ruleFilters.empty()) {
-		// join it using UNION or INTERSECT according to 'All' and 'Any' buttons
-		activeRuleFilter = new FilterRule(FilterBuilder::intersectFilters(ruleFilters));		
-	} else {
-		activeRuleFilter = 0;
-	}
-	setActiveFilter();
+	setFilterFromRuleSelection();
 }
 
 void MainWindow::on_tagTreeview_selection_changed() {
-	using namespace getodo;
-	//Gtk::TreeModel::iterator iter = pTagTreeView->get_selection()->get_selected();
-	//
-	//Gtk::TreeModel::Row row = *iter;
-	//id_t tagId = getodo::FilterRule::INVALID_ID;
-	//if (iter) {
-	//	tagId = row[refTagListStore->columns.id];
-	//}
-	////std::cout << "tag id: " << tagId << std::endl; // DEBUG
-	//if (taskManager->hasTag(tagId)) {
-	//	FilterRule filter = FilterBuilder::createTagFilter(tagId);
-	//	taskManager->setActiveFilterRule(filter);
-	//	filteringActive = true;
-	//	//std::cout << "tag filter: " << filter << std::endl; // DEBUG
-	//	refTaskTreeModelFilter->refilter();
-	//}
-
-	// for multiple selection
-	std::vector<FilterRule> tagFilters;
-
-	Gtk::TreeSelection::ListHandle_Path selectedRows = pTagTreeView->get_selection()->get_selected_rows();
-	BOOST_FOREACH(Gtk::TreePath path, selectedRows) {
-		Gtk::TreeIter sortIter = refTagListModelSort->get_iter(path);
-		Gtk::TreeIter iter = refTagListModelSort->convert_iter_to_child_iter(sortIter);
-		id_t tagId = getodo::FilterRule::INVALID_ID;
-		if (iter) {
-			tagId = (*iter)[refTagListStore->columns.id];
-		}
-		if (taskManager->hasTag(tagId)) {
-			FilterRule filter = FilterBuilder::createTagFilter(tagId);
-			tagFilters.push_back(filter);
-		}
-	}
-	if (!tagFilters.empty()) {
-		// join it using UNION or INTERSECT according to 'All' and 'Any' buttons
-		activeTagFilter = new FilterRule(FilterBuilder::intersectFilters(tagFilters));
-	} else {
-		activeTagFilter = 0;
-	}
-	setActiveFilter();
+	setFilterFromTagSelection();
 }
 
 void MainWindow::on_buttonTaskNewToplevel_clicked() {
@@ -410,13 +358,31 @@ void MainWindow::on_buttonTaskUpdate_clicked() {
 void MainWindow::on_buttonTaskFilter_toggled() {
 	//std::cout << "on_buttonTaskFilter_toggled" << std::endl; // DEBUG
 	filteringActive = pTaskFilterToggletoolbutton->get_active();
-	//toggleFiltering(active);
-	if (filteringActive) {
-		setFilterRuleFromSelection();
+	if (filteringActive && !taskManager->hasActiveFilterRule()) {
+		pTaskFilterToggletoolbutton->set_active(false);
 	} else {
-		resetTaskFilterRule();
-		//pFilterTreeView->get_selection()->unselect_all();
+		refTaskTreeModelFilter->refilter();
 	}
+}
+
+void MainWindow::on_buttonTagFilter_toggled() {
+	tagFilterActive = pTagFilterToggleButton->get_active();
+	setActiveFilter();
+}
+
+void MainWindow::on_buttonRuleFilter_toggled() {
+	ruleFilterActive = pRuleFilterToggleButton->get_active();
+	setActiveFilter();
+}
+
+void MainWindow::on_radioTagFilterAll_toggled() {
+	tagFilterAll = pTagFilterAllRadiobutton->get_active();
+	setFilterFromTagSelection();
+}
+
+void MainWindow::on_radioRuleFilterAll_toggled() {
+	ruleFilterAll = pRuleFilterAllRadiobutton->get_active();
+	setFilterFromRuleSelection();
 }
 
 // event handling to save individual items of editing panel
@@ -536,29 +502,116 @@ bool MainWindow::on_taskTreeview_filter_row_visible(const Gtk::TreeModel::const_
 }
 
 void MainWindow::setActiveFilter() {
-	std::vector<getodo::FilterRule> activeFilters;
+	using namespace getodo;
+	std::vector<FilterRule> activeFilters;
 	
-	if ((activeTagFilter == 0) && (activeRuleFilter == 0)) {
-		filteringActive = false;
+	if (!tagFilterActive && !ruleFilterActive) {
+		pTaskFilterToggletoolbutton->set_active(false);
 		taskManager->resetActiveFilterRule();
 	} else {
-		if (activeTagFilter != 0) {
-		activeFilters.push_back(*activeTagFilter);
+		if (tagFilterActive) {
+			activeFilters.push_back(activeTagFilter);
 		}
-		if (activeRuleFilter != 0) {
-			activeFilters.push_back(*activeRuleFilter);
+		if (ruleFilterActive) {
+			activeFilters.push_back(activeRuleFilter);
 		}
-		filteringActive = true;
-		getodo::FilterRule* activefilter = new getodo::FilterRule(
-			getodo::FilterBuilder::intersectFilters(activeFilters)
-		);
+		//filteringActive = true;
+		FilterRule activefilter = FilterBuilder::intersectFilters(activeFilters);
+		std::cout << "active filter: " << activefilter.rule << " "; // DEBUG
 		try {
-			taskManager->setActiveFilterRule(*activefilter);
-		} catch (getodo::GetodoError& ex) {
-			filteringActive = false;
+			taskManager->setActiveFilterRule(activefilter);
+			std::cout << "(OK)" << std::endl;
+		} catch (GetodoError&) {
+			pTaskFilterToggletoolbutton->set_active(false);
+			std::cout << "(bad)" << std::endl;
 		}
 	}
 	refTaskTreeModelFilter->refilter();
+}
+
+void MainWindow::setFilterFromTagSelection() {
+	using namespace getodo;
+	//Gtk::TreeModel::iterator iter = pTagTreeView->get_selection()->get_selected();
+	//
+	//Gtk::TreeModel::Row row = *iter;
+	//id_t tagId = getodo::FilterRule::INVALID_ID;
+	//if (iter) {
+	//	tagId = row[refTagListStore->columns.id];
+	//}
+	////std::cout << "tag id: " << tagId << std::endl; // DEBUG
+	//if (taskManager->hasTag(tagId)) {
+	//	FilterRule filter = FilterBuilder::createTagFilter(tagId);
+	//	taskManager->setActiveFilterRule(filter);
+	//	filteringActive = true;
+	//	//std::cout << "tag filter: " << filter << std::endl; // DEBUG
+	//	refTaskTreeModelFilter->refilter();
+	//}
+
+	// for multiple selection
+	std::vector<FilterRule> tagFilters;
+
+	Gtk::TreeSelection::ListHandle_Path selectedRows = pTagTreeView->get_selection()->get_selected_rows();
+	BOOST_FOREACH(Gtk::TreePath path, selectedRows) {
+		Gtk::TreeIter sortIter = refTagListModelSort->get_iter(path);
+		Gtk::TreeIter iter = refTagListModelSort->convert_iter_to_child_iter(sortIter);
+		id_t tagId = getodo::FilterRule::INVALID_ID;
+		if (iter) {
+			tagId = (*iter)[refTagListStore->columns.id];
+		}
+		if (taskManager->hasTag(tagId)) {
+			FilterRule filter = FilterBuilder::createTagFilter(tagId);
+			tagFilters.push_back(filter);
+		}
+	}
+	if (!tagFilters.empty()) {
+		// join them using UNION or INTERSECT according to 'All' and 'Any' buttons
+		if (tagFilterAll) {
+			activeTagFilter = FilterBuilder::intersectFilters(tagFilters);
+		} else {
+			activeTagFilter = FilterBuilder::unionFilters(tagFilters);
+		}
+	} else {
+		activeTagFilter = FilterRule();
+	}
+	setActiveFilter();
+}
+
+void MainWindow::setFilterFromRuleSelection() {
+	using namespace getodo;
+	//Gtk::TreeModel::iterator iter = pFilterTreeView->get_selection()->get_selected();
+	//// enable the toggle button if anything selected, disable if nothing
+	//// this will activate the selected filter rule
+	//if (iter != 0) {
+	//	setFilterRuleFromSelection();
+	//}
+	//pTaskFilterToggletoolbutton->set_active(iter != 0);
+	
+	// for multiple selection
+	std::vector<FilterRule> ruleFilters;
+
+	Gtk::TreeSelection::ListHandle_Path selectedRows = pFilterTreeView->get_selection()->get_selected_rows();
+	BOOST_FOREACH(Gtk::TreePath path, selectedRows) {
+		Gtk::TreeIter sortIter = refFilterListModelSort->get_iter(path);
+		Gtk::TreeIter iter = refFilterListModelSort->convert_iter_to_child_iter(sortIter);
+		id_t filterId = getodo::FilterRule::INVALID_ID;
+		if (iter) {
+			filterId = (*iter)[refFilterListStore->columns.id];
+		}
+		if (taskManager->hasFilterRule(filterId)) {
+			ruleFilters.push_back(taskManager->getFilterRule(filterId));
+		}
+	}
+	if (!ruleFilters.empty()) {
+		// join them using UNION or INTERSECT according to 'All' and 'Any' buttons
+		if (ruleFilterAll) {
+			activeRuleFilter = FilterBuilder::intersectFilters(ruleFilters);
+		} else {
+			activeRuleFilter = FilterBuilder::unionFilters(ruleFilters);
+		}
+	} else {
+		activeRuleFilter = FilterRule();
+	}
+	setActiveFilter();
 }
 
 void MainWindow::fillEditingPanel(getodo::Task& task) {
@@ -648,57 +701,6 @@ bool MainWindow::updateTaskPartial(boost::function<void(getodo::TaskPersistence&
 	pTaskDateLastModifiedLabel->set_text(task->getDateLastModified().toString());
 	taskManager->signal_task_updated(*task);
 	return true;
-}
-
-
-void MainWindow::setTaskFilterRule(getodo::FilterRule& filter) {
-	try {
-		taskManager->setActiveFilterRule(filter);
-		filteringActive = true;
-		// std::cout << "setTaskFilterRule: refilter" << std::endl; // DEBUG
-		refTaskTreeModelFilter->refilter();
-	} catch (getodo::GetodoError&) {
-		//toggleFiltering(false);
-		//filteringActive = false;
-		pTaskFilterToggletoolbutton->set_active(false);
-	}
-}
-
-void MainWindow::resetTaskFilterRule() {
-	filteringActive = false;
-	taskManager->resetActiveFilterRule();
-	// std::cout << "resetTaskFilterRule: refilter" << std::endl; // DEBUG
-	refTaskTreeModelFilter->refilter();
-}
-
-void MainWindow::setFilterRuleFromSelection() {
-	// set the selected filter rule as active
-	using namespace getodo;
-	Gtk::TreeModel::iterator iter = pFilterTreeView->get_selection()->get_selected();
-	Gtk::TreeModel::Row row = *iter;
-	id_t filterId = getodo::FilterRule::INVALID_ID;
-	if (iter) {
-		filterId = row[refFilterListStore->columns.id];
-	}
-	// std::cout << "filter id: " << filterId << std::endl; // DEBUG
-	getodo::FilterRule* activeRule = taskManager->getActiveFilterRule();
-	if (activeRule && (activeRule->id == filterId)) {
-		return; // nothing changes, the selected rule is already active
-	}
-//	try {
-	// TODO: possible exception from getFilterRule() should be handled
-	// The problem is that throwing exception in signal handler kills the app.
-	if (taskManager->hasFilterRule(filterId)) {
-		FilterRule& filterRule = taskManager->getFilterRule(filterId);
-		setTaskFilterRule(filterRule);
-	}
-//	} catch (GetodoError&) {
-	else {
-		pTaskFilterToggletoolbutton->set_active(false);
-	}
-	//	//setTaskFilterRule(FilterRule(std::string(Glib::ustring(row[filterColumns.name])),
-	//	//	std::string(Glib::ustring(row[filterColumns.rule]))));
-//	}
 }
 
 //void MainWindow::toggleFiltering(bool on) {

@@ -45,6 +45,7 @@ public:
 	static const id_t INVALID_ID = -1;
 	static bool isValidId(id_t id);
 	bool hasValidId() const;
+	bool isEmpty() const;
 };
 
 /** Filter rule persistence.
@@ -90,7 +91,18 @@ public:
 	// join SQL queries using INTERSECT command
 	static FilterRule intersectFilters(const std::vector<FilterRule>& filters);
 private:
-	static FilterRule joinFilters(const std::vector<FilterRule>& filters, std::string command);
+	// if there's any occurence of dualCommand in the filters,
+	// we have to join them a more complicated way
+	static FilterRule joinFilters(
+		const std::vector<FilterRule>& filters,
+		std::string command,
+		std::string dualCommand
+		);
+	static FilterRule joinFiltersImpl(
+		const std::vector<FilterRule>& filters,
+		std::string command,
+		bool simple = true
+		);
 };
 
 } // namespace getodo

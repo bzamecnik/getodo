@@ -55,11 +55,15 @@ protected:
 	Gtk::TreeView* pTagTreeView;
 	Glib::RefPtr<getodo::TagListStore> refTagListStore;
 	Glib::RefPtr<Gtk::TreeModelSort> refTagListModelSort;
+	Gtk::ToggleButton* pRuleFilterToggleButton;
+	Gtk::RadioButton* pRuleFilterAllRadiobutton;
 	
 	// filtering panel - filter rules
 	Gtk::TreeView* pFilterTreeView;
 	Glib::RefPtr<getodo::FilterListStore> refFilterListStore;
 	Glib::RefPtr<Gtk::TreeModelSort> refFilterListModelSort;
+	Gtk::ToggleButton* pTagFilterToggleButton;
+	Gtk::RadioButton* pTagFilterAllRadiobutton;
 
 
 	// menubar
@@ -74,8 +78,15 @@ protected:
 	void on_buttonTaskNewSubtask_clicked();
 	void on_buttonTaskDelete_clicked();
 	void on_buttonTaskUpdate_clicked();
-	void on_buttonTaskFilter_toggled();
+
 	void on_buttonRecurrence_clicked();
+
+	void on_buttonTaskFilter_toggled();
+	void on_buttonTagFilter_toggled();
+	void on_buttonRuleFilter_toggled();
+
+	void on_radioTagFilterAll_toggled();
+	void on_radioRuleFilterAll_toggled();
 
 	void on_taskTreeview_selection_changed();
 	bool on_taskTreeview_filter_row_visible(const Gtk::TreeModel::const_iterator& iter);
@@ -100,9 +111,14 @@ private:
 	//	Glib::RefPtr<Gtk::TreeModel> refTreeModel);
 
 	bool filteringActive;
+	bool tagFilterActive;
+	bool ruleFilterActive;
 
-	getodo::FilterRule* activeTagFilter;
-	getodo::FilterRule* activeRuleFilter;
+	bool tagFilterAll; // true = ALL (intersection), false = ANY (union)
+	bool ruleFilterAll; // true = ALL, false = ANY
+
+	getodo::FilterRule activeTagFilter;
+	getodo::FilterRule activeRuleFilter;
 
 	// true, if signal handler should respond to event from this panel
 	// false, if there is some batch filling or cleaning of the panel
@@ -110,16 +126,14 @@ private:
 
 	// return a join (INTERSECT) of activeTagFilter and activeRuleFilter
 	void setActiveFilter();
+	void setFilterFromTagSelection();
+	void setFilterFromRuleSelection();
 
 	void fillEditingPanel(getodo::Task& task);
 	void clearEditingPanel();
 	void saveEditingPanelToTask(getodo::Task& task);
 	getodo::id_t getCurrentlyEditedTaskId();
 	bool updateTaskPartial(boost::function<void(getodo::TaskPersistence&)> f);
-
-	void setTaskFilterRule(getodo::FilterRule& filter); // set the rule and enable filtering
-	void resetTaskFilterRule(); // unset the rule and disable filtering
-	void setFilterRuleFromSelection(); // true if a rule set, false if reset
 
 	//void toggleFiltering(bool on); // enable filtering on true
 };
