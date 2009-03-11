@@ -180,6 +180,9 @@ FilterRule FilterBuilder::joinFilters(
 	std::ostringstream ss;
 	std::vector<std::string> filterStrings;
 	BOOST_FOREACH(FilterRule filter, filters) {
+		if (filter.isEmpty()) {
+			continue;
+		}
 		if (filter.rule.find(dualCommand, 0) != std::string::npos) {
 			filterStrings.push_back("SELECT * FROM (" + filter.rule + ")");
 		} else {

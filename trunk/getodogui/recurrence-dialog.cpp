@@ -55,8 +55,8 @@ RecurrenceDialog::RecurrenceDialog(BaseObjectType* cobject,
 		//	sigc::mem_fun(*this, &MainWindow::on_buttonTaskNew_clicked) );
 
 	} catch (Gnome::Glade::XmlError& e) {
-		std::cerr << e.what() << std::endl;
-		//exit(-1);
+		std::cerr << "Error in instatiating widget from Glade file: " << e.what() << std::endl;
+		exit(-1);
 	}
 
 	yearlyMonthCombobox->set_model(refMonthsTreeModel);
@@ -65,15 +65,21 @@ RecurrenceDialog::RecurrenceDialog(BaseObjectType* cobject,
 	clearPanel();
 }
 
-RecurrenceDialog::~RecurrenceDialog() {}
+RecurrenceDialog::~RecurrenceDialog() {
+	if (recurrence != 0) {
+		delete recurrence;
+		recurrence = 0;
+	}
+}
 
 
 void RecurrenceDialog::on_response(int response) {
 	using namespace getodo;
 	if (response == Gtk::RESPONSE_OK) {
-		// TODO: make a Recurrence from dialog contents
-		if (recurrence) {
+		// make a Recurrence from dialog contents
+		if (recurrence != 0) {
 			delete recurrence;
+			recurrence = 0;
 		}
 		if (onceRadiobutton->get_active()) {
 			recurrence = new RecurrenceOnce();
@@ -134,6 +140,10 @@ getodo::Recurrence& RecurrenceDialog::getRecurrence() {
 }
 void RecurrenceDialog::setRecurrence(const getodo::Recurrence& r) {
 	using namespace getodo;
+	if (recurrence != 0) {
+		delete recurrence;
+		recurrence = 0;
+	}
 	recurrence = r.clone();
 	// set dialog contents according to recurrence
 	std::string type = recurrence->getTypeLongName();

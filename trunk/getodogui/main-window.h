@@ -89,6 +89,10 @@ protected:
 
 	void on_buttonRecurrence_clicked();
 
+	void on_buttonRuleFilterNew_clicked();
+	void on_buttonRuleFilterEdit_clicked();
+	void on_buttonRuleFilterDelete_clicked();
+
 	void on_buttonTaskFilter_toggled();
 	void on_buttonTagFilter_toggled();
 	void on_buttonRuleFilter_toggled();

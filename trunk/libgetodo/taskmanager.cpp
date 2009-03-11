@@ -279,8 +279,8 @@ id_t TaskManager::addFilterRule(const FilterRule& rule) {
 	FilterRule* ruleCopy = new FilterRule(rule);
 	p.insert(*ruleCopy);
 	filters[ruleCopy->id] = ruleCopy;
-	return ruleCopy->id;
 	signal_filter_inserted(*ruleCopy);
+	return ruleCopy->id;
 }
 
 bool TaskManager::hasFilterRule(id_t filterRuleId) {

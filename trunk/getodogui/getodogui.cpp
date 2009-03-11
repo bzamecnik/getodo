@@ -23,8 +23,10 @@ GeToDoApp::GeToDoApp(int argc, char* argv[])
 		refXml->get_widget_derived("mainWindow", pWindow);
 		refXml = Gnome::Glade::Xml::create("recurrence-dialog.glade");
 		refXml->get_widget_derived("recurrenceDialog", pRecurrenceDialog);
+		refXml = Gnome::Glade::Xml::create("filter-dialog.glade");
+		refXml->get_widget_derived("filterDialog", pFilterDialog);
 	} catch (Gnome::Glade::XmlError& e) {
-		std::cerr << e.what() << std::endl;
+		std::cerr << "Error loading Glade GUI files: " << e.what() << std::endl;
 		exit(1);
 	}
 	pWindow->setTaskManager(taskManager);
@@ -57,6 +59,10 @@ void GeToDoApp::run() {
 
 RecurrenceDialog& GeToDoApp::getRecurrenceDialog() {
 	return *pRecurrenceDialog;
+}
+
+FilterDialog& GeToDoApp::getFilterDialog() {
+	return *pFilterDialog;
 }
 
 int main(int argc, char* argv[]) {

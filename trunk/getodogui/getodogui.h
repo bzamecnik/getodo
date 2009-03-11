@@ -8,9 +8,11 @@
 class GeToDoApp;
 class MainWindow;
 class RecurrenceDialog;
+class FilterDialog;
 
 #include "main-window.h"
 #include "recurrence-dialog.h"
+#include "filter-dialog.h"
 //#include "tagmodel.h"
 //#include "taskmodel.h"
 
@@ -27,13 +29,16 @@ protected:
 	Gtk::Main kit;
 	MainWindow* pWindow;
 	RecurrenceDialog* pRecurrenceDialog;
+	FilterDialog* pFilterDialog;
 public:
 	~GeToDoApp();
 	void run();
 	static GeToDoApp& getSingleton();
 	static GeToDoApp* create(int argc, char* argv[]);
 
-	RecurrenceDialog& getRecurrenceDialog(); // TODO: a bit ugly
+	// TODO: a bit ugly
+	RecurrenceDialog& getRecurrenceDialog();
+	FilterDialog& getFilterDialog();
 private:
 	getodo::TaskManager* taskManager;
 	static GeToDoApp* instance;
