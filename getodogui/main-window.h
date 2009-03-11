@@ -58,8 +58,8 @@ protected:
 	Gtk::CellRendererText tagNameCellRenderer;
 	Gtk::TreeViewColumn tagNameTreeViewColumn;
 
-	void tagNameTreeViewColumn_on_cell_data(Gtk::CellRenderer* renderer, const Gtk::TreeModel::iterator& iter);
-	void tagNameCellRenderer_on_edited(const Glib::ustring& pathString, const Glib::ustring& newText);
+	void on_tagNameTreeViewColumn_cell_data(Gtk::CellRenderer* renderer, const Gtk::TreeModel::iterator& iter);
+	void on_tagNameCellRenderer_edited(const Glib::ustring& pathString, const Glib::ustring& newText);
 
 	Gtk::ToggleButton* pRuleFilterToggleButton;
 	Gtk::RadioButton* pRuleFilterAllRadiobutton;

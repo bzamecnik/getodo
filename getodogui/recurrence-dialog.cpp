@@ -72,7 +72,6 @@ RecurrenceDialog::~RecurrenceDialog() {
 	}
 }
 
-
 void RecurrenceDialog::on_response(int response) {
 	using namespace getodo;
 	if (response == Gtk::RESPONSE_OK) {
@@ -133,8 +132,9 @@ void RecurrenceDialog::on_response(int response) {
 }
 
 getodo::Recurrence& RecurrenceDialog::getRecurrence() {
+	using namespace getodo;
 	if (recurrence == 0) {
-		recurrence = new getodo::RecurrenceOnce();
+		recurrence = new RecurrenceOnce();
 	}
 	return *recurrence;
 }
