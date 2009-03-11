@@ -8,9 +8,9 @@
 
 // ----- class RecurrenceDialog --------------------
 
-// this dialog have to return a Recurrence
-
 /** Recurrence editing dialog.
+ * Usage: for editing an existing recurrence call setRecurrence(), for creating nothing.
+ * Then call run() and get the new recurrence using getRecurrence().
  */
 class RecurrenceDialog : public Gtk::Dialog
 {
@@ -18,15 +18,26 @@ public:
 	RecurrenceDialog(BaseObjectType* cobject, const Glib::RefPtr<Gnome::Glade::Xml>& refGlade);
 	virtual ~RecurrenceDialog();
 
+	/** Get recurrence.
+	 * \return recurrence build upon contents of the form or RecurrenceOnce
+	 * as a default if something went wrong
+	 */
 	getodo::Recurrence& getRecurrence();
+	/** Set recurrence to edit.
+	 * \param r recurrence to fill the form
+	 */
 	void setRecurrence(const getodo::Recurrence& r);
 protected:
 	Glib::RefPtr<Gnome::Glade::Xml> refXml;
 
-	// ----- signal handlers -----
+	/** Response signal handler.
+	 * Process the form and build a recurrence.
+	 *
+	 * It is called when the dialog closes.
+	 */
 	void on_response(int response);
 
-	// model columns for yearlyMonthCombobox
+	/** Model columns for yearlyMonthCombobox. */
 	class MonthsModelColumns : public Gtk::TreeModel::ColumnRecord
 	{
 		public:

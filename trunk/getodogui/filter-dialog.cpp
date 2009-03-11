@@ -1,4 +1,4 @@
-// $Id: $
+// $Id$
 
 #include "stdafx.h"
 #include "filter-dialog.h"
