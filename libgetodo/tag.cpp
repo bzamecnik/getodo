@@ -49,18 +49,14 @@ TagPersistence::TagPersistence(sqlite3_connection* c) : conn(c) {}
 
 TagPersistence::~TagPersistence() {}
 
-bool TagPersistence::insert(Tag& tag) {
+id_t TagPersistence::insert(Tag& tag) {
 	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
 
-	if (tag.name.empty()) { return false; } // exclude empty tags
+	if (tag.name.empty()) { // exclude empty tags
+		throw new std::invalid_argument("Tag name empty");
+	}
 
-	int count = 0;
-	if (tag.hasValidId()) {
-		// find out if there is already a tag with such a tagId
-		sqlite3_command cmd(*conn, "SELECT count(*) FROM Tag WHERE tagId = ?;");
-		cmd.bind(1, tag.id);
-		count = cmd.executeint();
-	} else {
+	if (!tag.hasValidId()) {
 		sqlite3_command cmd(*conn, "SELECT tagId FROM Tag WHERE tagName = ?;");
 		cmd.bind(1, tag.name);
 		sqlite3_cursor cursor = cmd.executecursor();
@@ -69,27 +65,22 @@ bool TagPersistence::insert(Tag& tag) {
 			// tag.id respectively
 			tag.id = cursor.getint(0);
 			cursor.close();
-			return false;
+			return tag.id;
 		}
 		cursor.close();
 	}
-	if (count > 0) {
-		//update(tag);
-		return false;
-	} else {
-		// it is not there -> insert
-		// id is defined NOT NULL, inserting NULL by not specifying
-		// the value sets it to the ROWID (ie. it's auto-incremented)
-		sqlite3_command cmd(*conn, "INSERT INTO Tag (tagName) VALUES (?);");
-		cmd.bind(1, tag.name);
-		cmd.executenonquery();
-		// get the id which database automatically created
-		tag.id = sqlite3_last_insert_rowid(conn->db());
-	}
-	return true;
+	// it is not there -> insert
+	// id is defined NOT NULL, inserting NULL by not specifying
+	// the value sets it to the ROWID (ie. it's auto-incremented)
+	sqlite3_command cmd(*conn, "INSERT INTO Tag (tagName) VALUES (?);");
+	cmd.bind(1, tag.name);
+	cmd.executenonquery();
+	// get the id which database automatically created
+	tag.id = sqlite3_last_insert_rowid(conn->db());
+	return tag.id;
 }
 
-void TagPersistence::update(Tag& tag) {
+void TagPersistence::update(const Tag& tag) {
 	if (!conn) {
 		throw new GetodoError("No database connection in the persistence.");
 	}
