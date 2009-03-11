@@ -55,13 +55,21 @@ protected:
 	Gtk::TreeView* pTagTreeView;
 	Glib::RefPtr<getodo::TagListStore> refTagListStore;
 	Glib::RefPtr<Gtk::TreeModelSort> refTagListModelSort;
+	Gtk::CellRendererText tagNameCellRenderer;
+	Gtk::TreeViewColumn tagNameTreeViewColumn;
+
+	void tagNameTreeViewColumn_on_cell_data(Gtk::CellRenderer* renderer, const Gtk::TreeModel::iterator& iter);
+	void tagNameCellRenderer_on_edited(const Glib::ustring& pathString, const Glib::ustring& newText);
+
 	Gtk::ToggleButton* pRuleFilterToggleButton;
 	Gtk::RadioButton* pRuleFilterAllRadiobutton;
+	
 	
 	// filtering panel - filter rules
 	Gtk::TreeView* pFilterTreeView;
 	Glib::RefPtr<getodo::FilterListStore> refFilterListStore;
 	Glib::RefPtr<Gtk::TreeModelSort> refFilterListModelSort;
+
 	Gtk::ToggleButton* pTagFilterToggleButton;
 	Gtk::RadioButton* pTagFilterAllRadiobutton;
 

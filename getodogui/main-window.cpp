@@ -202,7 +202,19 @@ void MainWindow::setTaskManager(getodo::TaskManager* manager) {
 	if (pTagTreeView->get_columns().empty()) {
 		//pTagTreeView->append_column("Id", refTagListStore->columns.id); // future: hidden
 		//pTagTreeView->append_column("Active", refTagListStore->columns.active);
-		pTagTreeView->append_column("Name", refTagListStore->columns.name);
+		
+		//pTagTreeView->append_column("Name", refTagListStore->columns.name);
+		tagNameTreeViewColumn.set_title("Name");
+		tagNameTreeViewColumn.pack_start(tagNameCellRenderer);
+		pTagTreeView->append_column(tagNameTreeViewColumn);
+
+		tagNameCellRenderer.set_property("editable", true);
+
+		tagNameTreeViewColumn.set_cell_data_func(tagNameCellRenderer,
+			sigc::mem_fun(*this, &MainWindow::tagNameTreeViewColumn_on_cell_data) );
+
+		tagNameCellRenderer.signal_edited().connect( sigc::mem_fun(*this,
+			&MainWindow::tagNameCellRenderer_on_edited) );
 	}
 
 	// ---- filter treeview ----
@@ -383,6 +395,43 @@ void MainWindow::on_radioTagFilterAll_toggled() {
 void MainWindow::on_radioRuleFilterAll_toggled() {
 	ruleFilterAll = pRuleFilterAllRadiobutton->get_active();
 	setFilterFromRuleSelection();
+}
+
+void MainWindow::tagNameTreeViewColumn_on_cell_data(
+	Gtk::CellRenderer* renderer,
+	const Gtk::TreeModel::iterator& iter)
+{
+	if(iter) {
+		Glib::ustring tagName = (*iter)[refTagListStore->columns.name];
+		tagNameCellRenderer.set_property("text", tagName);
+	}
+}
+
+void MainWindow::tagNameCellRenderer_on_edited(
+	const Glib::ustring& pathString,
+	const Glib::ustring& newText)
+{
+	using namespace getodo;
+	Gtk::TreePath path(pathString);
+	if (!newText.empty()) {
+		Gtk::TreeModel::iterator iter = refTagListModelSort->get_iter(path);
+		if (iter) {
+			// save the new tag name
+			Gtk::TreeRow row = *iter;			
+			Tag editedTag = Tag(row[refTagListStore->columns.id],
+				std::string(newText.c_str()));
+			taskManager->editTag(editedTag.id, editedTag);
+			// no need to update this, as is will be updated automatically
+			//row[refTagListStore->columns.name] = newText;
+		}
+	} else {
+		// error message & edit again
+		Gtk::MessageDialog dialog(*this, "Tag name must not be empty.",
+			false, Gtk::MESSAGE_ERROR);
+		dialog.run();
+		pTagTreeView->set_cursor(path, tagNameTreeViewColumn,
+			tagNameCellRenderer, true /* start_editing */);
+	}
 }
 
 // event handling to save individual items of editing panel
