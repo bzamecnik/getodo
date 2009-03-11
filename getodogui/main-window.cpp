@@ -80,6 +80,15 @@ MainWindow::MainWindow(BaseObjectType* cobject,
 		refXml->connect_clicked("taskRecurrenceButton",
 			sigc::mem_fun(*this, &MainWindow::on_buttonRecurrence_clicked) );
 
+		refXml->connect_clicked("ruleFilterNewButton",
+			sigc::mem_fun(*this, &MainWindow::on_buttonRuleFilterNew_clicked) );
+
+		refXml->connect_clicked("ruleFilterEditButton",
+			sigc::mem_fun(*this, &MainWindow::on_buttonRuleFilterEdit_clicked) );
+
+		refXml->connect_clicked("ruleFilterDeleteButton",
+			sigc::mem_fun(*this, &MainWindow::on_buttonRuleFilterDelete_clicked) );
+
 		// - saving individual parts of task
 		// TODO: bind the signal handler in a cycle over such a vector:
 		//std::vector<std::pair<Gtk::Widget*, boost::function>> editingPanelWidgets =
@@ -510,7 +519,6 @@ bool MainWindow::on_taskDateCompletedEntry_focus_out_event(GdkEventFocus* event,
 		boost::ref(Date(entry->get_text())) ));
 }
 
-
 void MainWindow::on_buttonRecurrence_clicked() {
 	using namespace getodo;
 	RecurrenceDialog& dialog = GeToDoApp::getSingleton().getRecurrenceDialog();
@@ -522,6 +530,69 @@ void MainWindow::on_buttonRecurrence_clicked() {
 	}
 	updateTaskPartial(boost::bind( &TaskPersistence::setRecurrence, _1,
 		boost::ref(dialog.getRecurrence()) ));
+}
+
+void MainWindow::on_buttonRuleFilterNew_clicked() {
+	using namespace getodo;
+	FilterDialog& dialog = GeToDoApp::getSingleton().getFilterDialog();
+	int response = dialog.run();
+	if (response == Gtk::RESPONSE_OK) {
+		// add the new filter rule to the taskmanager
+		FilterRule newFilter = dialog.getFilterRule();
+		if (!newFilter.isEmpty()) {
+			taskManager->addFilterRule(newFilter);
+		}
+	}
+}
+
+void MainWindow::on_buttonRuleFilterEdit_clicked() {
+	using namespace getodo;
+	FilterDialog& dialog = GeToDoApp::getSingleton().getFilterDialog();
+	Gtk::TreeSelection::ListHandle_Path selectedRows = pFilterTreeView->get_selection()->get_selected_rows();
+	// try to get the first selected row
+	Gtk::TreeSelection::ListHandle_Path::iterator pathIter = selectedRows.begin();
+	if (pathIter == selectedRows.end()) {
+		return; // no rows selected
+	}
+	Gtk::TreeIter sortIter = refFilterListModelSort->get_iter(*pathIter);
+	Gtk::TreeIter iter = refFilterListModelSort->convert_iter_to_child_iter(sortIter);
+	id_t filterId = getodo::FilterRule::INVALID_ID;
+	if (iter) {
+		filterId = (*iter)[refFilterListStore->columns.id];
+	}
+	FilterRule selectedFilter;
+	if (!taskManager->hasFilterRule(filterId)) {
+		return;
+	}
+	selectedFilter = taskManager->getFilterRule(filterId);
+
+	dialog.setFilterRule(selectedFilter);
+	int response = dialog.run();
+	if (response == Gtk::RESPONSE_OK) {
+		// update the filter rule in taskmanager
+		FilterRule updatedFilter = dialog.getFilterRule();
+		if (!updatedFilter.isEmpty()) {
+			taskManager->editFilterRule(filterId, updatedFilter);
+		}
+		setFilterFromRuleSelection();
+	}
+}
+
+void MainWindow::on_buttonRuleFilterDelete_clicked() {
+	Gtk::MessageDialog dialog(*this, "Really delete these filter rules?",
+		false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_OK_CANCEL);
+	int response = dialog.run();
+	if (response == Gtk::RESPONSE_OK) {
+		Gtk::TreeSelection::ListHandle_Path selectedRows =
+			pFilterTreeView->get_selection()->get_selected_rows();
+		BOOST_FOREACH(Gtk::TreePath path, selectedRows) {
+			Gtk::TreeIter sortIter = refFilterListModelSort->get_iter(path);
+			Gtk::TreeIter iter = refFilterListModelSort->convert_iter_to_child_iter(sortIter);
+			if (iter) {
+				taskManager->deleteFilterRule((*iter)[refFilterListStore->columns.id]);
+			}
+		}
+	}
 }
 
 bool MainWindow::on_taskTreeview_filter_row_visible(const Gtk::TreeModel::const_iterator& iter) {
@@ -566,13 +637,13 @@ void MainWindow::setActiveFilter() {
 		}
 		//filteringActive = true;
 		FilterRule activefilter = FilterBuilder::intersectFilters(activeFilters);
-		std::cout << "active filter: " << activefilter.rule << " "; // DEBUG
+		//std::cout << "active filter: " << activefilter.rule << " "; // DEBUG
 		try {
 			taskManager->setActiveFilterRule(activefilter);
-			std::cout << "(OK)" << std::endl;
+			//std::cout << "(OK)" << std::endl;
 		} catch (GetodoError&) {
 			pTaskFilterToggletoolbutton->set_active(false);
-			std::cout << "(bad)" << std::endl;
+			//std::cout << "(bad)" << std::endl;
 		}
 	}
 	refTaskTreeModelFilter->refilter();

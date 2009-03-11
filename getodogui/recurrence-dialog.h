@@ -16,7 +16,7 @@ class RecurrenceDialog : public Gtk::Dialog
 {
 public:
 	RecurrenceDialog(BaseObjectType* cobject, const Glib::RefPtr<Gnome::Glade::Xml>& refGlade);
-	~RecurrenceDialog();
+	virtual ~RecurrenceDialog();
 
 	getodo::Recurrence& getRecurrence();
 	void setRecurrence(const getodo::Recurrence& r);

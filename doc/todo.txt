@@ -9,7 +9,7 @@ x- extend the Year Project to the Bachelor Thesis
 
 ==== Tasks ====
 
-- fix a bug in tag synchronization in TaskPersistence::update()
+*- fix a bug in tag synchronization in TaskPersistence::update()
 
 - Filtering
 	*- implement filtering throught SQL queries in FilterRule::filter()
@@ -25,8 +25,8 @@ x- extend the Year Project to the Bachelor Thesis
 	*- selected tags -> add rules to contain selected tags via OR and bound
 		with selected rule via AND: (filter AND (tag1 OR tag2 OR tag3)
 		- filters could be selected not by TreeView selection by rather by check boxes in a special column 
-	- make a dialog for filter rule editing and saving
-	- support renaming and deleting rules
+	*- make a dialog for filter rule editing and saving
+	*- support renaming and deleting rules
 	*- (CTRL-) clicking on a selected rule should unselect it
 	- left clicking on a rule should not select it, but show a popup menu
 	- F2 on a rule -> rename
@@ -38,11 +38,12 @@ x- extend the Year Project to the Bachelor Thesis
 	- fix bugs in filtering (GTK)
 
 - Tags
-	- support renaming tags (eg. on the F2 key)
+	*- support renaming tags
+		-	using F2 key
 	- support purging unused tags
 	*- support multiple selection
 		- additional columns with checkboxes
-	- clicking on selected tag should unselect it
+	*- (CTRL-) clicking on selected tag should unselect it
 	*- prepare ListStore based model for tags
 	*- sort tags - by name, [by popularity?]
 	- tags might need an additional column for count of tasks tagged with particular tag
@@ -66,7 +67,7 @@ x- extend the Year Project to the Bachelor Thesis
 - use shared_ptr in TaskManager for holding pointers to Tasks, Tags, ...
 - use exceptions!
 - doxygen docs - try it, make it working
-- TaskPersistence, FilterRulePersistence - split save() into insert() and update()
+- TaskPersistence, *FilterRulePersistence - split save() into insert() and update()
 - use operator= for copying Tasks and Tags
 
 - profile what happens in GUI (TaskTreeStore) - why it is so slow?
@@ -90,7 +91,7 @@ x- extend the Year Project to the Bachelor Thesis
 	- exception: don't delete what was never allocated (and had been initialized to NULL) 
 - TaskManager
 	*- write filtering code
-	- add some new methods (see source code comments)
+	*- add some new methods (see source code comments)
 	*- getPersistentTask() should not return TaskPersistence by reference but by value
 	- public methods shouldn't return pointers! - see shared_ptr
 *- TreeViews should be sortable (see bugs)
