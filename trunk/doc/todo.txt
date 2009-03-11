@@ -15,19 +15,19 @@ x- extend the Year Project to the Bachelor Thesis
 	*- implement filtering throught SQL queries in FilterRule::filter()
 	*- support combining rule via AND, OR, NOT operations
 		- this can be made at two different levels:
-			- combine the SQL queries - this is ok!
+			*- combine the SQL queries - this is ok!
 					- SELECT ... UNION SELECT ... UNION SELECT ...
 					- SELECT ... INTERSECT SELECT ... INTERSECT SELECT ...
 			- combine the result sets
 				-> this is easy but only for non-hierarchical combining
 	*- prepare ListStore based model for filters
 		- write doxygen docs
-	- selected tags -> add rules to contain selected tags via OR and bound
+	*- selected tags -> add rules to contain selected tags via OR and bound
 		with selected rule via AND: (filter AND (tag1 OR tag2 OR tag3)
 		- filters could be selected not by TreeView selection by rather by check boxes in a special column 
 	- make a dialog for filter rule editing and saving
 	- support renaming and deleting rules
-	- clicking on a selected rule should unselect it
+	*- (CTRL-) clicking on a selected rule should unselect it
 	- left clicking on a rule should not select it, but show a popup menu
 	- F2 on a rule -> rename
 	- double-clicking a rule should open an editing dialog
@@ -50,7 +50,7 @@ x- extend the Year Project to the Bachelor Thesis
 		- use a common generic ListStore for tags and filter rules
 			- additional columns, eg. 'active', 'count tasks'
 
-- fix support for (de)activating tag filters and rule filters separately
+*- fix support for (de)activating tag filters and rule filters separately
 
 - Task editing
 	- synchronize done & percentage values in the panel and the tree

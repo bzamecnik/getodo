@@ -56,19 +56,38 @@ public:
 class TagPersistence {
 	sqlite3_connection* conn;
 public:
-	/* Constructor for loading new Tags. */
+	/** A constructor for loading new tags.
+	 * \param conn A database connection. If it is not alright
+	 * other methods will throw GetodoError exceptions.
+	 */
 	TagPersistence(sqlite3_connection* conn);
 	virtual ~TagPersistence();
 
-	/** Insert a tag into the database and assign an id.
-	 * Return true, if successfully inserted into the database.
+	/** Insert a new tag into the database.
+	 * The tag is assumed to have no persistent id yet (eg. it was newly
+	 * created), so a new id is assigned. It is both set to the given
+	 * tag and returned.
+	 * 
+	 * Throws a GetodoError if the database connection is broken.
+	 *
+	 * \return id id assigned by the database.
 	 */
-	bool insert(Tag& tag);
-	/** Update an existing tag. */
-	void update(Tag& tag);
+	id_t insert(Tag& tag);
+	
+	/** Update an existing tag.
+	 * The tag is assumend to have a valid persistent id, otherwise
+	 * an exception is thrown.
+	 * If there's no such a tag in the database to update nothing happens.
+	 *
+	 * Throws a GetodoError if the database connection is broken.
+	 * Throws a std::invalid_argument, if the id is not valid.
+	 */
+	void update(const Tag& tag);
+	
 	/** Load a tag from the database. */
 	Tag& load(id_t id);
-	/* Delete a tag from the database. */
+	
+	/** Delete a tag from the database. */
 	void erase(id_t id);
 };
 

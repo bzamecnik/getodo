@@ -40,31 +40,31 @@ TaskManager::TaskManager(sqlite3_connection* c)
 : conn(c) {}
 
 TaskManager::~TaskManager() {
-    if(conn) {
+	if(conn) {
 		conn->close();
 	}
-    for (std::map<id_t,Task*>::iterator it = tasks.begin();
-        it != tasks.end(); ++it) {
-        delete it->second;
-    }
-    for (std::map<id_t,Tag*>::iterator it = tags.begin();
-        it != tags.end(); ++it) {
-        delete it->second;
-    }
-    for (std::map<id_t,FilterRule*>::iterator it = filters.begin();
-        it != filters.end(); ++it) {
-        delete it->second;
-    }
-    tasks.clear();
-    tags.clear();
-    filters.clear();
+	for (std::map<id_t,Task*>::iterator it = tasks.begin();
+		it != tasks.end(); ++it) {
+		delete it->second;
+	}
+	for (std::map<id_t,Tag*>::iterator it = tags.begin();
+		it != tags.end(); ++it) {
+		delete it->second;
+	}
+	for (std::map<id_t,FilterRule*>::iterator it = filters.begin();
+		it != filters.end(); ++it) {
+		delete it->second;
+	}
+	tasks.clear();
+	tags.clear();
+	filters.clear();
 }
 
 
 // ----- SQLite connection -----
 
 sqlite3_connection* TaskManager::getConnection() {
-    return conn;
+	return conn;
 }
 
 // ----- Task operations -----
@@ -72,11 +72,11 @@ sqlite3_connection* TaskManager::getConnection() {
 id_t TaskManager::addTask(const Task& task) {
 	Task* taskCopy = new Task(task);
 	taskCopy->setTaskId(Task::INVALID_ID); // delete id
-    // save it to database and get the new taskId
-    TaskPersistence tp(conn, taskCopy);
-    tp.insert();
-    // insert the task into TaskManager
-    tasks[taskCopy->getTaskId()] = taskCopy;
+	// save it to database and get the new taskId
+	TaskPersistence tp(conn, taskCopy);
+	tp.insert();
+	// insert the task into TaskManager
+	tasks[taskCopy->getTaskId()] = taskCopy;
 	signal_task_inserted(*taskCopy);
 
 	// TODO: add all tags from task
@@ -85,30 +85,30 @@ id_t TaskManager::addTask(const Task& task) {
 }
 
 bool TaskManager::hasTask(id_t taskId) {
-    std::map<id_t,Task*>::iterator it = tasks.find(taskId);
-    return (it != tasks.end());
+	std::map<id_t,Task*>::iterator it = tasks.find(taskId);
+	return (it != tasks.end());
 }
 
 Task* TaskManager::getTask(id_t taskId) {
-    // TODO: how to find out the type of task automatically?
-    // ie. without copying the type from the header file.
-    std::map<id_t,Task*>::iterator it = tasks.find(taskId);
-    if (it != tasks.end()) {
-        return it->second;
-    } else {
-        return 0; // maybe throw GetodoError
-    }
+	// TODO: how to find out the type of task automatically?
+	// ie. without copying the type from the header file.
+	std::map<id_t,Task*>::iterator it = tasks.find(taskId);
+	if (it != tasks.end()) {
+		return it->second;
+	} else {
+		return 0; // maybe throw GetodoError
+	}
 }
 
 TaskPersistence& TaskManager::getPersistentTask(id_t taskId) {
-    return *(new TaskPersistence(conn, getTask(taskId)));
+	return *(new TaskPersistence(conn, getTask(taskId)));
 }
 
 Task& TaskManager::editTask(id_t taskId, const Task& task) {
 	if (!hasTask(taskId)) {
 		throw new GetodoError("No such a task to edit.");
 	}
-    
+
 	// TODO: Write operator= for Task!!!
 	// TODO: synchronize tags in TaskManager from old to new task
 	// * _add_ tags which are in the in _new_ task only
@@ -120,20 +120,20 @@ Task& TaskManager::editTask(id_t taskId, const Task& task) {
 	delete tasks[taskId];
 	tasks[taskId] = 0;
 	// Correct new task's taskId to be the same as the former's one
-    taskCopy->setTaskId(taskId);
+	taskCopy->setTaskId(taskId);
 	// Copy new task there
 	tasks[taskId] = taskCopy;
 	// Save it to database
-    TaskPersistence tp(conn, taskCopy);
-    tp.update();
+	TaskPersistence tp(conn, taskCopy);
+	tp.update();
 	signal_task_updated(*taskCopy);
-    return *taskCopy;
+	return *taskCopy;
 }
 
 void TaskManager::deleteTask(id_t taskId) {
 	Task* task = getTask(taskId);
 	if (task == 0) { return; }
-	
+
 	Task* parent = 0;
 	if (task->hasParent()) {
 		id_t parentId = task->getParentId();
@@ -159,7 +159,7 @@ void TaskManager::deleteTask(id_t taskId) {
 	//		tp.save();
 	//	}
 	//}
-	
+
 	// delete the whole subtree
 	std::vector<id_t>& subtaskIds = task->getSubtaskIds();
 	for (std::vector<id_t>::iterator it = subtaskIds.begin();
@@ -178,11 +178,11 @@ void TaskManager::deleteTask(id_t taskId) {
 }
 
 std::vector<Task*>& TaskManager::getTasks() {
-    return convertMapToVector<id_t, Task>(tasks);
+	return convertMapToVector<id_t, Task>(tasks);
 }
 
 std::vector<Task*>& TaskManager::getTopLevelTasks() {
-    std::vector<Task*>& allTasks = getTasks();
+	std::vector<Task*>& allTasks = getTasks();
 	allTasks.erase(std::remove_if(allTasks.begin(), allTasks.end(),
 		boost::bind(&Task::hasParent, _1)), allTasks.end());
 	return allTasks;
@@ -194,9 +194,9 @@ id_t TaskManager::addTag(const Tag& tag) {
 	//if (hasTag(tag.name)) { return; } // already in TaskManager
 	// TODO: what if tags with the same name have different ids?
 
-    TagPersistence tp(conn);
-    // when saving, id is assigned by database
-    Tag* tagCopy = new Tag(tag);
+	TagPersistence tp(conn);
+	// when saving, id is assigned by database
+	Tag* tagCopy = new Tag(tag);
 	if (tp.insert(*tagCopy)) {
 		tags[tagCopy->id] = tagCopy;
 		signal_tag_inserted(*tagCopy);
@@ -206,8 +206,8 @@ id_t TaskManager::addTag(const Tag& tag) {
 }
 
 bool TaskManager::hasTag(id_t tagId) {
-    std::map<id_t,Tag*>::iterator it = tags.find(tagId);
-    return (it != tags.end());
+	std::map<id_t,Tag*>::iterator it = tags.find(tagId);
+	return (it != tags.end());
 }
 
 bool TaskManager::hasTag(std::string tagName) {
@@ -219,12 +219,12 @@ bool TaskManager::hasTag(std::string tagName) {
 }
 
 Tag& TaskManager::getTag(id_t tagId) {
-    std::map<id_t,Tag*>::iterator foundTag = tags.find(tagId);
+	std::map<id_t,Tag*>::iterator foundTag = tags.find(tagId);
 	if (foundTag == tags.end()) {
 		throw new std::invalid_argument("No such a tag.");
 	}
 	return *(foundTag->second);
-    
+
 }
 
 Tag& TaskManager::getTag(std::string tagName) {
@@ -236,23 +236,23 @@ Tag& TaskManager::getTag(std::string tagName) {
 }
 
 Tag& TaskManager::editTag(id_t tagId, const Tag& tag) {
-    if (!hasTag(tagId)) {
+	if (!hasTag(tagId)) {
 		throw new std::invalid_argument("No such a tag.");
 	}
-   
+
 	Tag* tagCopy = new Tag(tag);
-    // Delete original tag from tags
-    delete tags[tagId];
-    tags[tagId] = 0;
+	// Delete original tag from tags
+	delete tags[tagId];
+	tags[tagId] = 0;
 	// correct new tag's tagId to be the same as the former's one
 	tagCopy->id = tagId;
 	// Copy new tag there
-    tags[tagId] = tagCopy;
-    // Save it to database
-    TagPersistence p(conn);
-    p.update(*tagCopy);
+	tags[tagId] = tagCopy;
+	// Save it to database
+	TagPersistence p(conn);
+	p.update(*tagCopy);
 	signal_tag_updated(*tagCopy);
-    return *tagCopy;
+	return *tagCopy;
 }
 
 void TaskManager::deleteTag(id_t tagId) {
@@ -268,24 +268,24 @@ void TaskManager::deleteTag(id_t tagId) {
 }
 
 std::vector<Tag*>& TaskManager::getTags() {
-    return convertMapToVector<id_t, Tag>(tags);
+	return convertMapToVector<id_t, Tag>(tags);
 }
 
 // ----- FilterRule operations -----
 
 id_t TaskManager::addFilterRule(const FilterRule& rule) {
-    FilterRulePersistence p(conn);
-    // when saving, filterRuleId is assigned by database
-    FilterRule* ruleCopy = new FilterRule(rule);
-    p.save(*ruleCopy);
-    filters[ruleCopy->id] = ruleCopy;
+	FilterRulePersistence p(conn);
+	// when saving, filterRuleId is assigned by database
+	FilterRule* ruleCopy = new FilterRule(rule);
+	p.insert(*ruleCopy);
+	filters[ruleCopy->id] = ruleCopy;
 	return ruleCopy->id;
 	signal_filter_inserted(*ruleCopy);
 }
 
 bool TaskManager::hasFilterRule(id_t filterRuleId) {
-    std::map<id_t,FilterRule*>::iterator it = filters.find(filterRuleId);
-    return (it != filters.end());
+	std::map<id_t,FilterRule*>::iterator it = filters.find(filterRuleId);
+	return (it != filters.end());
 }
 
 bool TaskManager::hasFilterRule(std::string filterRuleName) {
@@ -297,30 +297,30 @@ bool TaskManager::hasFilterRule(std::string filterRuleName) {
 }
 
 FilterRule& TaskManager::getFilterRule(id_t filterRuleId) {
-    if (!hasFilterRule(filterRuleId)) {
+	if (!hasFilterRule(filterRuleId)) {
 		throw new GetodoError("No such a filter rule.");
 	}
-    return *(filters[filterRuleId]);
+	return *(filters[filterRuleId]);
 }
 
 FilterRule& TaskManager::editFilterRule(id_t filterRuleId, const FilterRule& filter) {
-    if (!hasFilterRule(filterRuleId)) {
+	if (!hasFilterRule(filterRuleId)) {
 		throw new std::invalid_argument("No such a filter rule.");
 	}
-       
+
 	FilterRule* ruleCopy = new FilterRule(filter);
-    // correct new FilterRule's filterRuleId to be the same as former's one
-    ruleCopy->id = filterRuleId;
+	// correct new FilterRule's filterRuleId to be the same as former's one
+	ruleCopy->id = filterRuleId;
 	// Delete original FilterRule from filters
-    delete filters[filterRuleId];
-    filters[filterRuleId] = 0;
+	delete filters[filterRuleId];
+	filters[filterRuleId] = 0;
 	// Copy new FilterRule there
-    filters[filterRuleId] = ruleCopy;
-    // Save it to database
-    FilterRulePersistence p(conn);
-    p.save(*ruleCopy);
+	filters[filterRuleId] = ruleCopy;
+	// Save it to database
+	FilterRulePersistence p(conn);
+	p.update(*ruleCopy);
 	signal_filter_updated(*ruleCopy);
-    return *ruleCopy;
+	return *ruleCopy;
 }
 
 
@@ -337,12 +337,12 @@ void TaskManager::deleteFilterRule(id_t filterRuleId) {
 }
 
 std::vector<FilterRule*>& TaskManager::getFilterRules() {
-    return convertMapToVector<id_t, FilterRule>(filters);
+	return convertMapToVector<id_t, FilterRule>(filters);
 }
 
 void TaskManager::setActiveFilterRule(const FilterRule& filter) {
 	activeFilterRule = filter;
-	try { 
+	try {
 		visibleTasksCache = filterTasks(activeFilterRule);
 	} catch (GetodoError& ex) {
 		resetActiveFilterRule();
@@ -388,75 +388,75 @@ idset_t& TaskManager::filterTasks(FilterRule& filterRule) {
 // ----- Other things -----
 
 void TaskManager::loadAllFromDatabase() {
-    if (!conn) { throw new GetodoError("No database connection."); }
-       
-    sqlite3_command cmd(*conn);
-    sqlite3_cursor cursor;
-    databaseRow_t row;
-    int columnsCount;
-       
-    // load Tasks
-    cmd.prepare("SELECT * FROM Task;");
-    cursor = cmd.executecursor();
-    columnsCount = cursor.colcount();
-    while (cursor.step()) {
-        for (int i = 0; i < columnsCount; i++) {
-            std::string columnData;
+	if (!conn) { throw new GetodoError("No database connection."); }
+
+	sqlite3_command cmd(*conn);
+	sqlite3_cursor cursor;
+	databaseRow_t row;
+	int columnsCount;
+
+	// load Tasks
+	cmd.prepare("SELECT * FROM Task;");
+	cursor = cmd.executecursor();
+	columnsCount = cursor.colcount();
+	while (cursor.step()) {
+		for (int i = 0; i < columnsCount; i++) {
+			std::string columnData;
 			if (!cursor.isnull(i)) {
 				columnData = cursor.getstring(i);
 			}
 			row[cursor.getcolname(i)] = columnData;
-        }
-        Task* task = Task::fromDatabaseRow(row);
-        // what if there's an exception
-        tasks[task->getTaskId()] = task;
+		}
+		Task* task = Task::fromDatabaseRow(row);
+		// what if there's an exception
+		tasks[task->getTaskId()] = task;
 		row.clear();
-    }
-    cursor.close();
-       
-    // load Tags
-    cmd.prepare("SELECT * FROM Tag;");
-    cursor = cmd.executecursor();
-    columnsCount = cursor.colcount();
-    while (cursor.step()) {
-        // Remark: Don't assume any order of columns to make things
-        // more robust with future changes in mind.
-        for (int i = 0; i < columnsCount; i++) {
-            std::string columnData;
+	}
+	cursor.close();
+
+	// load Tags
+	cmd.prepare("SELECT * FROM Tag;");
+	cursor = cmd.executecursor();
+	columnsCount = cursor.colcount();
+	while (cursor.step()) {
+		// Remark: Don't assume any order of columns to make things
+		// more robust with future changes in mind.
+		for (int i = 0; i < columnsCount; i++) {
+			std::string columnData;
 			if (!cursor.isnull(i)) {
 				columnData = cursor.getstring(i);
 			}
 			row[cursor.getcolname(i)] = columnData;
-        }
-        id_t tagId = boost::lexical_cast<id_t, std::string>(row["tagId"]);
-        tags[tagId] = new Tag(tagId, row["tagName"]);
-        row.clear();
-    }
-    cursor.close();
-       
-    // load Task-Tag relations
-    cmd.prepare("SELECT * FROM Tagged;");
-    cursor = cmd.executecursor();
-    columnsCount = cursor.colcount();
-    while (cursor.step()) {
-        for (int i = 0; i < columnsCount; i++) {
-            std::string columnData;
+		}
+		id_t tagId = boost::lexical_cast<id_t, std::string>(row["tagId"]);
+		tags[tagId] = new Tag(tagId, row["tagName"]);
+		row.clear();
+	}
+	cursor.close();
+
+	// load Task-Tag relations
+	cmd.prepare("SELECT * FROM Tagged;");
+	cursor = cmd.executecursor();
+	columnsCount = cursor.colcount();
+	while (cursor.step()) {
+		for (int i = 0; i < columnsCount; i++) {
+			std::string columnData;
 			if (!cursor.isnull(i)) {
 				columnData = cursor.getstring(i);
 			}
 			row[cursor.getcolname(i)] = columnData;
-        }
-        id_t taskId = boost::lexical_cast<id_t, std::string>(row["taskId"]);
-        id_t tagId = boost::lexical_cast<id_t, std::string>(row["tagId"]);
-        if (hasTask(taskId) && hasTag(tagId)) {
-            // at first check if the referenced task and tag really exist
-            tasks[taskId]->addTag(tagId);
-        }
-        row.clear();
-    }
-    cursor.close();
-       
-    // load parent-subtask relations
+		}
+		id_t taskId = boost::lexical_cast<id_t, std::string>(row["taskId"]);
+		id_t tagId = boost::lexical_cast<id_t, std::string>(row["tagId"]);
+		if (hasTask(taskId) && hasTag(tagId)) {
+			// at first check if the referenced task and tag really exist
+			tasks[taskId]->addTag(tagId);
+		}
+		row.clear();
+	}
+	cursor.close();
+
+	// load parent-subtask relations
 	for (std::map<id_t,Task*>::iterator it = tasks.begin();
 		it != tasks.end(); ++it)
 	{
@@ -472,43 +472,43 @@ void TaskManager::loadAllFromDatabase() {
 		}
 		cursor.close();
 	}
-       
-    // load FilterRules
-    cmd.prepare("SELECT * FROM FilterRule;");
-    cursor = cmd.executecursor();
-    columnsCount = cursor.colcount();
-    while (cursor.step()) {
-        for (int i = 0; i < columnsCount; i++) {
-            std::string columnData;
+
+	// load FilterRules
+	cmd.prepare("SELECT * FROM FilterRule;");
+	cursor = cmd.executecursor();
+	columnsCount = cursor.colcount();
+	while (cursor.step()) {
+		for (int i = 0; i < columnsCount; i++) {
+			std::string columnData;
 			if (!cursor.isnull(i)) {
 				columnData = cursor.getstring(i);
 			}
 			row[cursor.getcolname(i)] = columnData;
-        }
-        id_t filterRuleId = boost::lexical_cast<id_t, std::string>(row["filterRuleId"]);
-        filters[filterRuleId] = new FilterRule(filterRuleId, row["name"], row["rule"]);
-        row.clear();
-    }
-    cursor.close();
+		}
+		id_t filterRuleId = boost::lexical_cast<id_t, std::string>(row["filterRuleId"]);
+		filters[filterRuleId] = new FilterRule(filterRuleId, row["name"], row["rule"]);
+		row.clear();
+	}
+	cursor.close();
 }
 
 // return true, if there exist all the tables needed
 bool TaskManager::checkDatabaseStructure() {
-    if (!conn) { throw new GetodoError("No database connection."); }
-    // TODO
-    // * this code could be optimized, using a set may be overkill
-    // * table names shouldn't be hard-coded
+	if (!conn) { throw new GetodoError("No database connection."); }
+	// TODO
+	// * this code could be optimized, using a set may be overkill
+	// * table names shouldn't be hard-coded
 
 	// ATTENTION: when changing number of tables, change
 	// the upper limit in tablesNeeded!
-    std::string tables[] = {"Task","Tag","Tagged","FilterRule"};
-    std::set<std::string> tablesNeeded(&tables[0],&tables[4]);
-       
-    sqlite3_command cmd(*conn,"SELECT name FROM sqlite_master "
-        "WHERE type='table' ORDER BY name;");
-    sqlite3_cursor cursor = cmd.executecursor();
-    std::set<std::string>::iterator tableIt;
-    while (cursor.step()) {
+	std::string tables[] = {"Task","Tag","Tagged","FilterRule"};
+	std::set<std::string> tablesNeeded(&tables[0],&tables[4]);
+
+	sqlite3_command cmd(*conn,"SELECT name FROM sqlite_master "
+		"WHERE type='table' ORDER BY name;");
+	sqlite3_cursor cursor = cmd.executecursor();
+	std::set<std::string>::iterator tableIt;
+	while (cursor.step()) {
 		if (!cursor.isnull(0)) { // this check may not be needed here
 			std::string table = cursor.getstring(0);
 			tableIt = tablesNeeded.find(table);
@@ -516,68 +516,68 @@ bool TaskManager::checkDatabaseStructure() {
 				tablesNeeded.erase(tableIt);
 			}
 		}
-    }
-    cursor.close();
-    return tablesNeeded.empty();
+	}
+	cursor.close();
+	return tablesNeeded.empty();
 }
 
 void TaskManager::createEmptyDatabase() {
-    if (!conn) { throw new GetodoError("No database connection."); }
+	if (!conn) { throw new GetodoError("No database connection."); }
 
-    // TODO: better would be to include this SQL in the compile-time
-    // from an external file
-    sqlite3_command cmd(*conn);
-    // Note: the command has to be split into separate queries
-    cmd.prepare(
-        "CREATE TABLE Task ("
-        "taskId      INTEGER      NOT NULL,"
-		"parentId      INTEGER DEFAULT '-1' NOT NULL," //-1 -> Task::INVALID_ID
-        "description      STRING      NOT NULL,"
-        "longDescription      STRING,"
-        "dateCreated      STRING      NOT NULL,"
-        "dateLastModified      STRING      NOT NULL,"
-        "dateStarted      STRING,"
-        "dateDeadline      STRING,"
-        "dateCompleted      STRING,"
-        "estDuration      STRING,"
-        "recurrence      STRING,"
-        "priority      STRING      NOT NULL,"
-        "completedPercentage      INTEGER      DEFAULT '0'  NOT NULL,"
-		"done      STRING      DEFAULT '0'  NOT NULL,"
-        "CONSTRAINT pk_Task PRIMARY KEY (taskId)"
-        ");"
-    );
-    cmd.executenonquery();
-       
-    cmd.prepare(
-        "CREATE TABLE Tag ("
-        "tagId      INTEGER      NOT NULL,"
-        "tagName      STRING      NOT NULL,"  // +UNIQUE
-        "CONSTRAINT pk_Tag PRIMARY KEY (tagId)"
-        ");"
-    );
-    cmd.executenonquery();
-       
-    cmd.prepare(
-        "CREATE TABLE Tagged ("
-        "taskId      INTEGER      NOT NULL,"
-        "tagId      INTEGER      NOT NULL,"
-        "CONSTRAINT pk_Tagged PRIMARY KEY (taskId, tagId),"
-        "CONSTRAINT fk_Tagged_Task FOREIGN KEY (taskId) REFERENCES Task(taskId),"
-        "CONSTRAINT fk_Tagged_Tag FOREIGN KEY (tagId) REFERENCES Tag(tagId)"
-        ");"
-    );
-    cmd.executenonquery();
-       
-    cmd.prepare(
-        "CREATE TABLE FilterRule ("
-        "filterRuleId      INTEGER      NOT NULL,"
-        "name      STRING      NOT NULL," // +UNIQUE (?)
-        "rule      STRING      NOT NULL,"
-        "CONSTRAINT pk_FilterRule PRIMARY KEY (filterRuleId)"
-        ");"
-    );
-    cmd.executenonquery();
+	// TODO: better would be to include this SQL in the compile-time
+	// from an external file
+	sqlite3_command cmd(*conn);
+	// Note: the command has to be split into separate queries
+	cmd.prepare(
+		"CREATE TABLE Task ("
+		"taskId	  INTEGER	  NOT NULL,"
+		"parentId	  INTEGER DEFAULT '-1' NOT NULL," //-1 -> Task::INVALID_ID
+		"description	  STRING	  NOT NULL,"
+		"longDescription	  STRING,"
+		"dateCreated	  STRING	  NOT NULL,"
+		"dateLastModified	  STRING	  NOT NULL,"
+		"dateStarted	  STRING,"
+		"dateDeadline	  STRING,"
+		"dateCompleted	  STRING,"
+		"estDuration	  STRING,"
+		"recurrence	  STRING,"
+		"priority	  STRING	  NOT NULL,"
+		"completedPercentage	  INTEGER	  DEFAULT '0'  NOT NULL,"
+		"done	  STRING	  DEFAULT '0'  NOT NULL,"
+		"CONSTRAINT pk_Task PRIMARY KEY (taskId)"
+		");"
+	);
+	cmd.executenonquery();
+
+	cmd.prepare(
+		"CREATE TABLE Tag ("
+		"tagId	  INTEGER	  NOT NULL,"
+		"tagName	  STRING	  NOT NULL,"  // +UNIQUE
+		"CONSTRAINT pk_Tag PRIMARY KEY (tagId)"
+		");"
+	);
+	cmd.executenonquery();
+
+	cmd.prepare(
+		"CREATE TABLE Tagged ("
+		"taskId	  INTEGER	  NOT NULL,"
+		"tagId	  INTEGER	  NOT NULL,"
+		"CONSTRAINT pk_Tagged PRIMARY KEY (taskId, tagId),"
+		"CONSTRAINT fk_Tagged_Task FOREIGN KEY (taskId) REFERENCES Task(taskId),"
+		"CONSTRAINT fk_Tagged_Tag FOREIGN KEY (tagId) REFERENCES Tag(tagId)"
+		");"
+	);
+	cmd.executenonquery();
+
+	cmd.prepare(
+		"CREATE TABLE FilterRule ("
+		"filterRuleId	  INTEGER	  NOT NULL,"
+		"name	  STRING	  NOT NULL," // +UNIQUE (?)
+		"rule	  STRING	  NOT NULL,"
+		"CONSTRAINT pk_FilterRule PRIMARY KEY (filterRuleId)"
+		");"
+	);
+	cmd.executenonquery();
 }
 
 } // namespace getodo

@@ -77,54 +77,40 @@ FilterRulePersistence::FilterRulePersistence(sqlite3_connection* c)
 
 FilterRulePersistence::~FilterRulePersistence() {}
 
-void FilterRulePersistence::save(FilterRule& filter) {
+id_t FilterRulePersistence::insert(FilterRule& filter) {
 	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
 
-	int count = 0;
-	if (filter.id >= 0) {
-		// find out, if there is already a filter with such a filterRuleId
-		sqlite3_command cmd(*conn, "SELECT count(*) FROM FilterRule WHERE filterRuleId = ?;");
-		cmd.bind(1, filter.id);
-		count = cmd.executeint();
-	}
-	//// uncomment this if filterRuleName is UNIQUE
-	//else {	
-	//	sqlite3_command cmd(*conn, "SELECT filterRuleId FROM FilterRule WHERE FilterRuleName = ?;");
-	//	cmd.bind(1, filter.name);
-	//	sqlite3_cursor cursor = cmd.executecursor();
-	//	if (cursor.step()) {
-	//		// if there is already a filter with such name, set the
-	//		// filter.id respectively
-	//		filter.id = cursor.getint(0);
-	//		cursor.close();
-	//		return;
-	//	}
-	//  cursor.close();
-	//}
-	if (count > 0) {
-		if (filter.id >= 0) {
-			// it is already there -> update
-			sqlite3_command cmd(*conn, "UPDATE FilterRule SET name = ?, rule = ? WHERE filterRuleId = ?;");
-			cmd.bind(1, filter.name);
-			cmd.bind(2, filter.rule);
-			cmd.bind(3, filter.id);
-			cmd.executenonquery();
-		}
-	} else {
-		// it is not there -> insert
-		sqlite3_command cmd(*conn, "INSERT INTO FilterRule (name,rule) VALUES (?,?);");
-		cmd.bind(1, filter.name);
-		cmd.bind(2, filter.rule);
-		cmd.executenonquery();
-		// get id which database automatically created
-		filter.id = sqlite3_last_insert_rowid(conn->db());
-	}
+	// id is defined NOT NULL, inserting NULL by not specifying
+	// the value sets it to the ROWID (ie. it's auto-incremented)
+	sqlite3_command cmd(*conn, "INSERT INTO FilterRule (name,rule) VALUES (?,?);");
+	cmd.bind(1, filter.name);
+	cmd.bind(2, filter.rule);
+	cmd.executenonquery();
+	// get id which database automatically created
+	filter.id = sqlite3_last_insert_rowid(conn->db());
+	return filter.id;
 }
 
-void FilterRulePersistence::load(FilterRule& filter, id_t id) {
+void FilterRulePersistence::update(const FilterRule& filter) {
+	if (!conn) {
+		throw new GetodoError("No database connection in the persistence.");
+	}
+	if (!filter.hasValidId()) {
+		throw new std::invalid_argument("Invalid filter id: " + filter.id);
+	}
+
+	// UPDATE doesn't throw any error when given row doesn't exist
+	sqlite3_command cmd(*conn, "UPDATE FilterRule SET name = ?, rule = ? WHERE filterRuleId = ?;");
+	cmd.bind(1, filter.name);
+	cmd.bind(2, filter.rule);
+	cmd.bind(3, filter.id);
+	cmd.executenonquery();
+}
+
+FilterRule FilterRulePersistence::load(id_t id) {
 	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
 
-	filter = FilterRule(); // clean
+	FilterRule filter = FilterRule(); // clean
 	sqlite3_command cmd(*conn, "SELECT name,rule FROM FilterRule WHERE filterRuleId = ?;");
 	cmd.bind(1, id);
 	sqlite3_cursor cursor = cmd.executecursor();
@@ -137,6 +123,7 @@ void FilterRulePersistence::load(FilterRule& filter, id_t id) {
 		throw new GetodoError("No such a filter rule to load.");
 	}
 	cursor.close();
+	return filter;
 }
 
 void FilterRulePersistence::erase(id_t id) {
@@ -169,29 +156,6 @@ void FilterRulePersistence::setColumn(id_t id, const std::string value, const st
 	cmd.executenonquery();
 }
 
-//FilterRule FilterBuilder::createAllTagsFilter(idset_t& tags) {
-//	// TODO: find out tag names, put them into the name
-//	// name: "all tags: tag1, tag2, tag3, ..."
-//	// rule: "NATURAL JOIN Tagged WHERE tagId = 1 AND tagId = 2 AND tagId = 3"
-//	
-//	std::ostringstream ss;
-//
-//	join(std::cout, tags.begin(), tags.end(), ", ");
-//	std::cout << std::endl;
-//
-//	std::vector<std::string> tagRules(tags.size());
-//	int i = 0;
-//	BOOST_FOREACH(id_t tagId, tags) {
-//		tagRules[i] = std::string("tagId = "
-//			+ boost::lexical_cast<std::string, id_t>(tagId));
-//		std::cout << "DEBUG: tagRules[" << i << "] = "  << tagRules[i] << std::endl;
-//		i++;
-//	}
-//	ss << "NATURAL JOIN Tagged WHERE ";
-//	join(ss, tagRules.begin(), tagRules.end(), " AND ");
-//	return FilterRule("tags", ss.str());
-//}
-
 FilterRule FilterBuilder::createTagFilter(id_t tagId) {
 	std::string tagIdStr = boost::lexical_cast<std::string, id_t>(tagId);
 	return FilterRule(
@@ -213,28 +177,13 @@ FilterRule FilterBuilder::joinFilters(
 		std::string command,
 		std::string dualCommand
 	) {
-	bool simple = true;
-	BOOST_FOREACH(FilterRule filter, filters) {
-		if (filter.rule.find(dualCommand, 0) != std::string::npos) {
-			simple = false;
-			break;
-		}
-	}
-	return joinFiltersImpl(filters, command, simple);
-}
-
-FilterRule FilterBuilder::joinFiltersImpl(
-		const std::vector<FilterRule>& filters,
-		std::string command,
-		bool simple
-	) {
 	std::ostringstream ss;
 	std::vector<std::string> filterStrings;
 	BOOST_FOREACH(FilterRule filter, filters) {
-		if (simple) {
-			filterStrings.push_back(filter.rule);
-		} else {
+		if (filter.rule.find(dualCommand, 0) != std::string::npos) {
 			filterStrings.push_back("SELECT * FROM (" + filter.rule + ")");
+		} else {
+			filterStrings.push_back(filter.rule);
 		}
 	}
 	join(ss, filterStrings.begin(), filterStrings.end(), command.c_str());
