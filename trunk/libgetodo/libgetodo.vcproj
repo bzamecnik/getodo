@@ -149,6 +149,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\recurrence.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\sqlite.cpp"
 				>
 			</File>
@@ -184,6 +188,10 @@
 			</File>
 			<File
 				RelativePath=".\getodo.h"
+				>
+			</File>
+			<File
+				RelativePath=".\recurrence.h"
 				>
 			</File>
 			<File

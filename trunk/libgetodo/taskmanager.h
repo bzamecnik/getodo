@@ -26,7 +26,14 @@ namespace getodo {
 using namespace sqlite3x;
 
 /** %Task manager.
- * Storage and manipulation of tasks, tags and filter rules.
+ * Storage and manipulation of tasks, tags and filter rules. It act as
+ * an object representation of what is in the database with some functionality
+ * added on top of it. Object stored here are persisted in the database.
+ *
+ * %Task manager provides a way to filter tasks.
+ *
+ * There are some signals available. They are useful for example to let
+ * a TreeView model know when a task changes or is inserted.
  */
 class TaskManager : public sigc::trackable {
 private:
@@ -36,12 +43,31 @@ private:
 
     sqlite3_connection* conn;
 
+	/** Active filter rule. */
 	FilterRule activeFilterRule;
-	idset_t visibleTasksCache; // task id's which have passed the filter
+
+	/**  Visible tasks cache.
+	 * Task id's which have passed the active filter.
+	 */
+	idset_t visibleTasksCache;
 public:
     // TaskManager(); // for in-memory database (sqlite filename :memory:)
-    TaskManager(std::string dbname);
+    
+	/** %Task manager constructor.
+	 * Create a task manager and load it from the database.
+	 * If the database is not initialized, create the table structure.
+	 * \param dbname filename of the database
+	 */
+	TaskManager(const std::string& dbname);
+
+	/** %Task manager constructor.
+	 * Create a task manager and load it from the database using a previously
+	 * opened database connection.
+	 * If the database is not initialized, create the table structure.
+	 * \param conn database connection
+	 */
     TaskManager(sqlite3_connection* conn);
+
     virtual ~TaskManager();
 
     // tip: a function for switching database connection
@@ -50,54 +76,274 @@ public:
     
     // ----- SQLite connection -----
     
+	/** Get the database connection.
+	 * \return SQLite connection
+	 */
     sqlite3_connection* getConnection(); // really publish?
+
 	//void setConnection(sqlite3_connection* conn);
     
     // ----- Task operations -----
 
+	/** Add a task.
+	 * Add a new task and save it to database.
+	 * 
+	 * Raise #signal_task_inserted.
+	 *
+	 * \param task task to add
+	 * \return id assigned by the database
+	 */
     id_t addTask(const Task& task);
+
+	/** Check if a task is already in task manager.
+	 * \param taskId task identification
+	 * \return true if present
+	 */
     bool hasTask(id_t taskId);
-    Task* getTask(id_t taskId); // TODO: change return type to Task& and throw GetodoError
-    TaskPersistence& getPersistentTask(id_t taskId); // for modyfing particular things
+
+	/** Get a task from task manager.
+	 * \todo TODO: change the return type to Task& or shared_ptr<Task>.
+	 *
+	 * \param taskId task identification
+	 * \return pointer to task or 0 if not found
+	 */
+    Task* getTask(id_t taskId);
+
+	/** Get task persistence for the task.
+	 * This is useful for modifying particular things without the need
+	 * to update the whole task.
+	 *
+	 * \param taskId task identification
+	 * \return task persistence
+	 */
+    TaskPersistence& getPersistentTask(id_t taskId);
+	/** Edit task.
+	 * Replace contents of task identified by \p taskId by contents
+	 * of \p task.
+	 *
+	 * Raise #signal_task_updated.
+	 *
+	 * Tags are synchronized in TaskPersistence::update().
+	 * 
+	 * Throw a GetodoError if a task with such a taskId is not present
+	 * 
+	 * \param taskId existing task identification
+	 * \param task new task contents
+	 * \return updated task
+	 */
     Task& editTask(id_t taskId, const Task& task);
-    void deleteTask(id_t taskId); //should throw an exception on failure
+
+	/** Delete task and its whole subtree.
+	 * Delete the task and recursively the whole tree of its subtasks.
+	 * Also remove tagging relations of all tasks being deleted. However,
+	 * tags themselves remain.
+	 * 
+	 * Raise #signal_task_removed.
+	 *
+	 * Throw a GetodoError if there's no such a task in the task manager.
+	 *
+	 * \param taskId task identification
+	 */
+    void deleteTask(id_t taskId);
+
+	/** Get all tasks present in task manager.
+	 * This is useful for batch operations with all the tasks.
+	 * \return vector of all tasks
+	 */
 	std::vector<Task*>& getTasks();
+
+	/** Get all top-level tasks present in task manager.
+	 * Top level tasks are those which have no parent. This is useful for batch
+	 * operations with all the tasks.
+	 * \return vector of all top-level tasks
+	 */
 	std::vector<Task*>& getTopLevelTasks();
 
     // ----- Tag operations -----
 
+	/** Add a tag.
+	 * Add a new tag and save it to database.
+	 * 
+	 * Raise #signal_tag_inserted.
+	 *
+	 * \param tag tag to add
+	 * \return id assigned by the database or Tag::INVALID_ID on error
+	 */
     id_t addTag(const Tag& tag);
+
+	/** Check presence of tag by its id.
+	 * \param tagId tag identification
+	 * \return true if such a tag is present in task manager
+	 */
     bool hasTag(id_t tagId);
-    bool hasTag(std::string tagName);
+
+	/** Check presence of tag by its name.
+	 * \param tagName tag name
+	 * \return true if such a tag is present in task manager
+	 */
+    bool hasTag(const std::string& tagName);
+
+	/** Get tag by its id.
+	 * Throw GetodoError if the tag is not found.
+	 *
+	 * \param tagId tag identification
+	 * \return reference to the tag if it's is present in task manager
+	 */
     Tag& getTag(id_t tagId);
-    Tag& getTag(std::string tagName);
+
+	/** Get tag by its name.
+	 * Throw GetodoError if the tag is not found.
+	 *
+	 * \param tagName tag name
+	 * \return reference to the tag if it's is present in task manager
+	 */
+    Tag& getTag(const std::string& tagName);
+
+	/** Edit tag.
+	 * Replace contents of tag identified by \p tagId by contents of \p tag.
+	 * 
+	 * Raise #signal_tag_updated.
+	 *
+	 * Throw GetodoError if the tag is not found.
+	 *
+	 * \param tagId existing tag id
+	 * \param tag new tag
+	 * \return reference to the updated tag
+	 */
     Tag& editTag(id_t tagId, const Tag& tag);
-    void deleteTag(id_t tagId); //should throw an exception on failure
+
+	/** Delete tag.
+	 * Raise #signal_tag_removed.
+	 *
+	 * Throw GetodoError if there is not such a tag in the task manager.
+	 *
+	 * \param tagId tag identification
+	 */
+    void deleteTag(id_t tagId);
+
+	/** Get all tags present in task manager.
+	 * This is useful for batch operations with all the tags.
+	 * \return vector of all tags
+	 */
     std::vector<Tag*>& getTags();
 
     // ----- FilterRule operations -----
 
+	/** Add a filter rule.
+	 * Add a new filter rule and save it to database. Id is automatically
+	 * assigned by the database.
+	 * 
+	 * Raise #signal_filter_inserted.
+	 *
+	 * \param filter filter rule to add
+	 * \return id assigned by the database
+	 */
     id_t addFilterRule(const FilterRule& filter);
+
+	/** Check presence of filter rule by its id.
+	 * \param filterRuleId filter rule identification
+	 * \return true if such a filter rule is present in task manager
+	 */
     bool hasFilterRule(id_t filterRuleId);
-    bool hasFilterRule(std::string filterRuleName);
+
+	/** Check presence of filter rule by its name.
+	 * \param filterRuleName filter rule name
+	 * \return true if such a filter rule is present in task manager
+	 */
+    bool hasFilterRule(const std::string& filterRuleName);
+
+	/** Get filter rule by its id.
+	 * Throw GetodoError if the filter rule is not found.
+	 *
+	 * \param filterRuleId filter rule identification
+	 * \return reference to the filter rule if it's is present in task manager
+	 */
     FilterRule& getFilterRule(id_t filterRuleId);
+
+	/** Edit filter rule.
+	 * Replace contents of filter rule identified by \p filterRuleId by
+	 * contents of \p filter.
+	 * 
+	 * Raise #signal_filter_updated.
+	 *
+	 * Throw GetodoError if the filter rule is not found.
+	 *
+	 * \param filterRuleId existing filter rule identification
+	 * \param filter new filter rule
+	 * \return reference to the updated tag
+	 */
     FilterRule& editFilterRule(id_t filterRuleId, const FilterRule& filter);
-    void deleteFilterRule(id_t filterRuleId); //should throw an exception on failure
+
+	/** Delete filter rule.
+	 * Raise #signal_filter_removed.
+	 *
+	 * Throw GetodoError if there is not such a filter rule in the task manager.
+	 *
+	 * \param filterRuleId filter rule identification
+	 */
+    void deleteFilterRule(id_t filterRuleId);
+
+	/** Get all filter rules present in task manager.
+	 * This is useful for batch operations with all the filter rules.
+	 * \return vector of all filter rules
+	 */
     std::vector<FilterRule*>& getFilterRules();
 
-	void setActiveFilterRule(const FilterRule& filter); // enable filtering and set the rule
-	void resetActiveFilterRule(); // deactivate filtering
+	/** Filter tasks.
+	 * Filter tasks in task manager using a given filter rule.
+	 *
+	 * \param filterRule filter rule
+	 * \return set of task id that passed the filter, ie. they are visible
+	 */
+    idset_t& filterTasks(FilterRule& filterRule);
+
+	/** Set the active filtering rule.
+	 * Set \p filter as the active rule, filter tasks using this rule and
+	 * store them in visibleTasksCache for getting via getFilteredTasks().
+	 * If the rule is broken unset the rule and clear the visibleTasksCache.
+	 *
+	 * \param filter filter to set active
+	 */
+	void setActiveFilterRule(const FilterRule& filter);
+
+	/** Unset the active filtering rule.
+	 * And clear the visibleTasksCache.
+	 */
+	void resetActiveFilterRule();
+
 	//FilterRule* getActiveFilterRule() const;
+
+	/** Check if any active filter rule is present.
+	 * \return true if there is any active filter rule
+	 */
 	bool hasActiveFilterRule() const;
 
-	bool isTaskVisible(id_t taskId); // true, if taskId passed the filter
+	/** Check task visibility under active filter rule.
+	 * Note: id's of task that passed the filter are visibleTaskCache.
+	 * 
+	 * \param taskId identification of task to check
+	 * \return true if the task is passed the filter
+	 */
+	bool isTaskVisible(id_t taskId);
+
+	/** Get id's of task that passed the filter.
+	 * \return set of task id's that passed the filter, eg. they are visible
+	 */
 	idset_t getFilteredTasks();
 
 	// ----- signals for models -----
 	sigc::signal1<void, Task&> signal_task_inserted;
 	sigc::signal1<void, Task&> signal_task_updated;
 	sigc::signal1<void, Task&> signal_task_removed;
-	sigc::signal2<void, Task&, id_t> signal_task_moved; // args: task being moved, old parent id
+	
+	/** Signal that task has moved.
+	 * Task has moved if it changed its parent task.
+	 *
+	 * Arguments:
+	 * - task being moved
+	 * - old parent id
+	 */
+	sigc::signal2<void, Task&, id_t> signal_task_moved;
 
 	sigc::signal1<void, Tag&> signal_tag_inserted;
 	sigc::signal1<void, Tag&> signal_tag_updated;
@@ -106,18 +352,36 @@ public:
 	sigc::signal1<void, FilterRule&> signal_filter_inserted;
 	sigc::signal1<void, FilterRule&> signal_filter_updated;
 	sigc::signal1<void, FilterRule&> signal_filter_removed;
-private:
-    void loadAllFromDatabase(); // to be called by the constructor
-    
-    // void loadFromDatabase(const FilterRule& filter);
-    // TODO: move functionality here and make loadAllFromDatabase()
-    // call this function with empty filter
-    
-    void createEmptyDatabase(); // create an inital database structure
-    bool checkDatabaseStructure(); // true, if all needed tables exist
+protected:
+	/** Try to load things from database.
+	 * If the database is not initialized create the table structure.
+	 */
+	void tryLoadingFromDatabase();
 
-	// TODO: Use output iterator and back_inserter.
-	// See: http://bytes.com/groups/c/60522-returning-vector-reference#post225137
+	/** Load everything from database in a batch.
+	 * This is usually called by the TaskManager constructor.
+	 */
+    void loadAllFromDatabase();
+    
+	/** Initialize the database.
+	 * Create the initial table structure.
+	 */
+    void createEmptyDatabase();
+
+	/** Check database structure.
+	 * \return true if all the needed tables exist
+	 */
+    bool checkDatabaseStructure();
+
+	/** Convert map to vector.
+	 * Make a vector from map values where value is a pointer.
+	 * 
+	 * \todo TODO: Use output iterator and back_inserter.
+	 * See: http://bytes.com/groups/c/60522-returning-vector-reference#post225137 
+	 *
+	 * \param m source map
+	 * \return vector of map values
+	 */
     template<typename T_key, typename T_value>
     std::vector<T_value*>& convertMapToVector(std::map<T_key, T_value *>& m)
 	{
@@ -128,12 +392,6 @@ private:
         }
         return vector;
     }
-
-	// TODO:
-    // - specify a format for FilterRules
-    // - parse it, convert it to SQL query (WHERE)
-    //idset_t filterTasks(id_t filterRuleId); // TODO
-    idset_t& filterTasks(FilterRule& filterRule);
 };
 
 } // namespace getodo

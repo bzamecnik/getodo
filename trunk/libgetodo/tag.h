@@ -68,7 +68,7 @@ public:
 	 * created), so a new id is assigned. It is both set to the given
 	 * tag and returned.
 	 * 
-	 * Throws a GetodoError if the database connection is broken.
+	 * Throw a GetodoError if the database connection is broken.
 	 *
 	 * \return id id assigned by the database.
 	 */
@@ -79,8 +79,8 @@ public:
 	 * an exception is thrown.
 	 * If there's no such a tag in the database to update nothing happens.
 	 *
-	 * Throws a GetodoError if the database connection is broken.
-	 * Throws a std::invalid_argument, if the id is not valid.
+	 * Throw a GetodoError if the database connection is broken.
+	 * Throw a std::invalid_argument, if the id is not valid.
 	 */
 	void update(const Tag& tag);
 	

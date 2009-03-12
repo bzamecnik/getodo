@@ -53,6 +53,22 @@ x- extend the Year Project to the Bachelor Thesis
 
 *- fix support for (de)activating tag filters and rule filters separately
 
+- write docs
+	- FilterListStore
+	- FilterListStore::ModelColumns
+	*- GetodoError
+	- MainWindow
+	- Recurrence* - finish
+	- TagListStore
+	- TagListStore::ModelColumns
+	- Task - finish
+	*- TaskManager
+	- TaskPersistence
+
+- TaskManager
+	- change filters and tags map values from pointers to value types
+		- eg. std::map<id_t,Tag*> -> std::map<id_t,Tag> 
+
 - Task editing
 	- synchronize done & percentage values in the panel and the tree
 
