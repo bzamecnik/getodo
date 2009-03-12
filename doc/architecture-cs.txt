@@ -9,7 +9,7 @@ Libgetodo zajišuje objektovou reprezentaci základních typù a jejich databázovou
 
 Getodogui vyuívá funcionality Libgetodo a poskytuje k ní GUI.
 
-Schéma databáze je mono nalézt v souboru doc/sql/getodo-sqlite.sql. ER-diagram v doc/sql/diagram.png. (FIXME - zaktualizovat ER diagram podle SQL)
+Schéma databáze je mono nalézt v souboru doc/sql/getodo-sqlite.sql. ER-diagram v doc/sql/diagram.png.
 
 Celı projekt je psán v jazyce C++ a buildován pomocí MS Visual Studia.
 Pouité knihovny:
@@ -68,7 +68,7 @@ Persistence pro FilterRule. Funguje podobnì jako TaskPersistence. Poskytuje meto
 
 === FilterBuilder ===
 
-Tovární tøída pro vırobu filtrovacích pravidel. (FIXME - zatím není plnì implementována)
+Tovární tøída pro vırobu filtrovacích pravidel.
 
 === Date ===
 
