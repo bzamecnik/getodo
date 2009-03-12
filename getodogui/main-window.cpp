@@ -360,8 +360,9 @@ void MainWindow::on_buttonTaskDelete_clicked() {
 	// TODO: or delete multiple selected rows (use get_selected_rows())
 	Gtk::TreeModel::iterator iter = pTaskTreeView->get_selection()->get_selected();
 	if (iter) {
-		// TODO: select next row (will that work, when using a sorted model?)
 		taskManager->deleteTask((*iter)[refTaskTreeModel->columns.id]);
+		
+		// TODO: select next row (will that work, when using a sorted model?)
 	}
 }
 
@@ -522,24 +523,32 @@ bool MainWindow::on_taskDateCompletedEntry_focus_out_event(GdkEventFocus* event,
 
 void MainWindow::on_buttonRecurrence_clicked() {
 	using namespace getodo;
-	RecurrenceDialog& dialog = GeToDoApp::getSingleton().getRecurrenceDialog();
-	dialog.setRecurrence(*Recurrence::fromString(
+	RecurrenceDialog* dialog = 0;
+	dialog = GeToDoApp::getSingleton().getWidget("recurrenceDialog", dialog);
+	if (dialog == 0) {
+		return;
+	}
+	dialog->setRecurrence(*Recurrence::fromString(
 		pTaskRecurrenceEntry->get_text()));
-	int response = dialog.run();
+	int response = dialog->run();
 	if (response == Gtk::RESPONSE_OK) {
-		pTaskRecurrenceEntry->set_text(Recurrence::toString(dialog.getRecurrence()));
+		pTaskRecurrenceEntry->set_text(Recurrence::toString(dialog->getRecurrence()));
 	}
 	updateTaskPartial(boost::bind( &TaskPersistence::setRecurrence, _1,
-		boost::ref(dialog.getRecurrence()) ));
+		boost::ref(dialog->getRecurrence()) ));
 }
 
 void MainWindow::on_buttonRuleFilterNew_clicked() {
 	using namespace getodo;
-	FilterDialog& dialog = GeToDoApp::getSingleton().getFilterDialog();
-	int response = dialog.run();
+	FilterDialog* dialog = 0;
+	dialog = GeToDoApp::getSingleton().getWidget("filterDialog", dialog);
+	if (dialog == 0) {
+		return;
+	}
+	int response = dialog->run();
 	if (response == Gtk::RESPONSE_OK) {
 		// add the new filter rule to the taskmanager
-		FilterRule newFilter = dialog.getFilterRule();
+		FilterRule newFilter = dialog->getFilterRule();
 		if (!newFilter.isEmpty()) {
 			taskManager->addFilterRule(newFilter);
 		}
@@ -548,7 +557,11 @@ void MainWindow::on_buttonRuleFilterNew_clicked() {
 
 void MainWindow::on_buttonRuleFilterEdit_clicked() {
 	using namespace getodo;
-	FilterDialog& dialog = GeToDoApp::getSingleton().getFilterDialog();
+	FilterDialog* dialog = 0;
+	dialog = GeToDoApp::getSingleton().getWidget("filterDialog", dialog);
+	if (dialog == 0) {
+		return;
+	}
 	Gtk::TreeSelection::ListHandle_Path selectedRows = pFilterTreeView->get_selection()->get_selected_rows();
 	// try to get the first selected row
 	Gtk::TreeSelection::ListHandle_Path::iterator pathIter = selectedRows.begin();
@@ -567,11 +580,11 @@ void MainWindow::on_buttonRuleFilterEdit_clicked() {
 	}
 	selectedFilter = taskManager->getFilterRule(filterId);
 
-	dialog.setFilterRule(selectedFilter);
-	int response = dialog.run();
+	dialog->setFilterRule(selectedFilter);
+	int response = dialog->run();
 	if (response == Gtk::RESPONSE_OK) {
 		// update the filter rule in taskmanager
-		FilterRule updatedFilter = dialog.getFilterRule();
+		FilterRule updatedFilter = dialog->getFilterRule();
 		if (!updatedFilter.isEmpty()) {
 			taskManager->editFilterRule(filterId, updatedFilter);
 		}
@@ -586,7 +599,7 @@ void MainWindow::on_buttonRuleFilterDelete_clicked() {
 	if (response == Gtk::RESPONSE_OK) {
 		Gtk::TreeSelection::ListHandle_Path selectedRows =
 			pFilterTreeView->get_selection()->get_selected_rows();
-		BOOST_FOREACH(Gtk::TreePath path, selectedRows) {
+		foreach(Gtk::TreePath path, selectedRows) {
 			Gtk::TreeIter sortIter = refFilterListModelSort->get_iter(path);
 			Gtk::TreeIter iter = refFilterListModelSort->convert_iter_to_child_iter(sortIter);
 			if (iter) {
@@ -673,7 +686,7 @@ void MainWindow::setFilterFromTagSelection() {
 	std::vector<FilterRule> tagFilters;
 
 	Gtk::TreeSelection::ListHandle_Path selectedRows = pTagTreeView->get_selection()->get_selected_rows();
-	BOOST_FOREACH(Gtk::TreePath path, selectedRows) {
+	foreach(Gtk::TreePath path, selectedRows) {
 		Gtk::TreeIter sortIter = refTagListModelSort->get_iter(path);
 		Gtk::TreeIter iter = refTagListModelSort->convert_iter_to_child_iter(sortIter);
 		id_t tagId = FilterRule::INVALID_ID;
@@ -712,7 +725,7 @@ void MainWindow::setFilterFromRuleSelection() {
 	std::vector<FilterRule> ruleFilters;
 
 	Gtk::TreeSelection::ListHandle_Path selectedRows = pFilterTreeView->get_selection()->get_selected_rows();
-	BOOST_FOREACH(Gtk::TreePath path, selectedRows) {
+	foreach(Gtk::TreePath path, selectedRows) {
 		Gtk::TreeIter sortIter = refFilterListModelSort->get_iter(path);
 		Gtk::TreeIter iter = refFilterListModelSort->convert_iter_to_child_iter(sortIter);
 		id_t filterId = FilterRule::INVALID_ID;

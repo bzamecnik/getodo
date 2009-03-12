@@ -21,23 +21,21 @@ using namespace sqlite3x;
 
 // ----- Constructors & destructor -----
 
-TaskManager::TaskManager(std::string dbname)
+TaskManager::TaskManager(const std::string& dbname)
 : conn(0) {
 	try {
 		conn = new sqlite3_connection(dbname);
-	} catch(database_error) {
+	} catch(database_error&) {
 		conn = 0;
 		return;
 	}
-	if (checkDatabaseStructure()) {
-		 loadAllFromDatabase();
-	} else {
-		createEmptyDatabase();
-	}
+	tryLoadingFromDatabase();
 }
 
 TaskManager::TaskManager(sqlite3_connection* c)
-: conn(c) {}
+: conn(c) {
+	tryLoadingFromDatabase();
+}
 
 TaskManager::~TaskManager() {
 	if(conn) {
@@ -90,13 +88,11 @@ bool TaskManager::hasTask(id_t taskId) {
 }
 
 Task* TaskManager::getTask(id_t taskId) {
-	// TODO: how to find out the type of task automatically?
-	// ie. without copying the type from the header file.
 	std::map<id_t,Task*>::iterator it = tasks.find(taskId);
 	if (it != tasks.end()) {
 		return it->second;
 	} else {
-		return 0; // maybe throw GetodoError
+		return 0; // better throw GetodoError
 	}
 }
 
@@ -106,14 +102,13 @@ TaskPersistence& TaskManager::getPersistentTask(id_t taskId) {
 
 Task& TaskManager::editTask(id_t taskId, const Task& task) {
 	if (!hasTask(taskId)) {
-		throw new GetodoError("No such a task to edit.");
+		throw new GetodoError("No such a task to edit: "
+			+ boost::lexical_cast<std::string, id_t>(taskId));
 	}
 
 	// TODO: Write operator= for Task!!!
-	// TODO: synchronize tags in TaskManager from old to new task
-	// * _add_ tags which are in the in _new_ task only
-	// * DON'T _delete_ tags which are in the _old_ task only
-	//   unless we're sure they're not used in any other task
+
+	// Note: Tags are synchronized in TaskPersistence::update().
 
 	Task* taskCopy = new Task(task); // copy
 	// Delete original task from tasks
@@ -132,7 +127,10 @@ Task& TaskManager::editTask(id_t taskId, const Task& task) {
 
 void TaskManager::deleteTask(id_t taskId) {
 	Task* task = getTask(taskId);
-	if (task == 0) { return; }
+	if (task == 0) {
+		throw new GetodoError("No such a task to delete: "
+			+ boost::lexical_cast<std::string, id_t>(taskId));
+	}
 
 	Task* parent = 0;
 	if (task->hasParent()) {
@@ -191,18 +189,26 @@ std::vector<Task*>& TaskManager::getTopLevelTasks() {
 // ----- Tag operations -----
 
 id_t TaskManager::addTag(const Tag& tag) {
-	//if (hasTag(tag.name)) { return; } // already in TaskManager
-	// TODO: what if tags with the same name have different ids?
+	// for now tag names are not unique
+	if (hasTag(tag.id)) {
+		Tag* existingTag = tags[tag.id];
+		if (existingTag && (existingTag->name == tag.name)) {
+			return tag.id; // already in TaskManager
+			// or this could throw an exception...
+		}
+	}
+	// if wa have unique tag name this would be sufficient:
+	//if (hasTag(tag.name)) { return; }
 
 	TagPersistence tp(conn);
-	// when saving, id is assigned by database
 	Tag* tagCopy = new Tag(tag);
-	if (tp.insert(*tagCopy)) {
-		tags[tagCopy->id] = tagCopy;
-		signal_tag_inserted(*tagCopy);
-		return tagCopy->id;
+	// when saving, id is assigned by database
+	if (!tp.insert(*tagCopy)) {
+		return Tag::INVALID_ID;
 	}
-	return Task::INVALID_ID;
+	tags[tagCopy->id] = tagCopy;
+	signal_tag_inserted(*tagCopy);
+	return tagCopy->id;
 }
 
 bool TaskManager::hasTag(id_t tagId) {
@@ -210,7 +216,7 @@ bool TaskManager::hasTag(id_t tagId) {
 	return (it != tags.end());
 }
 
-bool TaskManager::hasTag(std::string tagName) {
+bool TaskManager::hasTag(const std::string& tagName) {
 	std::map<id_t, Tag*>::iterator it;
 	for (it = tags.begin(); it != tags.end(); ++it) {
 		if (it->second && (it->second->name == tagName)) { return true; }
@@ -221,23 +227,25 @@ bool TaskManager::hasTag(std::string tagName) {
 Tag& TaskManager::getTag(id_t tagId) {
 	std::map<id_t,Tag*>::iterator foundTag = tags.find(tagId);
 	if (foundTag == tags.end()) {
-		throw new std::invalid_argument("No such a tag.");
+		throw new getodo::GetodoError("No such a tag: "
+			+ boost::lexical_cast<std::string, id_t>(tagId));
 	}
 	return *(foundTag->second);
 
 }
 
-Tag& TaskManager::getTag(std::string tagName) {
+Tag& TaskManager::getTag(const std::string& tagName) {
 	std::map<id_t, Tag*>::iterator it;
 	for (it = tags.begin(); it != tags.end(); ++it) {
 		if (it->second && (it->second->name == tagName)) { return *(it->second); }
 	}
-	throw new std::invalid_argument("No such a tag.");
+	throw new getodo::GetodoError("No such a tag: " + tagName);
 }
 
 Tag& TaskManager::editTag(id_t tagId, const Tag& tag) {
 	if (!hasTag(tagId)) {
-		throw new std::invalid_argument("No such a tag.");
+		throw new getodo::GetodoError("No such a tag to edit: "
+			+ boost::lexical_cast<std::string, id_t>(tagId));
 	}
 
 	Tag* tagCopy = new Tag(tag);
@@ -257,14 +265,16 @@ Tag& TaskManager::editTag(id_t tagId, const Tag& tag) {
 
 void TaskManager::deleteTag(id_t tagId) {
 	std::map<id_t,Tag*>::iterator foundTag = tags.find(tagId);
-	if (foundTag != tags.end()) {
-		signal_tag_removed(*foundTag->second);
-		// erase from database
-		TagPersistence p(conn);
-		p.erase(tagId);
-		// erase from task manager
-		tags.erase(tagId);
+	if (foundTag == tags.end()) {
+		throw new getodo::GetodoError("No such a tag to delete: "
+			+ boost::lexical_cast<std::string, id_t>(tagId));
 	}
+	signal_tag_removed(*foundTag->second);
+	// erase from database
+	TagPersistence p(conn);
+	p.erase(tagId);
+	// erase from task manager
+	tags.erase(tagId);
 }
 
 std::vector<Tag*>& TaskManager::getTags() {
@@ -288,10 +298,10 @@ bool TaskManager::hasFilterRule(id_t filterRuleId) {
 	return (it != filters.end());
 }
 
-bool TaskManager::hasFilterRule(std::string filterRuleName) {
-	std::map<id_t, FilterRule*>::iterator it;
-	for (it = filters.begin(); it != filters.end(); ++it) {
-		if (it->second && (it->second->name == filterRuleName)) { return true; }
+bool TaskManager::hasFilterRule(const std::string& filterRuleName) {
+	std::pair<id_t, FilterRule*> pair;
+	foreach(pair, filters) {
+		if (pair.second && (pair.second->name == filterRuleName)) { return true; }
 	}
 	return false;
 }
@@ -305,7 +315,7 @@ FilterRule& TaskManager::getFilterRule(id_t filterRuleId) {
 
 FilterRule& TaskManager::editFilterRule(id_t filterRuleId, const FilterRule& filter) {
 	if (!hasFilterRule(filterRuleId)) {
-		throw new std::invalid_argument("No such a filter rule.");
+		throw new getodo::GetodoError("No such a filter rule.");
 	}
 
 	FilterRule* ruleCopy = new FilterRule(filter);
@@ -326,18 +336,25 @@ FilterRule& TaskManager::editFilterRule(id_t filterRuleId, const FilterRule& fil
 
 void TaskManager::deleteFilterRule(id_t filterRuleId) {
 	std::map<id_t,FilterRule*>::iterator foundFilter = filters.find(filterRuleId);
-	if (foundFilter != filters.end()) {
-		signal_filter_removed(*foundFilter->second);
-		// erase from database
-		FilterRulePersistence p(conn);
-		p.erase(filterRuleId);
-		// erase from task manager
-		filters.erase(filterRuleId);
+	if (foundFilter == filters.end()) {
+		throw new getodo::GetodoError("No such a filter rule to delete: "
+			+ boost::lexical_cast<std::string, id_t>(filterRuleId));
 	}
+	signal_filter_removed(*foundFilter->second);
+	// erase from database
+	FilterRulePersistence p(conn);
+	p.erase(filterRuleId);
+	// erase from task manager
+	filters.erase(filterRuleId);
 }
 
 std::vector<FilterRule*>& TaskManager::getFilterRules() {
 	return convertMapToVector<id_t, FilterRule>(filters);
+}
+
+idset_t& TaskManager::filterTasks(FilterRule& filterRule) {
+	// TODO: rethrow the exception
+	return filterRule.filter(*conn);
 }
 
 void TaskManager::setActiveFilterRule(const FilterRule& filter) {
@@ -380,12 +397,15 @@ idset_t TaskManager::getFilteredTasks() {
 	return visibleTasksCache;
 }
 
-idset_t& TaskManager::filterTasks(FilterRule& filterRule) {
-	// TODO: rethrow the exception
-	return filterRule.filter(*conn);
-}
-
 // ----- Other things -----
+
+void TaskManager::tryLoadingFromDatabase() {
+	if (checkDatabaseStructure()) {
+		loadAllFromDatabase();
+	} else {
+		createEmptyDatabase();
+	}
+}
 
 void TaskManager::loadAllFromDatabase() {
 	if (!conn) { throw new GetodoError("No database connection."); }

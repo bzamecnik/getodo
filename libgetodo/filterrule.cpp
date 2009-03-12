@@ -179,7 +179,7 @@ FilterRule FilterBuilder::joinFilters(
 	) {
 	std::ostringstream ss;
 	std::vector<std::string> filterStrings;
-	BOOST_FOREACH(FilterRule filter, filters) {
+	foreach(FilterRule filter, filters) {
 		if (filter.isEmpty()) {
 			continue;
 		}

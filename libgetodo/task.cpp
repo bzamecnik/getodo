@@ -475,7 +475,7 @@ void TaskPersistence::update() {
 		ss.str(""); // clear the stream
 		ss << "DELETE FROM Tagged WHERE taskID = ? AND ";
 		std::vector<std::string> tagParts;
-		BOOST_FOREACH(id_t tagId, newTags) {
+		foreach(id_t tagId, newTags) {
 			tagParts.push_back("NOT tagId = " + boost::lexical_cast<std::string, id_t>(tagId));
 		}
 		join(ss, tagParts.begin(), tagParts.end(), " AND ");
@@ -490,7 +490,6 @@ void TaskPersistence::update() {
 	}
 
 	// get the remaining tags
-
 	idset_t remainingTags;
 	try {
 		cmd.prepare("SELECT tagId FROM Tagged WHERE taskId = ?;");
@@ -519,7 +518,7 @@ void TaskPersistence::update() {
 		ss.str("");
 		ss << "INSERT INTO Tagged (taskId, tagId) VALUES (" << taskId << ",?);";
 		try {
-			BOOST_FOREACH(id_t tagId, tagsToInsert) {
+			foreach(id_t tagId, tagsToInsert) {
 				cmd.prepare(ss.str());
 				cmd.bind(1, tagId);
 				cmd.executenonquery();
@@ -786,7 +785,7 @@ void TaskPersistence::saveTags() {
 	
 	// TODO: remove unused tags (ie. the ones deleted in Task but not yet in db)
 	idset_t tags = task->getTagIds();
-	BOOST_FOREACH(id_t tagId, tags) {
+	foreach(id_t tagId, tags) {
 		addTag(tagId);
 	}
 }

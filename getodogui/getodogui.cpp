@@ -8,31 +8,50 @@
 GeToDoApp* GeToDoApp::instance = 0;
 
 GeToDoApp::GeToDoApp(int argc, char* argv[])
-	: kit(argc, argv), pWindow(0), pRecurrenceDialog(0)
+	: kit(argc, argv), pWindow(0)
 {
 	using namespace getodo;
 	if (argc <= 1) {
 		std::cerr << "Usage: " << argv[0] << " DATABASE_FILE" << std::endl;
 		exit(1);
 	}
-	taskManager = new TaskManager(argv[1]);
+	taskManager = new TaskManager(std::string(argv[1]));
+
+	RecurrenceDialog* pRecurrenceDialog = 0;
+	FilterDialog* pFilterDialog = 0;
 
 	Glib::RefPtr<Gnome::Glade::Xml> refXml;
 	try {
 		refXml = Gnome::Glade::Xml::create("main-window.glade");
 		refXml->get_widget_derived("mainWindow", pWindow);
+		//widgets["mainWindow"] = pWindow;
+
 		refXml = Gnome::Glade::Xml::create("recurrence-dialog.glade");
 		refXml->get_widget_derived("recurrenceDialog", pRecurrenceDialog);
+		widgets["recurrenceDialog"] = pRecurrenceDialog;
+
 		refXml = Gnome::Glade::Xml::create("filter-dialog.glade");
 		refXml->get_widget_derived("filterDialog", pFilterDialog);
-	} catch (Gnome::Glade::XmlError& e) {
-		std::cerr << "Error loading Glade GUI files: " << e.what() << std::endl;
+		widgets["filterDialog"] = pFilterDialog;
+	} catch (Gnome::Glade::XmlError& ex) {
+		std::cerr << "Error loading Glade GUI files: " << ex.what() << std::endl;
 		exit(1);
 	}
 	pWindow->setTaskManager(taskManager);
 }
 
 GeToDoApp::~GeToDoApp() {
+	// TODO: the top-level widget should be deleted, but it give some errors... :(
+	//
+	//if (pWindow != 0) {
+	//	delete pWindow;
+	//}
+	//std::pair<std::string, Gtk::Widget*> pair;
+	//foreach(pair, widgets) {
+	//	if (pair.second != 0) {
+	//		delete pair.second;
+	//	}
+	//}
 }
 
 GeToDoApp* GeToDoApp::create(int argc, char* argv[]) {
@@ -50,19 +69,7 @@ GeToDoApp& GeToDoApp::getSingleton() {
 void GeToDoApp::run() {
 	if (pWindow) {	
 		kit.run(*pWindow);
-		// TODO: Find out, whether to explicitly delete widget created by Glade.
-		
-		// delete pWindow;
-		// pWindow = 0;
 	}
-}
-
-RecurrenceDialog& GeToDoApp::getRecurrenceDialog() {
-	return *pRecurrenceDialog;
-}
-
-FilterDialog& GeToDoApp::getFilterDialog() {
-	return *pFilterDialog;
 }
 
 int main(int argc, char* argv[]) {
