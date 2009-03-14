@@ -2,7 +2,7 @@
 //
 // libgetodo header file for including from external programs
 //
-// Author: Bohumir Zamecnik <bohumir@zamecnik.org>, (C) 2008
+// Author: Bohumir Zamecnik <bohumir@zamecnik.org>, (C) 2008-2009
 //
 // Copyright: See COPYING file that comes with this distribution
 //

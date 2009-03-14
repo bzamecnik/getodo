@@ -1,18 +1,31 @@
 // $Id$
+//
+// Class GeToDoApp, main() function
+//
+// Author: Bohumir Zamecnik <bohumir@zamecnik.org>, (C) 2008-2009
+//
+// Copyright: See COPYING file that comes with this distribution
+//
 
 #ifndef GETODOGUI_GETODOGUI_H
 #define GETODOGUI_GETODOGUI_H
 
 #include "getodo.h"
 
+namespace getodo {
+
 class GeToDoApp;
 class MainWindow;
 class RecurrenceDialog;
 class FilterDialog;
 
+} // namespace getodo
+
 #include "main-window.h"
 #include "recurrence-dialog.h"
 #include "filter-dialog.h"
+
+namespace getodo {
 
 // ----- class GeToDoApp --------------------
 
@@ -21,7 +34,7 @@ class FilterDialog;
  * the application. Then it holds all the window and dialog widgets from each
  * Glade file.
  * 
- * It is a singleton class, its constructed using create() function and its
+ * It is a singleton class. It is constructed using create() function and its
  * instance is provided by by getSingleton() function.
  */
 class GeToDoApp
@@ -67,10 +80,12 @@ protected:
 	MainWindow* pWindow;
 private:
 	std::map<std::string, Gtk::Widget*> widgets;
-	getodo::TaskManager* taskManager;
+	TaskManager* taskManager;
 	static GeToDoApp* instance;
 
 	GeToDoApp(int argc, char* argv[]);
 };
+
+} // namespace getodo
 
 #endif // GETODOGUI_GETODOGUI_H

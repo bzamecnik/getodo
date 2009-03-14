@@ -3,6 +3,8 @@
 #include "stdafx.h"
 #include "filter-dialog.h"
 
+namespace getodo {
+
 // ----- class FilterDialog --------------------
 
 FilterDialog::FilterDialog(BaseObjectType* cobject,
@@ -28,18 +30,17 @@ FilterDialog::FilterDialog(BaseObjectType* cobject,
 
 FilterDialog::~FilterDialog() {}
 
-getodo::FilterRule FilterDialog::getFilterRule() {
+FilterRule FilterDialog::getFilterRule() {
 	return filter;
 }
 
-void FilterDialog::setFilterRule(const getodo::FilterRule& filter) {
+void FilterDialog::setFilterRule(const FilterRule& filter) {
 	this->filter = filter;
 	pNameEntry->set_text(filter.name);
 	refRuleTextBuffer->set_text(filter.rule);
 }
 
 void FilterDialog::on_response(int response) {
-	using namespace getodo;
 	if (response == Gtk::RESPONSE_OK) {
 		// make a FilterRule from dialog contents
 		filter.name = pNameEntry->get_text();
@@ -53,3 +54,5 @@ void FilterDialog::clearPanel() {
 	pNameEntry->set_text("");
 	refRuleTextBuffer->set_text("");
 }
+
+} // namespace getodo

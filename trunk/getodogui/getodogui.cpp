@@ -3,6 +3,8 @@
 #include "stdafx.h"
 #include "getodogui.h"
 
+namespace getodo {
+
 // ----- class GeToDoApp --------------------
 
 GeToDoApp* GeToDoApp::instance = 0;
@@ -10,7 +12,6 @@ GeToDoApp* GeToDoApp::instance = 0;
 GeToDoApp::GeToDoApp(int argc, char* argv[])
 	: kit(argc, argv), pWindow(0)
 {
-	using namespace getodo;
 	if (argc <= 1) {
 		std::cerr << "Usage: " << argv[0] << " DATABASE_FILE" << std::endl;
 		exit(1);
@@ -72,7 +73,11 @@ void GeToDoApp::run() {
 	}
 }
 
+} // namespace getodo
+
 int main(int argc, char* argv[]) {
+	using namespace getodo;
+
 	GeToDoApp *app;
 	try {
 		app = GeToDoApp::create(argc, argv);

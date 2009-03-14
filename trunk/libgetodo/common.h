@@ -2,7 +2,7 @@
 //
 // Common includes and typedefs.
 //
-// Author: Bohumir Zamecnik <bohumir@zamecnik.org>, (C) 2008
+// Author: Bohumir Zamecnik <bohumir@zamecnik.org>, (C) 2008-2009
 //
 // Copyright: See COPYING file that comes with this distribution
 //
@@ -34,9 +34,9 @@
 /** GeToDo namespace. */
 namespace getodo {
 
-/** Identification of tasks, tags, ... */
+/** Identification of tasks, tags, etc. */
 typedef int id_t;
-/** Set of id's of tasks, tags, ... whatever using id_t */
+/** Set of id's of tasks, tags or whatever using #id_t. */
 typedef std::set<id_t> idset_t;
 /** Database row type.
  * Key is database column name, value is its value.
@@ -64,16 +64,17 @@ public:
 // ----- utils --------------------
 
 /** Join items in a range with a separator.
- * The separator goes only between the items, neither at the beginning nor the end.
- *
- * The items must have an operator<<().
+ * Separator goes only between the items, neither at the beginning nor the end.
+ * Items must have an operator<<().
  *
  * Example:
+ * \code
  * int list_init[4] = {42,17,68,89};
  * join(std::cout,&list_init[0],&list_init[4], ", ");
  *
  * std::list<int> alist(&list_init[0],&list_init[4]);
  * join(std::cout,alist.begin(), alist.end(), ", ");
+ * \endcode
  *
  * Thanks to Thomas Guest:
  * http://wordaligned.org/articles/joined-output-and-the-fencepost-problem

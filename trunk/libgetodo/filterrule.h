@@ -1,10 +1,10 @@
 // $Id$
 //
-// C++ Interface: FilterRule
+// Classes FilterRule, FilterRulePersistence, FilterBuilder
 //
 // Description: 
 //
-// Author: Bohumir Zamecnik <bohumir@zamecnik.org>, (C) 2008
+// Author: Bohumir Zamecnik <bohumir@zamecnik.org>, (C) 2008-2009
 //
 // Copyright: See COPYING file that comes with this distribution
 //

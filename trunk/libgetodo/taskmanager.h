@@ -1,14 +1,10 @@
 // $Id$
 //
-// C++ Interface: TaskManager
+// Class TaskManager
 //
-// Description: 
-//
-//
-// Author: Bohumir Zamecnik <bohumir@zamecnik.org>, (C) 2008
+// Author: Bohumir Zamecnik <bohumir@zamecnik.org>, (C) 2008-2009
 //
 // Copyright: See COPYING file that comes with this distribution
-//
 //
 
 #ifndef LIBGETODO_TASKMANAGER_H
@@ -102,7 +98,7 @@ public:
     bool hasTask(id_t taskId);
 
 	/** Get a task from task manager.
-	 * \todo TODO: change the return type to Task& or shared_ptr<Task>.
+	 * TODO: change the return type to Task& or shared_ptr<Task>.
 	 *
 	 * \param taskId task identification
 	 * \return pointer to task or 0 if not found
@@ -376,7 +372,7 @@ protected:
 	/** Convert map to vector.
 	 * Make a vector from map values where value is a pointer.
 	 * 
-	 * \todo TODO: Use output iterator and back_inserter.
+	 * TODO: Use output iterator and back_inserter.
 	 * See: http://bytes.com/groups/c/60522-returning-vector-reference#post225137 
 	 *
 	 * \param m source map

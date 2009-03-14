@@ -3,6 +3,8 @@
 #include "stdafx.h"
 #include "recurrence-dialog.h"
 
+namespace getodo {
+
 // TODO:
 // * make sensitive only controls for selected recurrence type, make others insensitive
 //   * use setWidgetsInactive() and then handle radio buttons' change signals
@@ -73,7 +75,6 @@ RecurrenceDialog::~RecurrenceDialog() {
 }
 
 void RecurrenceDialog::on_response(int response) {
-	using namespace getodo;
 	if (response == Gtk::RESPONSE_OK) {
 		// make a Recurrence from dialog contents
 		if (recurrence != 0) {
@@ -131,15 +132,13 @@ void RecurrenceDialog::on_response(int response) {
 	clearPanel();
 }
 
-getodo::Recurrence& RecurrenceDialog::getRecurrence() {
-	using namespace getodo;
+Recurrence& RecurrenceDialog::getRecurrence() {
 	if (recurrence == 0) {
 		recurrence = new RecurrenceOnce();
 	}
 	return *recurrence;
 }
-void RecurrenceDialog::setRecurrence(const getodo::Recurrence& r) {
-	using namespace getodo;
+void RecurrenceDialog::setRecurrence(const Recurrence& r) {
 	if (recurrence != 0) {
 		delete recurrence;
 		recurrence = 0;
@@ -241,3 +240,5 @@ void RecurrenceDialog::setWidgetsInactive() {
 	intervalSinceEntry->set_sensitive(false);
 	intervalUntilEntry->set_sensitive(false);
 }
+
+} // namespace getodo

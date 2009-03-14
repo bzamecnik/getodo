@@ -1,10 +1,19 @@
 // $Id$
+//
+// Class FilterDialog
+//
+// Author: Bohumir Zamecnik <bohumir@zamecnik.org>, (C) 2008-2009
+//
+// Copyright: See COPYING file that comes with this distribution
+//
 
 #ifndef GETODOGUI_FILTER_DIALOG_H
 #define GETODOGUI_FILTER_DIALOG_H
 
 #include "getodo.h"
 #include "getodogui.h"
+
+namespace getodo {
 
 // ----- class FilterDialog --------------------
 
@@ -21,11 +30,11 @@ public:
 	/** Get filter rule.
 	 * \return filter rule build upon contents of the form
 	 */
-	getodo::FilterRule getFilterRule();
+	FilterRule getFilterRule();
 	/** Set filter rule to edit.
 	 * \param filter filter rule to fill the form
 	 */
-	void setFilterRule(const getodo::FilterRule& filter);
+	void setFilterRule(const FilterRule& filter);
 protected:
 	Glib::RefPtr<Gnome::Glade::Xml> refXml;
 
@@ -41,9 +50,11 @@ protected:
 	Gtk::TextView* pRuleTextview;
 	Glib::RefPtr<Gtk::TextBuffer> refRuleTextBuffer;
 private:
-	getodo::FilterRule filter;
+	FilterRule filter;
 
 	void clearPanel();
 };
+
+} // namespace getodo
 
 #endif // GETODOGUI_FILTER_DIALOG_H
