@@ -1,11 +1,8 @@
 // $Id$
 //
-// C++ Interface: Task
+// Classes Task, TaskPersistence
 //
-// Description: 
-//
-//
-// Author: Bohumir Zamecnik <bohumir@zamecnik.org>, (C) 2008
+// Author: Bohumir Zamecnik <bohumir@zamecnik.org>, (C) 2008-2009
 //
 // Copyright: See COPYING file that comes with this distribution
 //
@@ -23,16 +20,18 @@ namespace getodo {
 // ----- class Task --------------------
 
 /** %Task.
- * Representation of a task. Object of class Task are data objects with
+ * Representation of a task. Instances of Task class are data objects with
  * no reference to the database. TaskPersistence is used to communicate
  * with the database (insert, load, update, delete).
  */ 
 class Task {
 private:
-	/** Id of the task. INVALID_ID, if not already in database */
+	/** Identification of the task.
+	 * INVALID_ID if not already in database
+	 */
 	id_t taskId;
-	/** Id of parent task. INVALID_ID, if the task has no parent task.
-	 * Ie. it is a top level task.
+	/** Id of parent task.
+	 * INVALID_ID if the task has no parent task. Ie. it is a top level task.
 	 */
 	id_t parentId;
 	/** Subtasks.
@@ -204,7 +203,7 @@ public:
 	TaskPersistence(sqlite3x::sqlite3_connection* conn, Task* task);
 	~TaskPersistence();
 	
-	/** Save Task to database and assign an id.
+	/** Insert task to database and assign an id.
 	 * Return true, if successfully inserted.
 	 */
 	bool insert();

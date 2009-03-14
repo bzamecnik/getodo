@@ -24,7 +24,8 @@ x- extend the Year Project to the Bachelor Thesis
 		- write doxygen docs
 	*- selected tags -> add rules to contain selected tags via OR and bound
 		with selected rule via AND: (filter AND (tag1 OR tag2 OR tag3)
-		- filters could be selected not by TreeView selection by rather by check boxes in a special column 
+		- filters could be selected not by TreeView selection by rather by
+		 	check boxes in a special column 
 	*- make a dialog for filter rule editing and saving
 	*- support renaming and deleting rules
 	*- (CTRL-) clicking on a selected rule should unselect it
@@ -54,13 +55,13 @@ x- extend the Year Project to the Bachelor Thesis
 *- fix support for (de)activating tag filters and rule filters separately
 
 - write docs
-	- FilterListStore
-	- FilterListStore::ModelColumns
+	*- FilterListStore
+	*- FilterListStore::ModelColumns
 	*- GetodoError
-	- MainWindow
-	- Recurrence* - finish
-	- TagListStore
-	- TagListStore::ModelColumns
+	*- MainWindow
+	*- Recurrence* - finish
+	*- TagListStore
+	*- TagListStore::ModelColumns
 	- Task - finish
 	*- TaskManager
 	- TaskPersistence
@@ -72,6 +73,9 @@ x- extend the Year Project to the Bachelor Thesis
 - Task editing
 	- synchronize done & percentage values in the panel and the tree
 
+- TaskPersistence
+	- write saveTagsFromString() to support out_of_focus saving of tags
+
 - new subtask should select the newly created task
 
 - put TreeModelFilter and TreeModelSort inside the TaskTreeModel
@@ -82,8 +86,8 @@ x- extend the Year Project to the Bachelor Thesis
 - SQL autoincrement - don't repeat what sqlite already set
 - use shared_ptr in TaskManager for holding pointers to Tasks, Tags, ...
 - use exceptions!
-- doxygen docs - try it, make it working
-- TaskPersistence, *FilterRulePersistence - split save() into insert() and update()
+*- doxygen docs - try it, make it working
+*- *TaskPersistence, *FilterRulePersistence - split save() into insert() and update()
 - use operator= for copying Tasks and Tags
 
 - profile what happens in GUI (TaskTreeStore) - why it is so slow?
@@ -124,6 +128,11 @@ x- extend the Year Project to the Bachelor Thesis
 - use Boost Test facilities for the testing code
 - use SQL transactions
 - apply advices from book Sutter, Alexandrescu: C++ 101 Programming Techniques
+
+- Task
+	- "done" field could be completely omitted
+	- dateCompleted != invalid date would suffice
+	- "done" column in the model could be virtual
 
 - write a simple Duration
 
@@ -168,6 +177,8 @@ x- extend the Year Project to the Bachelor Thesis
 	- status
 	- context (?)
 - better installer
+- tip: custom sorting in database
+	- see sqlite3_create_collation() in the SQLite C API.
 
 ==== BUGS ====
 

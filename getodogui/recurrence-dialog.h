@@ -1,10 +1,19 @@
 // $Id$
+//
+// Class RecurrenceDialog
+//
+// Author: Bohumir Zamecnik <bohumir@zamecnik.org>, (C) 2008-2009
+//
+// Copyright: See COPYING file that comes with this distribution
+//
 
 #ifndef GETODOGUI_RECURRENCE_DIALOG_H
 #define GETODOGUI_RECURRENCE_DIALOG_H
 
 #include "getodo.h"
 #include "getodogui.h"
+
+namespace getodo {
 
 // ----- class RecurrenceDialog --------------------
 
@@ -22,11 +31,11 @@ public:
 	 * \return recurrence build upon contents of the form or RecurrenceOnce
 	 * as a default if something went wrong
 	 */
-	getodo::Recurrence& getRecurrence();
+	Recurrence& getRecurrence();
 	/** Set recurrence to edit.
 	 * \param r recurrence to fill the form
 	 */
-	void setRecurrence(const getodo::Recurrence& r);
+	void setRecurrence(const Recurrence& r);
 protected:
 	Glib::RefPtr<Gnome::Glade::Xml> refXml;
 
@@ -73,11 +82,13 @@ protected:
 	Gtk::Entry* intervalSinceEntry;
 	Gtk::Entry* intervalUntilEntry;
 private:
-	getodo::Recurrence* recurrence;
+	Recurrence* recurrence;
 
 	void fillMonthsModel();
 	void clearPanel();
 	void setWidgetsInactive();
 };
+
+} // namespace getodo
 
 #endif // GETODOGUI_RECURRENCE_DIALOG_H

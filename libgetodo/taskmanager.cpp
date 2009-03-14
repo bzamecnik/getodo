@@ -227,7 +227,7 @@ bool TaskManager::hasTag(const std::string& tagName) {
 Tag& TaskManager::getTag(id_t tagId) {
 	std::map<id_t,Tag*>::iterator foundTag = tags.find(tagId);
 	if (foundTag == tags.end()) {
-		throw new getodo::GetodoError("No such a tag: "
+		throw new GetodoError("No such a tag: "
 			+ boost::lexical_cast<std::string, id_t>(tagId));
 	}
 	return *(foundTag->second);
@@ -239,12 +239,12 @@ Tag& TaskManager::getTag(const std::string& tagName) {
 	for (it = tags.begin(); it != tags.end(); ++it) {
 		if (it->second && (it->second->name == tagName)) { return *(it->second); }
 	}
-	throw new getodo::GetodoError("No such a tag: " + tagName);
+	throw new GetodoError("No such a tag: " + tagName);
 }
 
 Tag& TaskManager::editTag(id_t tagId, const Tag& tag) {
 	if (!hasTag(tagId)) {
-		throw new getodo::GetodoError("No such a tag to edit: "
+		throw new GetodoError("No such a tag to edit: "
 			+ boost::lexical_cast<std::string, id_t>(tagId));
 	}
 
@@ -266,7 +266,7 @@ Tag& TaskManager::editTag(id_t tagId, const Tag& tag) {
 void TaskManager::deleteTag(id_t tagId) {
 	std::map<id_t,Tag*>::iterator foundTag = tags.find(tagId);
 	if (foundTag == tags.end()) {
-		throw new getodo::GetodoError("No such a tag to delete: "
+		throw new GetodoError("No such a tag to delete: "
 			+ boost::lexical_cast<std::string, id_t>(tagId));
 	}
 	signal_tag_removed(*foundTag->second);
@@ -315,7 +315,7 @@ FilterRule& TaskManager::getFilterRule(id_t filterRuleId) {
 
 FilterRule& TaskManager::editFilterRule(id_t filterRuleId, const FilterRule& filter) {
 	if (!hasFilterRule(filterRuleId)) {
-		throw new getodo::GetodoError("No such a filter rule.");
+		throw new GetodoError("No such a filter rule.");
 	}
 
 	FilterRule* ruleCopy = new FilterRule(filter);
@@ -337,7 +337,7 @@ FilterRule& TaskManager::editFilterRule(id_t filterRuleId, const FilterRule& fil
 void TaskManager::deleteFilterRule(id_t filterRuleId) {
 	std::map<id_t,FilterRule*>::iterator foundFilter = filters.find(filterRuleId);
 	if (foundFilter == filters.end()) {
-		throw new getodo::GetodoError("No such a filter rule to delete: "
+		throw new GetodoError("No such a filter rule to delete: "
 			+ boost::lexical_cast<std::string, id_t>(filterRuleId));
 	}
 	signal_filter_removed(*foundFilter->second);

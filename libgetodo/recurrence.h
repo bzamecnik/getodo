@@ -1,8 +1,9 @@
 // $Id$
 //
-// Description: classes Recurrence*
+// Classes Recurrence, RecurrenceOnce, RecurrenceDaily, RecurrenceWeekly,
+// RecurrenceMonthly, RecurrenceYearly, RecurrenceIntervalDays
 //
-// Author: Bohumir Zamecnik <bohumir@zamecnik.org>, (C) 2008
+// Author: Bohumir Zamecnik <bohumir@zamecnik.org>, (C) 2008-2009
 //
 // Copyright: See COPYING file that comes with this distribution
 //
@@ -36,41 +37,81 @@ class Date;
  * - every Nth month (optionally given a day of month)
  * - every Nth year (optionally given a day and month)
  * - every day in an interval between two days
+ *
+ * Use next() funcion to obtain the date of next occurence of the event
+ * after a date given. This can be used to generate repeated tasks.
  */
 class Recurrence {
 public:
 	virtual ~Recurrence();
-	/** Virtual cloning support.
+
+	/** Cloning support.
 	 * Used as a virtual copy constructor.
+	 * \return copy of this instance with respect to its type
 	 */
 	virtual Recurrence* clone() const = 0;
 
-	// Maybe use boost::gregorian::date_iterator inside and return date
-	// or make a custom iterator
-	/** Return next occurence of the event after given date. */
-	virtual Date next(Date start)=0;
+	/** Compute next occurence of the event.
+	 * Compute the date of next occurence of the event after given date.
+	 * 
+	 * TODO: We can use boost::gregorian::date_iterator inside and return date
+	 * or make a custom iterator.
+	 *
+	 * \param start date after which the event happens
+	 * \return date of next occurence of the event
+	 */
+	virtual Date next(Date start) = 0;
 	
-	/** Serialization.
+	/** Serialization with atype identifier.
+	 * Convert a recurrence to string.
+	 *
 	 * Note: this function adds a correct recurrence type identifier as a prefix.
+	 *
+	 * \param r recurrence
+	 * \return serialized form of recurrence with type identifier
 	 */
 	static std::string toString(const Recurrence& r);
-	/** Serialization. Without any type identifier. */
+
+	/** Serialization without any type identifier.
+	 * Convert a recurrence to string.
+	 *
+	 * \return serialized form of recurrence
+	 */
 	std::string toString() const;
+
 	/** Deserialization.
 	 * Given a string create proper Recurrence* object using
-	 * recurrence type identifier.
-	 * This is a kind of Factory Method.
+	 * recurrence type identifier. It is a factory method.
+	 * RecurrenceOnce is a default fallback in case of bad syntax
+	 * of the string.
+	 *
+	 * \param str serilized recurrence with type identifier
+	 * \return deserialized recurrence or RecurrenceOnce on error
 	 */
 	static Recurrence* fromString(std::string str);
 
+	/** Print on an output stream.
+	 * Use virtual printOn() for correct serializatoin.
+	 * \param o output stream
+	 * \param r recurrence to print
+	 * \return modified output stream
+	 */
 	friend std::ostream& operator<< (std::ostream& o, const Recurrence& r);
-	/** Recurrence type name. Used in user interface. */
+
+	/** Human readable recurrence type name.
+	 * Used in the user interface.
+	 * \return long name of the recurrence type
+	 */
 	virtual std::string getTypeLongName() const = 0;
 protected:
-	/** Type identifier for serialization. */
+	/** Type identifier for serialization.
+	 * \return identifier of recurrence type
+	 */
 	virtual std::string getTypeId() const = 0;
-	/** Serialization to an output stream. operator<< cannot be virtual, so
-	 * the core code is separated into printOn().
+
+	/** Print on output stream.
+	 * As operator<<() cannot be virtual the core code is separated into
+	 * printOn(). It is also used is toString() functions.
 	 */
 	virtual void printOn(std::ostream& o) const = 0;
 };
@@ -93,7 +134,7 @@ protected:
 };
 
 /** Daily recurrence.
- * Occurs every n-th day.
+ * Occurs every n-th day. The n is refered as \p period.
  */
 class RecurrenceDaily : public Recurrence {
 private:
@@ -106,7 +147,9 @@ public:
 	virtual RecurrenceDaily* clone() const;
 	virtual Date next(Date start);
 
-	/* Period in days. */
+	/** Period in days.
+	 * \return period in days
+	 */
 	int getPeriod() const;
 
 	virtual std::string getTypeLongName() const;
@@ -116,9 +159,11 @@ protected:
 	virtual void printOn(std::ostream& o) const;
 };
 
-/** Weelky recurrence.
- * Occurs every week. Two modes can be used: every week after specified date
- * or using a selection of weekdays.
+/** Weekly recurrence.
+ * Occurs every n-th week. The n is refered as \p period.
+ * Two modes can be used:
+ * - every n-th week after a specified date
+ * - every n-th week using a selection of weekdays
  */
 class RecurrenceWeekly : public Recurrence {
 public:
@@ -139,10 +184,16 @@ public:
 	virtual RecurrenceWeekly* clone() const;
 	virtual Date next(Date start);
 
-	/* Period in weeks. */
+	/** Period in weeks.
+	 * \return period in weeks
+	 */
 	int getPeriod() const;
-	/* On which days of week the event can happen. If empty the recurrence
-	 * is computed on that weekday as in the date given. */
+
+	/** Weekday selection.
+	 * On which days of week the event can happen. If empty the recurrence
+	 * is computed on that weekday as in the date given.
+	 * \return set of weekdays
+	 */
 	weekdaySet_t getWeekdaySelection() const;
 
 	virtual std::string getTypeLongName() const;
@@ -153,8 +204,10 @@ protected:
 };
 
 /** Monthly recurrence.
- * Occurs every month. Two modes can be used: every month after specified date
- * or on given day of month.
+ * Occurs every n-th month. The n is refered as \p period.
+ * Two modes can be used:
+ * - every n-th month after a specified date
+ * - every n-th month on a given day of month.
  */
 class RecurrenceMonthly : public Recurrence {
 private:
@@ -172,9 +225,21 @@ public:
 	virtual ~RecurrenceMonthly();
 	virtual RecurrenceMonthly* clone() const;
 	virtual Date next(Date start);
-	
+
+	/** Period in months.
+	 * \return period in months
+	 */
 	int getPeriod() const;
+
+	/** Day of month.
+	 * \return day of month on which the event occurs.
+	 */
 	boost::gregorian::greg_day getDayOfMonth() const;
+
+	/** Check if the day of month is used.
+	 * That is to check the mode of operation.
+	 * \return true if day of month is set and used
+	 */
 	bool isDayOfMonthSet() const;
 
 	virtual std::string getTypeLongName() const;
@@ -185,8 +250,9 @@ protected:
 };
 
 /** Yearly recurrence.
- * Occurs every year. Two modes can be used: every year after specified date
- * or on given day and month of year.
+ * Occurs every year. Two modes can be used:
+ * - every year after a specified date
+ * - every year on given day and month
  */
 class RecurrenceYearly : public Recurrence {
 private:
@@ -204,8 +270,15 @@ public:
 	virtual ~RecurrenceYearly();
 	virtual RecurrenceYearly* clone() const;
 	virtual Date next(Date start);
-	
+
+	/** Day and month of year.
+	 * \return day and month of year
+	 */
 	boost::gregorian::partial_date getDayAndMonth() const;
+
+	/** Check if day and month of year is used.
+	 * \return true if day and month of year is set and used
+	 */
 	bool isDayAndMonthUsed() const;
 
 	virtual std::string getTypeLongName() const;
@@ -217,9 +290,9 @@ protected:
 
 /** %Recurrence on interval of days.
  * Occurs every day between two dates.
- * If input is bad, next() will return not_a_date_time,
+ * If input is bad next() will return not_a_date_time,
  * just like RecurrenceOnce::next().
- * Period will be invalid, eg. of zero length.
+ * Date period will be invalid, eg. of zero length.
  */
 class RecurrenceIntervalDays : public Recurrence {
 private:
@@ -232,7 +305,13 @@ public:
 	virtual RecurrenceIntervalDays* clone() const;
 	virtual Date next(Date start);
 
+	/** Date of period start.
+	 * \return date of period start
+	 */
 	boost::gregorian::date getDateStart() const;
+	/** Date of period end.
+	 * \return date of period end
+	 */
 	boost::gregorian::date getDateEnd() const;
 
 	virtual std::string getTypeLongName() const;
