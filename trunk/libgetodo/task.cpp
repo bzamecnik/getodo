@@ -530,8 +530,8 @@ void TaskPersistence::update() {
 }
 
 databaseRow_t& TaskPersistence::prepareRowToSave() {
-	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
-	if (!task) { throw new GetodoError("No task in the persistence."); }
+	checkDBConnection();
+	checkTask();
 
 	databaseRow_t& row = task->toDatabaseRow();
 	// TODO: delete this when Duration will be ready
@@ -544,7 +544,7 @@ databaseRow_t& TaskPersistence::prepareRowToSave() {
 }
 
 Task* TaskPersistence::load(id_t taskId) {
-	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
+	checkDBConnection();
 	
 	// Load task itself
 	
@@ -597,11 +597,8 @@ Task* TaskPersistence::load(id_t taskId) {
 }
 
 void TaskPersistence::erase() {
-	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
-	if (!task) { throw new GetodoError("No task in the persistence."); }
-	if (!task->hasValidId()) {
-		throw new std::invalid_argument("Invalid task id: " + task->getTaskId());
-	}
+	checkDBConnection();
+	checkTaskPersistent();
 	
 	sqlite3_command cmd(*conn, "DELETE FROM Tagged WHERE taskId = ?;");
 	cmd.bind(1, task->getTaskId());
@@ -654,8 +651,8 @@ void TaskPersistence::setLongDescription(const std::string& longDescription) {
 }
 
 void TaskPersistence::addTag(id_t tagId) {
-	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
-	if (!task) { throw new GetodoError("No task in the persistence."); }
+	checkDBConnection();
+	checkTask();
 	if (task->hasTag(tagId)) { return; } // task already has this tag
 
 	sqlite3_command cmd(*conn);
@@ -673,8 +670,8 @@ void TaskPersistence::addTag(id_t tagId) {
 }
 
 void TaskPersistence::removeTag(id_t tagId) {
-	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
-	if (!task) { throw new GetodoError("No task in the persistence."); }
+	checkDBConnection();
+	checkTask();
 	// TODO: check this out
 	//if (!task->hasTag(tagId) { return; } // nothing to remove
 
@@ -688,8 +685,8 @@ void TaskPersistence::removeTag(id_t tagId) {
 }
 
 void TaskPersistence::setParentId() {
-	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
-	if (!task) { throw new GetodoError("No task in the persistence."); }
+	checkDBConnection();
+	checkTask();
 
 	sqlite3_command cmd(*conn);
 	cmd.prepare("UPDATE Task SET parentId = ? WHERE taskId = ?;");
@@ -701,93 +698,101 @@ void TaskPersistence::setParentId() {
 
 void TaskPersistence::setDateCreated(const DateTime& dateCreated) {
 	if (!task) { return; }
-	// NOTE: this is a poor man's substitute for operator==() on DateTime
-	if (task->getDateCreated().toString().compare(
-		dateCreated.toString()) == 0) { return; } // no change
-	// check if dateCreated is ok
-	setColumn<std::string>("dateCreated", dateCreated.toString());
-	task->setDateCreated(dateCreated);
+	if (task->getDateCreated() != dateCreated) {
+		// check if dateCreated is ok
+		setColumn<std::string>("dateCreated", dateCreated.toString());
+		task->setDateCreated(dateCreated);
+	}
 }
 
 void TaskPersistence::setDateLastModified(const DateTime& dateLastModified) {
 	if (!task) { return; }
-	// NOTE: this is a poor man's substitute for operator==() on DateTime
-	if (task->getDateLastModified().toString().compare(
-		dateLastModified.toString()) == 0) { return; } // no change
-	// check if dateLastModified is ok
-	setColumn<std::string>("dateLastModified", dateLastModified.toString());
-	task->setDateLastModified(dateLastModified);
+	if (task->getDateLastModified() != dateLastModified) {
+		// check if dateLastModified is ok
+		setColumn<std::string>("dateLastModified", dateLastModified.toString());
+		task->setDateLastModified(dateLastModified);
+	}
 }
 void TaskPersistence::setDateStarted(const Date& dateStarted) {
 	if (!task) { return; }
-	// NOTE: this is a poor man's substitute for operator==() on Date
-	if (task->getDateStarted().toString().compare(
-		dateStarted.toString()) == 0) { return; } // no change
-	// check if dateStarted is ok
-	setColumn<std::string>("dateStarted", dateStarted.toString());
-	task->setDateStarted(dateStarted);
+	if (task->getDateStarted() != dateStarted) {
+		// check if dateStarted is ok
+		setColumn<std::string>("dateStarted", dateStarted.toString());
+		task->setDateStarted(dateStarted);
+	}
 }
 void TaskPersistence::setDateDeadline(const Date& dateDeadline) {
 	if (!task) { return; }
-	// NOTE: this is a poor man's substitute for operator==() on Date
-	if (task->getDateDeadline().toString().compare(
-		dateDeadline.toString()) == 0) { return; } // no change
-	// check if dateDeadline is ok
-	setColumn<std::string>("dateDeadline", dateDeadline.toString());
-	task->setDateDeadline(dateDeadline);
+	if (task->getDateDeadline() != dateDeadline) {
+		// check if dateDeadline is ok
+		setColumn<std::string>("dateDeadline", dateDeadline.toString());
+		task->setDateDeadline(dateDeadline);
+	}
 }
 void TaskPersistence::setDateCompleted(const Date& dateCompleted) {
 	if (!task) { return; }
-	// NOTE: this is a poor man's substitute for operator==() on Date
-	if (task->getDateCompleted().toString().compare(
-		dateCompleted.toString()) == 0) { return; } // no change
-	// check if dateCompleted is ok
-	setColumn<std::string>("dateCompleted", dateCompleted.toString());
-	task->setDateCompleted(dateCompleted);
+	if (task->getDateCompleted() != dateCompleted) {
+		// check if dateCompleted is ok
+		setColumn<std::string>("dateCompleted", dateCompleted.toString());
+		task->setDateCompleted(dateCompleted);
+	}
 }
 
 void TaskPersistence::setRecurrence(const Recurrence& recurrence) {
 	if (!task) { return; }
-	std::string newRecurrenceStr = Recurrence::toString(recurrence);
-	// NOTE: this is a poor man's substitute for operator==() on Recurrence
-	if (Recurrence::toString(task->getRecurrence()).compare(
-		newRecurrenceStr) == 0) { return; } // no change
-	setColumn<std::string>("recurrence", newRecurrenceStr);
-	task->setRecurrence(recurrence.clone());
+	if (task->getRecurrence() != recurrence) {
+		std::string newRecurrenceStr = Recurrence::toString(recurrence);
+		setColumn<std::string>("recurrence", newRecurrenceStr);
+		task->setRecurrence(recurrence.clone());
+	}
 }
 
 void TaskPersistence::setPriority(int priority) {
 	if (!task) { return; }
-	if (task->getPriority() == priority) { return; } // no change
-	// check if priority is ok
-	setColumn<int>("priority", priority);
-	task->setPriority(priority);
+	if (task->getPriority() != priority) {
+		// check if priority is ok
+		setColumn<int>("priority", priority);
+		task->setPriority(priority);
+	}
 }
  
 void TaskPersistence::setCompletedPercentage(int completedPercentage) {
 	if (!task) { return; }
-	if (task->getCompletedPercentage() == completedPercentage) { return; } // no change
-	// check if completedPercentage is ok (in interval [0;100])
-	setColumn<int>("completedPercentage", completedPercentage);
-	task->setCompletedPercentage(completedPercentage);
+	if (task->getCompletedPercentage() != completedPercentage) {
+		// check if completedPercentage is ok (in interval [0;100])
+		setColumn<int>("completedPercentage", completedPercentage);
+		task->setCompletedPercentage(completedPercentage);
+	}
 }
 
 void TaskPersistence::setDone(bool done) {
 	if (!task) { return; }
-	if (task->isDone() == done) { return; } // no change
-	setColumn<bool>("done", done);
-	task->setDone(done);
-	setCompletedPercentage(task->getCompletedPercentage());
+	if (task->isDone() != done) {
+		setColumn<bool>("done", done);
+		task->setDone(done);
+		setCompletedPercentage(task->getCompletedPercentage());
+	}
 }
 
-void TaskPersistence::saveTags() {
-	if (!task) { throw new GetodoError("No task in the persistence."); }
-	
-	// TODO: remove unused tags (ie. the ones deleted in Task but not yet in db)
-	idset_t tags = task->getTagIds();
-	foreach(id_t tagId, tags) {
-		addTag(tagId);
+bool TaskPersistence::checkDBConnection() {
+	if (!conn) {
+		throw new GetodoError("No database connection in the persistence.");
 	}
+	return true;
+}
+
+bool TaskPersistence::checkTask() {
+	if (!task) {
+		throw new GetodoError("No task in the persistence.");
+	}
+	return true;
+}
+
+bool TaskPersistence::checkTaskPersistent() {
+	if (checkTask() && !task->hasValidId()) {
+		throw new GetodoError("Task hasn't been store into database yet.");
+	}
+	return true;
 }
 
 } // namespace getodo

@@ -67,7 +67,7 @@ protected:
 	// ---- task tree view ----
 
 	/** %Task TreeView.
-	 * Uses sorted and filtered #TaskTreeStore as its model.
+	 * Uses sorted and filtered TaskTreeStore as its model.
 	 */
 	Gtk::TreeView* pTaskTreeView;
 

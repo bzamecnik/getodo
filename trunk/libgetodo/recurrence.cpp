@@ -45,6 +45,14 @@ inline std::ostream& operator<< (std::ostream& o, const Recurrence& r) {
 	return o;
 }
 
+bool Recurrence::operator==(const Recurrence& rhs) const {
+	return Recurrence::toString(*this) == Recurrence::toString(rhs);
+}
+
+bool Recurrence::operator!=(const Recurrence& rhs) const {
+	return !(*this == rhs);
+}
+
 // ----- class RecurrenceOnce --------------------
 
 RecurrenceOnce::RecurrenceOnce() {} //empty

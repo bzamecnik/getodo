@@ -57,7 +57,10 @@ private:
 	Date dateCompleted;
 
 	//Duration& estDuration; // estimated duration
-	Recurrence* recurrence; // using abstract base class -> pointer
+	/** Recurrence - how to repeat the task.
+	 * Recurrence is an abstract base class, so there is a pointer.
+	 */
+	Recurrence* recurrence;
 	
 	int priority; // TODO: number or symbol?
 	int completedPercentage;
@@ -81,23 +84,26 @@ public:
 	id_t getTaskId() const;
 	/* Set id of the task. */ 
 	void setTaskId(id_t taskId);
-	/** Check if task has such an id, so it should be stored in the database. */
+	/** Check if task has such an id, so it could be stored in database. */
 	bool hasValidId() const;
 
 	/** Get id of the parent task */
 	id_t getParentId() const;
 	//void setParentId(id_t parentId); // not needed
 	
-	/** Set parent task. A reference to TaskManager is given to tell the old
-	 * and new parents of the change. Passing task manager is not a clean solution.
+	/** Set parent task.
+	 * A reference to TaskManager is given to tell the old and new parents
+	 * of the change. However, passing task manager is not a clean solution.
 	 */
 	void setParent(id_t newParentId, TaskManager& manager);
-	/* Unset parent. Ie. make the task a top level one.
-	 * A reference to TaskManager is given to tell the old
-	 * and new parents of the change. Passing task manager is not a clean solution.
+	/* Unset parent.
+	 * Make the task a top level one.
+	 *
+	 * A reference to TaskManager is given to tell the old and new parents
+	 * of the change. However, passing task manager is not a clean solution.
 	 */
 	void unsetParent(TaskManager& manager);
-	/** Check if the task has a parent task, ie. it is not a top level task. */
+	/** Check if the task has a parent task, so it is not a top level task. */
 	bool hasParent() const;
 
 	std::string getDescription() const;
@@ -158,14 +164,20 @@ public:
 	 * All fields except subtasks and tags are serialized.
 	 * Subtasks are only another view to parent relation.
 	 * Tags need to be stored separately.
+	 * \return database row with the task contents
 	 */
 	databaseRow_t& toDatabaseRow() const;
-	/** Create a task from a database row. Factory method. */
+	/** Create a task from a database row.
+	 * Factory method.
+	 * \param row database row with the task contents
+	 * \return newly created task
+	 */
 	static Task* fromDatabaseRow(databaseRow_t& row);
 
 	// ----- text I/O -----
-	/** String representation. For debugging purposes. For database
-	 * serializaiton use toDatabaseRow().
+	/** String representation.
+	 * This is useful for debugging purposes only.
+	 * For database serializaiton use toDatabaseRow().
 	 */
 	std::string toString() const;
 	friend std::ostream& operator<< (std::ostream& o, const Task& task);
@@ -186,6 +198,20 @@ private:
 
 /** %Task persistence.
  * Object-relation mapping of Task objects.
+ *
+ * The persistence has a reference to both the task to be modified
+ * and he database connection.
+ *
+ * There is a CRUD (Create, Read, Update, Delete) interface:
+ * - insert()
+ * - load()
+ * - update()
+ * - erase()
+ *
+ * For modifying partiular things (ie. mak small changes) in the task without
+ * a need to modify the whole there is a wrapped interface of Task class.
+ * These function use setColumns().
+ *
  * TODO:
  * Persistence should contain a reference to TaskManager,
  * not only to a database connection in order to call signals!
@@ -197,20 +223,45 @@ private:
 	/** Task being persisted. */
 	Task* task;
 public:
-	/** Constructor for loading new tasks from database. */
+	/** Constructor for loading new tasks from database.
+	 * \param conn A database connection. If it is not alright
+	 * other methods will throw GetodoError exceptions.
+	 */
 	TaskPersistence(sqlite3x::sqlite3_connection* conn);
-	/** Constructor for modifying particular things in a task */
+	/** Constructor for modifying particular things in a task.
+	 * Any changes made through TaskPersistence interface will
+	 * show up in the \p task.
+	 *
+	 * \param conn A database connection. If it is not alright
+	 * other methods will throw GetodoError exceptions.
+	 * \param task task to modify
+	 */
 	TaskPersistence(sqlite3x::sqlite3_connection* conn, Task* task);
 	~TaskPersistence();
 	
 	/** Insert task to database and assign an id.
-	 * Return true, if successfully inserted.
+	 * \return true, if successfully inserted
+	 */
+	/** Insert a task tag into the database.
+	 * The task is assumed to have no persistent id yet (eg. it was newly
+	 * created), so a new id is assigned.
+	 * 
+	 * \throw GetodoError if the database connection is broken
+	 *
+	 \return true, if successfully inserted
 	 */
 	bool insert();
+	
 	/** Update an existing task (with valid taskId) */
 	void update();
 
-	/** Load Task from database. */
+	/** Load task from database into Task object.
+	 * Factory method. Load task, its tags and subtask relations and create
+	 * a new Task instance.
+	 * \throw GetodoError if the database connection is broken
+	 * \throw GetodoError if there is no such a task
+	 * \param taskId task id to load
+	 */
 	Task* load(id_t taskId);
 
 	/** Delete the task from database. */
@@ -218,6 +269,7 @@ public:
 
 	/** Get the task being persited. */
 	Task* getTask() const;
+
 	/** Set the task being persited. */
 	void setTask(Task* task);
 
@@ -226,35 +278,75 @@ public:
 	// - will make SQL query to reflect changes into database
 	// Reason: We don't want to always save whole object, while making small changes.
 
+	/** Set description.
+	 * Do nothing when description doesn't change.
+	 * \param description new task description
+	 */
 	void setDescription(const std::string& description);
+
+	/** Set long description.
+	 * Do nothing when long description doesn't change.
+	 * \param longDescription new task long description
+	 */
 	void setLongDescription(const std::string& longDescription);
 
+	/** Add a tag.
+	 * Do nothing if the task already has this tag.
+	 * \param tagId new tag id
+	 */
 	void addTag(id_t tagId);
+
+	/** Remove a tag.
+	 * Nothing happens if no such a tag exist.
+	 * \param tagId id of tag to remove
+	 */
 	void removeTag(id_t tagId);
 
 	// TODO: set tags from string
 
+	/** Set parent task.
+	 */
 	void setParentId();
 
 	//void addSubtask(id_t taskId); // deprecated
 	//void removeSubtask(id_t taskId); // deprecated
 
+	/** Set creation date. */
 	void setDateCreated(const DateTime& dateCreated);
+
+	/** Set last modification date. */
 	void setDateLastModified(const DateTime& dateLastModified);
+
+	/** Set start date. */
 	void setDateStarted(const Date& dateStarted);
+	
+	/** Set deadline date. */
 	void setDateDeadline(const Date& dateDeadline);
+
+	/** Set completed date. */
 	void setDateCompleted(const Date& dateCompleted);
 
+	/** Set recurrence. */
 	void setRecurrence(const Recurrence& r);
 
+	/** Set priority. */
 	void setPriority(int priority); // TODO: throw domain_error
 
+	/** Set comleted percentage. */
 	void setCompletedPercentage(int completedPercentage); // TODO: throw domain_error
 	
+	/** Check if task is done. */
 	bool isDone();
+
+	/** Set done. */
 	void setDone(bool done = true);
 private:
-	/** Update a single column and also last modified date. */
+	/** Update a single column.
+	 * Update last modification date too.
+	 *
+	 * \param columnName name of database column
+	 * \param value new value
+	 */
 	template<typename T>
 	void setColumn(std::string columnName, T value) {
 		if (!conn) {
@@ -276,10 +368,30 @@ private:
 		cmd.executenonquery();
 	}
 
-	void saveTags();
-
 	/** Common code to insert() and update() */
 	databaseRow_t& prepareRowToSave();
+
+	/** Check database connection.
+	 * Check if the database connection is ok.
+	 * \throw GetodoError if the database connection is broken
+	 * \return true if ok
+	 */
+	bool checkDBConnection();
+
+	/** Check task.
+	 * Check if there is a task.
+	 * \throw GetodoError if there is no such a task
+	 * \return true if ok
+	 */
+	bool checkTask();
+
+	/** Check if the task is persistent.
+	 * Check if the task has been already stored in the database.
+	 * \throw GetodoError if the task is not persisted
+	 * \throw GetodoError if there is no such a task
+	 * \return true if ok
+	 */
+	bool checkTaskPersistent();
 };
 
 } // namespace getodo

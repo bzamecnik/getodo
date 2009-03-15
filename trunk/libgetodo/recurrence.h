@@ -18,9 +18,6 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <sstream>
 
-// TODO:
-// Support operator==() on Recurrence. It would be useful in TaskPersistence.
-
 namespace getodo {
 
 class DateTime;
@@ -97,6 +94,9 @@ public:
 	 * \return modified output stream
 	 */
 	friend std::ostream& operator<< (std::ostream& o, const Recurrence& r);
+
+	bool operator==(const Recurrence& rhs) const;
+	bool operator!=(const Recurrence& rhs) const;
 
 	/** Human readable recurrence type name.
 	 * Used in the user interface.

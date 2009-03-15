@@ -23,10 +23,6 @@ namespace getodo {
 //	- Make AbstractDate a common ancestor to Date and DateTime?
 //  - How to cope with not_a_date_time invalid dates from bad input strings?
 
-// TODO:
-// - Support operator==() on DateTime, Date
-//	 It would be useful in TaskPersistence.
-
 /** %Date and time.
  * Representaion of date and time. We have own DateTime class instead of
  * using boost::posix_time::ptime because of serialization to own string 
@@ -47,8 +43,12 @@ public:
 
 	/** Serialization */
 	std::string toString() const;
+
 	/** Deserialization */
 	friend std::ostream& operator<< (std::ostream& o, const DateTime& date);
+
+	bool operator==(const DateTime& rhs) const;
+	bool operator!=(const DateTime& rhs) const;
 private:
 	// format for string representation
 	// eg. YYYY-MM-DD HH:MM:SS
@@ -73,8 +73,12 @@ public:
 	
 	/** Serialization */
 	std::string toString() const;
+
 	/** Deserialization */
 	friend std::ostream& operator<< (std::ostream& o, const Date& date);
+
+	bool operator==(const Date& rhs) const;
+	bool operator!=(const Date& rhs) const;
 private:
 	// Format: YYYY-MM-DD
 	static std::string format;

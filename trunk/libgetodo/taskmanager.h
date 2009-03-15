@@ -121,7 +121,7 @@ public:
 	 *
 	 * Tags are synchronized in TaskPersistence::update().
 	 * 
-	 * Throw a GetodoError if a task with such a taskId is not present
+	 * \throw GetodoError if a task with such a taskId is not present
 	 * 
 	 * \param taskId existing task identification
 	 * \param task new task contents
@@ -136,7 +136,7 @@ public:
 	 * 
 	 * Raise #signal_task_removed.
 	 *
-	 * Throw a GetodoError if there's no such a task in the task manager.
+	 * \throw GetodoError if there's no such a task in the task manager.
 	 *
 	 * \param taskId task identification
 	 */
@@ -180,7 +180,7 @@ public:
     bool hasTag(const std::string& tagName);
 
 	/** Get tag by its id.
-	 * Throw GetodoError if the tag is not found.
+	 * \throw GetodoError if the tag is not found.
 	 *
 	 * \param tagId tag identification
 	 * \return reference to the tag if it's is present in task manager
@@ -188,7 +188,7 @@ public:
     Tag& getTag(id_t tagId);
 
 	/** Get tag by its name.
-	 * Throw GetodoError if the tag is not found.
+	 * \throw GetodoError if the tag is not found.
 	 *
 	 * \param tagName tag name
 	 * \return reference to the tag if it's is present in task manager
@@ -200,7 +200,7 @@ public:
 	 * 
 	 * Raise #signal_tag_updated.
 	 *
-	 * Throw GetodoError if the tag is not found.
+	 * \throw GetodoError if the tag is not found.
 	 *
 	 * \param tagId existing tag id
 	 * \param tag new tag
@@ -211,7 +211,7 @@ public:
 	/** Delete tag.
 	 * Raise #signal_tag_removed.
 	 *
-	 * Throw GetodoError if there is not such a tag in the task manager.
+	 * \throw GetodoError if there is not such a tag in the task manager.
 	 *
 	 * \param tagId tag identification
 	 */
@@ -249,7 +249,7 @@ public:
     bool hasFilterRule(const std::string& filterRuleName);
 
 	/** Get filter rule by its id.
-	 * Throw GetodoError if the filter rule is not found.
+	 * \throw GetodoError if the filter rule is not found.
 	 *
 	 * \param filterRuleId filter rule identification
 	 * \return reference to the filter rule if it's is present in task manager
@@ -262,7 +262,7 @@ public:
 	 * 
 	 * Raise #signal_filter_updated.
 	 *
-	 * Throw GetodoError if the filter rule is not found.
+	 * \throw GetodoError if the filter rule is not found.
 	 *
 	 * \param filterRuleId existing filter rule identification
 	 * \param filter new filter rule
@@ -273,7 +273,7 @@ public:
 	/** Delete filter rule.
 	 * Raise #signal_filter_removed.
 	 *
-	 * Throw GetodoError if there is not such a filter rule in the task manager.
+	 * \throw GetodoError if there is not such a filter rule in the task manager.
 	 *
 	 * \param filterRuleId filter rule identification
 	 */
