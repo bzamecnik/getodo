@@ -73,6 +73,12 @@ public:
 
 /** Filter rule persistence.
  * Object-relation mapping of filter rules.
+ *
+ * There is a CRUD (Create, Read, Update, Delete) interface:
+ * - insert()
+ * - load()
+ * - update()
+ * - erase()
  */
 class FilterRulePersistence {
 public:
@@ -88,7 +94,7 @@ public:
 	 * created), so a new id is assigned. It is both set to the given
 	 * filter and returned.
 	 *
-	 * Throw a GetodoError if the database connection is broken.
+	 * \throw GetodoError if the database connection is broken.
 	 *
 	 * \return id id assigned by the database.
 	 */
@@ -99,14 +105,14 @@ public:
 	 * an exception is thrown.
 	 * If there's no such a rule in the database to update nothing happens.
 	 *
-	 * Throw a GetodoError if the database connection is broken
+	 * \throw GetodoError if the database connection is broken
 	 * or if the id is not valid.
 	 */
 	void update(const FilterRule& filter);
 
 	/** Load a filter rule from database.
-	 * Throw a GetodoError if the database connection is broken.
-	 * Throw a GetodoError if there's not such a rule in database.
+	 * \throw GetodoError if the database connection is broken.
+	 * \throw GetodoError if there's not such a rule in database.
 	 *
 	 * \param id id of a rule to load
 	 * \return filter rule loaded
@@ -114,21 +120,21 @@ public:
 	FilterRule load(id_t id);
 	
 	/** Delete a filter rule from database.
-	 * Throw a GetodoError if the database connection is broken.
+	 * \throw GetodoError if the database connection is broken.
 	 *
 	 * \param id id of the rule to delete
 	 */
 	void erase(id_t id);
 
 	/** Update name of the filter rule.
-	 * Throw a GetodoError if the database connection is broken.
+	 * \throw GetodoError if the database connection is broken.
 	 *
 	 * \param filter a filter rule to be modified
 	 * \param name new filter rule name
 	 */
 	void setName(FilterRule& filter, const std::string name);
 	/** Update actual rule of the filter rule.
-	 * Throw a GetodoError if the database connection is broken.
+	 * \throw GetodoError if the database connection is broken.
 	 *
 	 * \param filter a filter rule to be modified
 	 * \param rule new rule contents
@@ -138,7 +144,7 @@ private:
 	sqlite3_connection* conn;
 	/** Update particular field of a filter rule.
 	 * This is a common implementation for setName() and setRule().
-	 * Throw a GetodoError if the database connection is broken.
+	 * \throw GetodoError if the database connection is broken.
 	 *
 	 * \param id id of the rule to update
 	 * \param value new value

@@ -81,18 +81,24 @@ x- extend the Year Project to the Bachelor Thesis
 - put TreeModelFilter and TreeModelSort inside the TaskTreeModel
 	- make an interface to control these wrapper models
 
+*- Date, DateTime, Recurrence
+	*- make operator==() - useful for TaskPesistence
+
 - Task (database)
 	- rename: description -> title, longDescription -> description
 - SQL autoincrement - don't repeat what sqlite already set
 - use shared_ptr in TaskManager for holding pointers to Tasks, Tags, ...
-- use exceptions!
+
+- exceptions!
+	- catch GetodoError exception around functions that throw it
+
 *- doxygen docs - try it, make it working
 *- *TaskPersistence, *FilterRulePersistence - split save() into insert() and update()
 - use operator= for copying Tasks and Tags
 
 - profile what happens in GUI (TaskTreeStore) - why it is so slow?
 
-- finish architecture documentation in doc/architecture-cs.txt!
+*- finish architecture documentation in doc/architecture-cs.txt!
 
 - improve GUI design in Glade
 	- editing panel, menu, toolbar...	
@@ -115,14 +121,14 @@ x- extend the Year Project to the Bachelor Thesis
 	*- getPersistentTask() should not return TaskPersistence by reference but by value
 	- public methods shouldn't return pointers! - see shared_ptr
 *- TreeViews should be sortable (see bugs)
-- avoid duplicating code!!!
+- avoid code duplication!!!
 - save sqlite table names somewhere as constants
 - documenation
-	- we need: user docs, programmer's guide
-	- use Doxygen and write better doxygen comments
+	- we need: user docs, *programmer's guide
+	*- use Doxygen and write better doxygen comments
 	- write a README and INSTALL
 	*- write a paper on overall architecture and design notes
-	- write file description into each file's header
+	*- write file description into each file's header
 - write the rest of testing code to test the libgetodo
 	- [Duration, ...]
 - use Boost Test facilities for the testing code

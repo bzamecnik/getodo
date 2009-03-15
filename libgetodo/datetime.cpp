@@ -53,6 +53,14 @@ std::ostream& operator<< (std::ostream& o, const DateTime& date) {
 	return o;
 }
 
+bool DateTime::operator==(const DateTime& rhs) const {
+	return date == rhs.date;
+}
+
+bool DateTime::operator!=(const DateTime& rhs) const {
+	return !(*this == rhs);
+}
+
 // ----- class Date --------------------
 
 std::string Date::format("%Y-%m-%d");
@@ -105,6 +113,14 @@ std::ostream& operator<< (std::ostream& o, const Date& date) {
 	ss << date.date;
 	o << ss.str();
 	return o;
+}
+
+bool Date::operator==(const Date& rhs) const {
+	return date == rhs.date;
+}
+
+bool Date::operator!=(const Date& rhs) const {
+	return !(*this == rhs);
 }
 
 // ----- class Duration --------------------

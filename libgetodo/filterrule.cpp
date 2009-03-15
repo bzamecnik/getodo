@@ -108,7 +108,9 @@ void FilterRulePersistence::update(const FilterRule& filter) {
 }
 
 FilterRule FilterRulePersistence::load(id_t id) {
-	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
+	if (!conn) {
+		throw new GetodoError("No database connection in the persistence.");
+	}
 
 	FilterRule filter = FilterRule(); // clean
 	sqlite3_command cmd(*conn, "SELECT name,rule FROM FilterRule WHERE filterRuleId = ?;");
@@ -119,7 +121,8 @@ FilterRule FilterRulePersistence::load(id_t id) {
 		filter.name = cursor.getstring(0);
 		filter.rule = cursor.getstring(1);
 	} else {
-		cursor.close(); // a bit ugly: Duplicate close() call. Think how to do it better.
+		// a bit ugly: duplicate close() call. TODO: Think how to do it better.
+		cursor.close();
 		throw new GetodoError("No such a filter rule to load.");
 	}
 	cursor.close();
@@ -127,7 +130,9 @@ FilterRule FilterRulePersistence::load(id_t id) {
 }
 
 void FilterRulePersistence::erase(id_t id) {
-	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
+	if (!conn) {
+		throw new GetodoError("No database connection in the persistence.");
+	}
 	
 	sqlite3_command cmd(*conn, "DELETE FROM FilterRule WHERE filterRuleId = ?;");
 	cmd.bind(1, id);
@@ -144,7 +149,9 @@ void FilterRulePersistence::setRule(FilterRule& filter, const std::string rule) 
 	setColumn(filter.id, rule, "rule");
 }
 void FilterRulePersistence::setColumn(id_t id, const std::string value, const std::string column) {
-	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
+	if (!conn) {
+		throw new GetodoError("No database connection in the persistence.");
+	}
 	
 	// TODO: check, if the filter rule really exists in database, else throw
 	
@@ -155,6 +162,8 @@ void FilterRulePersistence::setColumn(id_t id, const std::string value, const st
 	cmd.bind(2, id);
 	cmd.executenonquery();
 }
+
+// ----- class FilterBuilder --------------------
 
 FilterRule FilterBuilder::createTagFilter(id_t tagId) {
 	std::string tagIdStr = boost::lexical_cast<std::string, id_t>(tagId);

@@ -51,11 +51,17 @@ public:
 
 /** %Tag persistence.
  * Object-relation mapping of Tag objects.
+ *
+ * There is a CRUD (Create, Read, Update, Delete) interface:
+ * - insert()
+ * - load()
+ * - update()
+ * - erase()
  */
 class TagPersistence {
 	sqlite3_connection* conn;
 public:
-	/** A constructor for loading new tags.
+	/** Constructor for loading new tags.
 	 * \param conn A database connection. If it is not alright
 	 * other methods will throw GetodoError exceptions.
 	 */
@@ -67,9 +73,11 @@ public:
 	 * created), so a new id is assigned. It is both set to the given
 	 * tag and returned.
 	 * 
-	 * Throw a GetodoError if the database connection is broken.
+	 * \param tag tag to be inserted to database
 	 *
-	 * \return id id assigned by the database.
+	 * \throw GetodoError if the database connection is broken
+	 *
+	 * \return id id assigned by the database
 	 */
 	id_t insert(Tag& tag);
 	
@@ -78,15 +86,31 @@ public:
 	 * an exception is thrown.
 	 * If there's no such a tag in the database to update nothing happens.
 	 *
-	 * Throw a GetodoError if the database connection is broken.
-	 * Throw a std::invalid_argument, if the id is not valid.
+	 * \param tag tag to be updated
+	 *
+	 * \throw GetodoError if the database connection is broken
+	 * \throw std::invalid_argument, if the id is not valid
 	 */
 	void update(const Tag& tag);
 	
-	/** Load a tag from the database. */
-	Tag& load(id_t id);
+	/** Load a tag from the database.
+	 * Create a tag from using data from database.
+	 *
+	 * \param id id of tag to load
+	 *
+	 * \throw GetodoError if the database connection is broken
+	 * \throw GetodoError if there is no such a tag
+	 *
+	 * \return tag loaded from database
+	 */
+	Tag load(id_t id);
 	
-	/** Delete a tag from the database. */
+	/** Delete a tag from the database.
+	 * If there is no such a tag nothing happens.
+	 *
+	 * \throw GetodoError if the database connection is broken
+	 * \param id id tag of tag to delete
+	 */
 	void erase(id_t id);
 };
 
