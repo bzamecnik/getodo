@@ -350,10 +350,10 @@ private:
 	template<typename T>
 	void setColumn(std::string columnName, T value) {
 		if (!conn) {
-			throw new GetodoError("No database connection in the persistence.");
+			throw GetodoError("No database connection in the persistence.");
 		}
 		if (!task || !task->hasValidId()) {
-			throw new GetodoError("Invalid task.");
+			throw GetodoError("Invalid task.");
 		}
 		DateTime modifiedDate = DateTime::now();
 		task->setDateLastModified(modifiedDate);
