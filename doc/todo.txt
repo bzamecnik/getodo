@@ -72,6 +72,7 @@ x- extend the Year Project to the Bachelor Thesis
 
 - Task editing
 	- synchronize done & percentage values in the panel and the tree
+	- setting done should also set date completed
 
 - TaskPersistence
 	- write saveTagsFromString() to support out_of_focus saving of tags
