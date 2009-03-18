@@ -155,8 +155,32 @@ RecurrenceWeekly* RecurrenceWeekly::clone() const {
 }
 
 Date RecurrenceWeekly::next(Date start) {
-	// TODO
-	return start; // stub
+	boost::gregorian::date nextDate;
+	if (useWeekdaySelection && !weekdaySelection.empty()) {
+		// find first day of week in the selection higher than start
+		// or the first day of week of the selection
+		// TODO
+		bool haveNextWeekday = false;
+		boost::gregorian::greg_weekday startWeekday = start.date.day_of_week();
+		boost::gregorian::greg_weekday nextWeekday(1);
+		for(weekdaySet_t::iterator it = weekdaySelection.begin();
+			it != weekdaySelection.end(); ++it)
+		{
+			if (it->as_number() > startWeekday.as_number()) {
+				nextWeekday = *it;
+				haveNextWeekday = true;
+				break;
+			}
+		}
+		if (!haveNextWeekday) {
+			nextWeekday = *(weekdaySelection.begin());
+		}
+		boost::gregorian::first_day_of_the_week_after fdaf(nextWeekday);
+		nextDate = fdaf.get_date(start.date) + boost::gregorian::weeks(period - 1);
+	} else {
+		nextDate = start.date + boost::gregorian::weeks(period);
+	}
+	return nextDate;
 }
 
 int RecurrenceWeekly::getPeriod() const { return period; }
@@ -223,8 +247,19 @@ RecurrenceMonthly* RecurrenceMonthly::clone() const {
 }
 
 Date RecurrenceMonthly::next(Date start) {
-	// TODO
-	return start; // stub
+	if (start.date.is_not_a_date()) {
+		return Date();
+	}
+	boost::gregorian::date nextDate = start.date;
+	if (useDayOfMonth) {
+		// TODO: is it ok?
+		nextDate = boost::gregorian::date(start.date.year(), start.date.month(), dayOfMonth);
+		if (start.date < nextDate) {
+			nextDate -= boost::gregorian::months(1);
+		}
+	}
+	nextDate += boost::gregorian::months(period);
+	return nextDate;
 }
 
 int RecurrenceMonthly::getPeriod() const {
@@ -281,13 +316,22 @@ RecurrenceYearly* RecurrenceYearly::clone() const {
 
 Date RecurrenceYearly::next(Date start) {
 	using namespace boost::gregorian;
+	if (start.date.is_not_a_date()) {
+		return Date();
+	}
+	partial_date startPartial(start.date.day(), start.date.month());
 	if(!useDayAndMonth) {
-		dayAndMonth = partial_date(start.date.day(), start.date.month());
+		dayAndMonth = startPartial;
 	}
 	date nextDate(not_a_date_time);
 	try {
-		nextDate = dayAndMonth.get_date(start.date.year());
-	} catch(std::out_of_range e) {
+		greg_year year = start.date.year();
+		if (!(startPartial < dayAndMonth)) { // dayAndMonth <= startPartial
+			year = year + 1;
+		}
+		nextDate = dayAndMonth.get_date(year);
+		
+	} catch(std::out_of_range&) {
 	}
 	return Date(nextDate);
 }

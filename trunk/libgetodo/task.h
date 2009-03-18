@@ -67,18 +67,23 @@ private:
 	bool done;
 
 public:
+	/** Generic id of task which is not already in the database. */
+	static const id_t INVALID_ID = -1;
+
 	// ----- Constructors -----
 	Task();
 	Task(const Task& t); // copy constructor
 	virtual ~Task();
 
-	/** Generic id of task which is not already in the database. */
-	static const id_t INVALID_ID = -1;
+	/** Make task's copy but clean it as it's not done yet.
+	 * \return cleaned task copy
+	 */
+	Task* copyAsNew();
+
+	// ----- Access member functions -----
 
 	/** Check if task of such an id could be stored in the database. */
 	static bool isValidId(id_t id);
-
-	// ----- Access member functions -----
 
 	/* Get id of the task. Could be INVALID_ID, if the task is not already in the database.*/ 
 	id_t getTaskId() const;

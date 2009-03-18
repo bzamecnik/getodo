@@ -19,6 +19,7 @@ MainWindow::MainWindow(BaseObjectType* cobject,
 	Gtk::ToolButton* pTaskNewSubtaskToolbutton = 0;
 	Gtk::ToolButton* pTaskDeleteToolbutton = 0;
 	Gtk::ToolButton* pTaskUpdateToolbutton = 0;
+	Gtk::ToolButton* pTaskNextByRecurrenceToolbutton = 0;
 
 	try {
 		// child widgets
@@ -48,6 +49,7 @@ MainWindow::MainWindow(BaseObjectType* cobject,
 		refXml->get_widget("taskDeleteToolbutton", pTaskDeleteToolbutton);
 		refXml->get_widget("taskUpdateToolbutton", pTaskUpdateToolbutton);
 		refXml->get_widget("taskUpdateToolbutton", pTaskUpdateToolbutton);
+		refXml->get_widget("taskNextByRecurrenceToolbutton", pTaskNextByRecurrenceToolbutton);
 		refXml->get_widget("taskFilterToggletoolbutton", pTaskFilterToggletoolbutton);
 
 		refXml->get_widget("tagFilterTogglebutton", pTagFilterToggleButton);
@@ -66,6 +68,8 @@ MainWindow::MainWindow(BaseObjectType* cobject,
 			sigc::mem_fun(*this, &MainWindow::on_buttonTaskDelete_clicked) );
 		pTaskUpdateToolbutton->signal_clicked().connect(
 			sigc::mem_fun(*this, &MainWindow::on_buttonTaskUpdate_clicked) );
+		pTaskNextByRecurrenceToolbutton->signal_clicked().connect(
+			sigc::mem_fun(*this, &MainWindow::on_buttonTaskNextByRecurrence_clicked) );
 		pTaskFilterToggletoolbutton->signal_toggled().connect(
 			sigc::mem_fun(*this, &MainWindow::on_buttonTaskFilter_toggled) );
 		
@@ -275,51 +279,23 @@ void MainWindow::on_tagTreeview_selection_changed() {
 
 void MainWindow::on_buttonTaskNewToplevel_clicked() {
 	// Create a new top level task and start editing it.
-	if (!taskManager) { return; }
-
-	id_t newTaskId = taskManager->addTask(*(new Task()));
-	Task& newTask = *taskManager->getTask(newTaskId);
-	fillEditingPanel(newTask);
-	
-	// select newly created task's row in treeview
-	// TODO: avoid code duplication
-	Gtk::TreeModel::iterator iter = refTaskTreeModel->getIterByTask(newTask);
-	Gtk::TreeModel::iterator filterIter = refTaskTreeModelFilter->convert_child_iter_to_iter(iter);
-	Gtk::TreeModel::iterator sortIter = refTaskTreeModelSort->convert_child_iter_to_iter(filterIter);
-	Gtk::TreeModel::Path path = refTaskTreeModelSort->get_path(sortIter);
-	pTaskTreeView->get_selection()->select(path);
-	pTaskTreeView->scroll_to_row(path);
-
-	pTaskDescriptionEntry->grab_focus();
+	createNewTask(*(new Task()));
 }
 
 void MainWindow::on_buttonTaskNew_clicked() {
-	// Create a task on the same level as selected task
+	// create a task on the same level as selected task
 	if (!taskManager) { return; }
 
-	// - find out currently selected task
+	// find out currently selected task
 	id_t selectedTaskId = getCurrentlyEditedTaskId();
 	Task* selectedTask = taskManager->getTask(selectedTaskId);
-	if (!selectedTask) { return; } // TODO: make a new top level task instead
-	// - get its parent task
-	id_t parentTaskId = selectedTask->getParentId();
-	
-	// - make a new task and select it
-	id_t newTaskId = taskManager->addTask(*(new Task()));
-	Task& newTask = *taskManager->getTask(newTaskId);
-	fillEditingPanel(newTask);
-	// - make this new task a child of that parent
-	newTask.setParent(parentTaskId, *taskManager);
-
-	// - select it
-	Gtk::TreeModel::iterator iter = refTaskTreeModel->getIterByTask(newTask);
-	Gtk::TreeModel::iterator filterIter = refTaskTreeModelFilter->convert_child_iter_to_iter(iter);
-	Gtk::TreeModel::iterator sortIter = refTaskTreeModelSort->convert_child_iter_to_iter(filterIter);
-	Gtk::TreeModel::Path path = refTaskTreeModelSort->get_path(sortIter);
-	pTaskTreeView->get_selection()->select(path);
-	pTaskTreeView->scroll_to_row(path);
-	
-	pTaskDescriptionEntry->grab_focus();
+	Task& newTask = *(new Task());
+	if (selectedTask) {
+		createNewTask(newTask, selectedTask->getParentId());
+	} else {
+		// make a new top level task instead
+		createNewTask(newTask);
+	}
 }
 
 void MainWindow::on_buttonTaskNewSubtask_clicked() {
@@ -328,28 +304,7 @@ void MainWindow::on_buttonTaskNewSubtask_clicked() {
 	if (!taskManager) { return; }
 
 	id_t selectedTaskId = getCurrentlyEditedTaskId();
-	Task* parentTask = 0;
-	id_t newTaskId = taskManager->addTask(*(new Task()));
-	Task& newTask = *taskManager->getTask(newTaskId);
-
-	if (Task::isValidId(selectedTaskId)	&&
-		(parentTask = taskManager->getTask(selectedTaskId)))
-	{
-		newTask.setParent(parentTask->getTaskId(), *taskManager);
-	}
-	
-	fillEditingPanel(newTask);
-	
-	// select newly created task's row in treeview
-	Gtk::TreeModel::iterator iter = refTaskTreeModel->getIterByTask(newTask);
-	Gtk::TreeModel::iterator filterIter = refTaskTreeModelFilter->convert_child_iter_to_iter(iter);
-	Gtk::TreeModel::iterator sortIter = refTaskTreeModelSort->convert_child_iter_to_iter(filterIter);
-	Gtk::TreeModel::Path path = refTaskTreeModelSort->get_path(sortIter);
-	pTaskTreeView->expand_to_path(path);
-	pTaskTreeView->get_selection()->select(path);
-	pTaskTreeView->scroll_to_row(path);
-
-	pTaskDescriptionEntry->grab_focus();
+	createNewTask(*(new Task()), selectedTaskId);
 }
 
 void MainWindow::on_buttonTaskDelete_clicked() {
@@ -373,6 +328,24 @@ void MainWindow::on_buttonTaskUpdate_clicked() {
 	if (updatedTask) {
 		saveEditingPanelToTask(*updatedTask);
 		taskManager->editTask(taskId, *updatedTask);
+	}
+}
+
+void MainWindow::on_buttonTaskNextByRecurrence_clicked() {
+	if (!taskManager) { return; }
+	id_t taskId = getCurrentlyEditedTaskId();
+	Task* selectedTask = taskManager->getTask(taskId);
+	if (selectedTask) {
+		Date deadlineDate = selectedTask->getDateDeadline();
+		Date nextDate = selectedTask->getRecurrence().next(deadlineDate);
+		
+		if (!nextDate.date.is_not_a_date()) {
+			Task* newTask = selectedTask->copyAsNew();
+			newTask->setDateDeadline(nextDate);
+			createNewTask(*newTask);
+		} else {
+			Gtk::MessageDialog("Can't create a copy of task using the recurrence. Such a next date is not valid.").run();
+		}
 	}
 }
 
@@ -798,7 +771,7 @@ id_t MainWindow::getCurrentlyEditedTaskId() {
 	try {
 		return boost::lexical_cast<id_t, std::string>(pTaskIdLabel->get_text());
 	} catch (boost::bad_lexical_cast) {
-		return -1;
+		return Task::INVALID_ID;
 	}
 }
 
@@ -814,6 +787,35 @@ bool MainWindow::updateTaskPartial(boost::function<void(TaskPersistence&)> f) {
 	pTaskDateLastModifiedLabel->set_text(task->getDateLastModified().toString());
 	taskManager->signal_task_updated(*task);
 	return true;
+}
+
+void MainWindow::selectTask(Gtk::TreeModel::iterator iter) {
+	Gtk::TreeModel::iterator filterIter = refTaskTreeModelFilter->convert_child_iter_to_iter(iter);
+	Gtk::TreeModel::iterator sortIter = refTaskTreeModelSort->convert_child_iter_to_iter(filterIter);
+	Gtk::TreeModel::Path path = refTaskTreeModelSort->get_path(sortIter);
+	pTaskTreeView->expand_to_path(path);
+	pTaskTreeView->get_selection()->select(path);
+	pTaskTreeView->scroll_to_row(path);
+
+	pTaskDescriptionEntry->grab_focus();
+}
+
+void MainWindow::createNewTask(Task& newTask, id_t parentId) {
+	if (!taskManager) { return; }
+
+	// register the new task
+	id_t newTaskId = taskManager->addTask(newTask);
+	Task* newTaskCopy = taskManager->getTask(newTaskId);
+	if (newTaskCopy == 0) { return; }
+	fillEditingPanel(*newTaskCopy);
+	
+	if (parentId != Task::INVALID_ID) {
+		// make the new task a child of given parent
+		newTaskCopy->setParent(parentId, *taskManager);
+	}
+
+	// select it
+	selectTask(refTaskTreeModel->getIterByTask(*newTaskCopy));
 }
 
 //void MainWindow::toggleFiltering(bool on) {

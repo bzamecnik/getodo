@@ -81,6 +81,19 @@ bool Task::isValidId(id_t id) {
 	return id >= 0;
 }
 
+Task* Task::copyAsNew() {
+	Task* newTask = new Task(*this);
+	newTask->dateCreated = DateTime::now();
+	newTask->dateLastModified = newTask->dateCreated;
+	newTask->dateDeadline = Date();
+	newTask->dateStarted = Date();
+	newTask->dateCompleted = Date();
+	newTask->subtasks.clear();
+	newTask->done = false;
+	newTask->completedPercentage = 0;
+	return newTask;
+}
+
 // ----- access methods ----------
 
 id_t Task::getTaskId() const { return taskId; }

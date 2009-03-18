@@ -1,6 +1,6 @@
 /**
 
-@mainpage libsqlite3x API docs
+@page libsqlite3x libsqlite3x API docs
 
 This is the documentation for sqlite3x and sq3, two slightly different
 C++ wrappers for the sqlite3 C API. Both are very small and suitable

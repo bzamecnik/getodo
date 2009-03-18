@@ -40,6 +40,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="&quot;C:\Program Files\boost\boost_1_34_1&quot;;&quot;$(SolutionDir)&quot;;&quot;C:\program files\sqlite&quot;"
+				MinimalRebuild="true"
 				RuntimeLibrary="1"
 				DebugInformationFormat="3"
 			/>

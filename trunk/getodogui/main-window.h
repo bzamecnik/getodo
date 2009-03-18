@@ -235,6 +235,14 @@ protected:
 	 */
 	void on_buttonTaskUpdate_clicked();
 
+	/* Generate next task by recurrence.
+	 * Copy selected task to new one and set deadline date according to
+	 * next date from recurrence.
+	 * Not applicable if no task selected or there is no recurrence or
+	 * deadline date.
+	 */
+	void on_buttonTaskNextByRecurrence_clicked();
+
 	/* Enable or disable filtering altogether. */
 	void on_buttonTaskFilter_toggled();
 private:
@@ -334,6 +342,16 @@ private:
 	 * \return true if the update ran alright
 	 */
 	bool updateTaskPartial(boost::function<void(TaskPersistence&)> f);
+
+	/** Select task in the task TreeView.
+	 * \param iter TaskTreeModel iterator
+	 */
+	void selectTask(Gtk::TreeModel::iterator iter);
+
+	/* Create a new task.
+	 * \param newTask new task
+	 */
+	void createNewTask(Task& newTask, id_t parentId = Task::INVALID_ID);
 };
 
 } // namespace getodo
