@@ -27,7 +27,7 @@ TaskManager::TaskManager(const std::string& dbname)
 		conn = new sqlite3_connection(dbname);
 	} catch(database_error&) {
 		conn = 0;
-		return;
+		throw GetodoError("Can't connect to the database file: " + dbname);
 	}
 	tryLoadingFromDatabase();
 }
@@ -102,7 +102,7 @@ TaskPersistence& TaskManager::getPersistentTask(id_t taskId) {
 
 Task& TaskManager::editTask(id_t taskId, const Task& task) {
 	if (!hasTask(taskId)) {
-		throw new GetodoError("No such a task to edit: "
+		throw GetodoError("No such a task to edit: "
 			+ boost::lexical_cast<std::string, id_t>(taskId));
 	}
 
@@ -128,7 +128,7 @@ Task& TaskManager::editTask(id_t taskId, const Task& task) {
 void TaskManager::deleteTask(id_t taskId) {
 	Task* task = getTask(taskId);
 	if (task == 0) {
-		throw new GetodoError("No such a task to delete: "
+		throw GetodoError("No such a task to delete: "
 			+ boost::lexical_cast<std::string, id_t>(taskId));
 	}
 
@@ -227,7 +227,7 @@ bool TaskManager::hasTag(const std::string& tagName) {
 Tag& TaskManager::getTag(id_t tagId) {
 	std::map<id_t,Tag*>::iterator foundTag = tags.find(tagId);
 	if (foundTag == tags.end()) {
-		throw new GetodoError("No such a tag: "
+		throw GetodoError("No such a tag: "
 			+ boost::lexical_cast<std::string, id_t>(tagId));
 	}
 	return *(foundTag->second);
@@ -239,12 +239,12 @@ Tag& TaskManager::getTag(const std::string& tagName) {
 	for (it = tags.begin(); it != tags.end(); ++it) {
 		if (it->second && (it->second->name == tagName)) { return *(it->second); }
 	}
-	throw new GetodoError("No such a tag: " + tagName);
+	throw GetodoError("No such a tag: " + tagName);
 }
 
 Tag& TaskManager::editTag(id_t tagId, const Tag& tag) {
 	if (!hasTag(tagId)) {
-		throw new GetodoError("No such a tag to edit: "
+		throw GetodoError("No such a tag to edit: "
 			+ boost::lexical_cast<std::string, id_t>(tagId));
 	}
 
@@ -266,7 +266,7 @@ Tag& TaskManager::editTag(id_t tagId, const Tag& tag) {
 void TaskManager::deleteTag(id_t tagId) {
 	std::map<id_t,Tag*>::iterator foundTag = tags.find(tagId);
 	if (foundTag == tags.end()) {
-		throw new GetodoError("No such a tag to delete: "
+		throw GetodoError("No such a tag to delete: "
 			+ boost::lexical_cast<std::string, id_t>(tagId));
 	}
 	signal_tag_removed(*foundTag->second);
@@ -308,14 +308,14 @@ bool TaskManager::hasFilterRule(const std::string& filterRuleName) {
 
 FilterRule& TaskManager::getFilterRule(id_t filterRuleId) {
 	if (!hasFilterRule(filterRuleId)) {
-		throw new GetodoError("No such a filter rule.");
+		throw GetodoError("No such a filter rule.");
 	}
 	return *(filters[filterRuleId]);
 }
 
 FilterRule& TaskManager::editFilterRule(id_t filterRuleId, const FilterRule& filter) {
 	if (!hasFilterRule(filterRuleId)) {
-		throw new GetodoError("No such a filter rule.");
+		throw GetodoError("No such a filter rule.");
 	}
 
 	FilterRule* ruleCopy = new FilterRule(filter);
@@ -337,7 +337,7 @@ FilterRule& TaskManager::editFilterRule(id_t filterRuleId, const FilterRule& fil
 void TaskManager::deleteFilterRule(id_t filterRuleId) {
 	std::map<id_t,FilterRule*>::iterator foundFilter = filters.find(filterRuleId);
 	if (foundFilter == filters.end()) {
-		throw new GetodoError("No such a filter rule to delete: "
+		throw GetodoError("No such a filter rule to delete: "
 			+ boost::lexical_cast<std::string, id_t>(filterRuleId));
 	}
 	signal_filter_removed(*foundFilter->second);
@@ -408,7 +408,7 @@ void TaskManager::tryLoadingFromDatabase() {
 }
 
 void TaskManager::loadAllFromDatabase() {
-	if (!conn) { throw new GetodoError("No database connection."); }
+	if (!conn) { throw GetodoError("No database connection."); }
 
 	sqlite3_command cmd(*conn);
 	sqlite3_cursor cursor;
@@ -514,7 +514,7 @@ void TaskManager::loadAllFromDatabase() {
 
 // return true, if there exist all the tables needed
 bool TaskManager::checkDatabaseStructure() {
-	if (!conn) { throw new GetodoError("No database connection."); }
+	if (!conn) { throw GetodoError("No database connection."); }
 	// TODO
 	// * this code could be optimized, using a set may be overkill
 	// * table names shouldn't be hard-coded
@@ -524,25 +524,32 @@ bool TaskManager::checkDatabaseStructure() {
 	std::string tables[] = {"Task","Tag","Tagged","FilterRule"};
 	std::set<std::string> tablesNeeded(&tables[0],&tables[4]);
 
-	sqlite3_command cmd(*conn,"SELECT name FROM sqlite_master "
-		"WHERE type='table' ORDER BY name;");
-	sqlite3_cursor cursor = cmd.executecursor();
-	std::set<std::string>::iterator tableIt;
-	while (cursor.step()) {
-		if (!cursor.isnull(0)) { // this check may not be needed here
-			std::string table = cursor.getstring(0);
-			tableIt = tablesNeeded.find(table);
-			if (tableIt != tablesNeeded.end()) {
-				tablesNeeded.erase(tableIt);
+	try {
+		sqlite3_command cmd(*conn,"SELECT name FROM sqlite_master "
+			"WHERE type='table' ORDER BY name;");
+		sqlite3_cursor cursor = cmd.executecursor();
+		std::set<std::string>::iterator tableIt;
+		while (cursor.step()) {
+			if (!cursor.isnull(0)) { // this check may not be needed here
+				std::string table = cursor.getstring(0);
+				tableIt = tablesNeeded.find(table);
+				if (tableIt != tablesNeeded.end()) {
+					tablesNeeded.erase(tableIt);
+				}
 			}
 		}
+		cursor.close();
+	} catch (database_error& ex) {
+		conn->close();
+		delete conn;
+		conn = 0;
+		throw GetodoError(std::string("Bad database: ") + ex.what());
 	}
-	cursor.close();
 	return tablesNeeded.empty();
 }
 
 void TaskManager::createEmptyDatabase() {
-	if (!conn) { throw new GetodoError("No database connection."); }
+	if (!conn) { throw GetodoError("No database connection."); }
 
 	// TODO: better would be to include this SQL in the compile-time
 	// from an external file

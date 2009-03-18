@@ -12,12 +12,22 @@ GeToDoApp* GeToDoApp::instance = 0;
 GeToDoApp::GeToDoApp(int argc, char* argv[])
 	: kit(argc, argv), pWindow(0)
 {
-	if (argc <= 1) {
-		std::cerr << "Usage: " << argv[0] << " DATABASE_FILE" << std::endl;
+	// default file name should be: ~/getodo.db
+	// Glib::build_filename(Glib::get_home_dir(), "getodo.db")
+	std::string dbName("getodo.db");
+	
+	if (argc > 1) {
+		dbName = argv[1];
+	}
+	
+	try {
+		std::cerr << dbName << std::endl;
+		taskManager = new TaskManager(dbName);
+	} catch (GetodoError& ex) {
+		std::cerr << ex.what() << std::endl;
 		exit(1);
 	}
-	taskManager = new TaskManager(std::string(argv[1]));
-
+	
 	RecurrenceDialog* pRecurrenceDialog = 0;
 	FilterDialog* pFilterDialog = 0;
 
@@ -78,6 +88,11 @@ void GeToDoApp::run() {
 int main(int argc, char* argv[]) {
 	using namespace getodo;
 
+	//std::cout << Glib::locale_from_utf8(Glib::get_home_dir()) << std::endl;
+	//Gtk::MessageDialog(Glib::get_home_dir()).run();
+	
+	// Glib::build_filename(Glib::get_home_dir(), "getodo.db")
+
 	GeToDoApp *app;
 	try {
 		app = GeToDoApp::create(argc, argv);
@@ -85,9 +100,11 @@ int main(int argc, char* argv[]) {
 	} catch(const Glib::Error& ex) {
 		std::cerr << ex.what() << std::endl;
 	} catch(const sqlite3x::database_error& ex) {
-		std::cerr << ex.what() << std::endl;
+		//std::cerr << ex.what() << std::endl;
+		Gtk::MessageDialog(ex.what(), false, Gtk::MESSAGE_ERROR).run();
 	} catch(const std::exception& ex) {
-		std::cerr << ex.what() << std::endl;
+		//std::cerr << ex.what() << std::endl;
+		Gtk::MessageDialog(ex.what(), false, Gtk::MESSAGE_ERROR).run();
 	}
 	delete app;
 	return 0;

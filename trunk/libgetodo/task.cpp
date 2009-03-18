@@ -215,7 +215,7 @@ void Task::setTagsFromString(TaskManager& manager, const std::string& tagsString
 
 void Task::addSubtask(id_t subtaskId) {
 	if (!Task::isValidId(subtaskId) || (subtaskId == taskId)) {
-		throw new GetodoError("Invalid subtask id.");
+		throw GetodoError("Invalid subtask id.");
 	}
 	subtasks.insert(subtaskId);
 }
@@ -464,7 +464,7 @@ void TaskPersistence::update() {
 	try {
 		cmd.executenonquery();
 	} catch (sqlite3x::database_error ex) {
-		std::cout << "SQL error: " << ex.what() << std::endl;
+		std::cerr << "SQL error: " << ex.what() << std::endl;
 	}
 
 	// we need to synchronize the tags:
@@ -485,7 +485,7 @@ void TaskPersistence::update() {
 			cmd.bind(1, taskId);
 			cmd.executenonquery();
 		} catch (sqlite3x::database_error ex) {
-			std::cout << "SQL error: " << ex.what() << std::endl;
+			std::cerr << "SQL error: " << ex.what() << std::endl;
 		}
 	}
 
@@ -501,7 +501,7 @@ void TaskPersistence::update() {
 		}
 		cursor.close();
 	} catch (sqlite3x::database_error ex) {
-		std::cout << "SQL error: " << ex.what() << std::endl;
+		std::cerr << "SQL error: " << ex.what() << std::endl;
 	}
 
 	// insert new tags that are not yet in the database
@@ -524,7 +524,7 @@ void TaskPersistence::update() {
 				cmd.executenonquery();
 			}
 		} catch (sqlite3x::database_error ex) {
-			std::cout << "SQL error: " << ex.what() << std::endl;
+			std::cerr << "SQL error: " << ex.what() << std::endl;
 		}
 	}
 }
@@ -552,7 +552,7 @@ Task* TaskPersistence::load(id_t taskId) {
 	cmd.bind(1, taskId);
 	sqlite3_cursor cursor = cmd.executecursor();
 	if (!cursor.step()) {
-		throw new GetodoError("No such a task to load: " + taskId);
+		throw GetodoError("No such a task to load: " + taskId);
 		return 0;
 	}
 	databaseRow_t row;
@@ -567,7 +567,7 @@ Task* TaskPersistence::load(id_t taskId) {
 	cursor.close();
 	task = Task::fromDatabaseRow(row);
 	if(!task) {
-		throw new GetodoError("Can't deserialize the task.");
+		throw GetodoError("Can't deserialize the task.");
 	}
 	
 	// Load its tags
@@ -776,21 +776,21 @@ void TaskPersistence::setDone(bool done) {
 
 bool TaskPersistence::checkDBConnection() {
 	if (!conn) {
-		throw new GetodoError("No database connection in the persistence.");
+		throw GetodoError("No database connection in the persistence.");
 	}
 	return true;
 }
 
 bool TaskPersistence::checkTask() {
 	if (!task) {
-		throw new GetodoError("No task in the persistence.");
+		throw GetodoError("No task in the persistence.");
 	}
 	return true;
 }
 
 bool TaskPersistence::checkTaskPersistent() {
 	if (checkTask() && !task->hasValidId()) {
-		throw new GetodoError("Task hasn't been store into database yet.");
+		throw GetodoError("Task hasn't been store into database yet.");
 	}
 	return true;
 }

@@ -78,7 +78,7 @@ FilterRulePersistence::FilterRulePersistence(sqlite3_connection* c)
 FilterRulePersistence::~FilterRulePersistence() {}
 
 id_t FilterRulePersistence::insert(FilterRule& filter) {
-	if (!conn) { throw new GetodoError("No database connection in the persistence."); }
+	if (!conn) { throw GetodoError("No database connection in the persistence."); }
 
 	// id is defined NOT NULL, inserting NULL by not specifying
 	// the value sets it to the ROWID (ie. it's auto-incremented)
@@ -93,10 +93,10 @@ id_t FilterRulePersistence::insert(FilterRule& filter) {
 
 void FilterRulePersistence::update(const FilterRule& filter) {
 	if (!conn) {
-		throw new GetodoError("No database connection in the persistence.");
+		throw GetodoError("No database connection in the persistence.");
 	}
 	if (!filter.hasValidId()) {
-		throw new std::invalid_argument("Invalid filter id: " + filter.id);
+		throw std::invalid_argument("Invalid filter id: " + filter.id);
 	}
 
 	// UPDATE doesn't throw any error when given row doesn't exist
@@ -109,7 +109,7 @@ void FilterRulePersistence::update(const FilterRule& filter) {
 
 FilterRule FilterRulePersistence::load(id_t id) {
 	if (!conn) {
-		throw new GetodoError("No database connection in the persistence.");
+		throw GetodoError("No database connection in the persistence.");
 	}
 
 	FilterRule filter = FilterRule(); // clean
@@ -123,7 +123,7 @@ FilterRule FilterRulePersistence::load(id_t id) {
 	} else {
 		// a bit ugly: duplicate close() call. TODO: Think how to do it better.
 		cursor.close();
-		throw new GetodoError("No such a filter rule to load.");
+		throw GetodoError("No such a filter rule to load.");
 	}
 	cursor.close();
 	return filter;
@@ -131,7 +131,7 @@ FilterRule FilterRulePersistence::load(id_t id) {
 
 void FilterRulePersistence::erase(id_t id) {
 	if (!conn) {
-		throw new GetodoError("No database connection in the persistence.");
+		throw GetodoError("No database connection in the persistence.");
 	}
 	
 	sqlite3_command cmd(*conn, "DELETE FROM FilterRule WHERE filterRuleId = ?;");
@@ -150,7 +150,7 @@ void FilterRulePersistence::setRule(FilterRule& filter, const std::string rule) 
 }
 void FilterRulePersistence::setColumn(id_t id, const std::string value, const std::string column) {
 	if (!conn) {
-		throw new GetodoError("No database connection in the persistence.");
+		throw GetodoError("No database connection in the persistence.");
 	}
 	
 	// TODO: check, if the filter rule really exists in database, else throw

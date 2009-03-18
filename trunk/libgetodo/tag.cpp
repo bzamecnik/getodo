@@ -51,11 +51,11 @@ TagPersistence::~TagPersistence() {}
 
 id_t TagPersistence::insert(Tag& tag) {
 	if (!conn) { 
-		throw new GetodoError("No database connection in the persistence.");
+		throw GetodoError("No database connection in the persistence.");
 	}
 
 	if (tag.name.empty()) { // exclude empty tags
-		throw new std::invalid_argument("Tag name empty");
+		throw std::invalid_argument("Tag name empty");
 	}
 
 	if (!tag.hasValidId()) {
@@ -84,10 +84,10 @@ id_t TagPersistence::insert(Tag& tag) {
 
 void TagPersistence::update(const Tag& tag) {
 	if (!conn) {
-		throw new GetodoError("No database connection in the persistence.");
+		throw GetodoError("No database connection in the persistence.");
 	}
 	if (!tag.hasValidId()) {
-		throw new std::invalid_argument("Invalid tag id: " + tag.id);
+		throw std::invalid_argument("Invalid tag id: " + tag.id);
 	}
 
 	// UPDATE doesn't throw any error when given row doesn't exist
@@ -99,7 +99,7 @@ void TagPersistence::update(const Tag& tag) {
 
 Tag TagPersistence::load(id_t id) {
 	if (!conn) {
-		throw new GetodoError("No database connection in the persistence.");
+		throw GetodoError("No database connection in the persistence.");
 	}
 	
 	sqlite3_command cmd(*conn, "SELECT tagName FROM Tag WHERE tagId = ?;");
@@ -108,14 +108,14 @@ Tag TagPersistence::load(id_t id) {
 	try {
 		name = cmd.executestring(); // this throws if the tag doesn't exist
 	} catch(sqlite3x::database_error ex) {
-		throw new GetodoError("No such a tag to load.");
+		throw GetodoError("No such a tag to load.");
 	}
 	return Tag(id, name);
 }
 
 void TagPersistence::erase(id_t id) {
 	if (!conn) {
-		throw new GetodoError("No database connection in the persistence.");
+		throw GetodoError("No database connection in the persistence.");
 	}
 	
 	sqlite3_command cmd(*conn, "DELETE FROM Tagged WHERE tagId = ?;");
