@@ -1,0 +1,220 @@
+===== TreeModel =====
+
+Co potøebujeme? 
+
+- reprezentovat Tasky ve stromové struktuøe
+- zobrazit Tasky, Tagy a FilterRules v TreeView
+	-> implementovat rozhraní TreeModel
+	- Tasky stromovì, zbytek staèí jako plochý seznam
+
+- Tasky
+	- stromová struktura v databázi i v objektové reprezentaci
+	- operace pro ètení a pro modifikace
+
+- dodìlat:
+	- pro zobrazování stromové struktury
+		* TaskModel::get_node()
+		* TaskModel::get_path()
+		* insert() - musí se updatovat parent-children relace
+		* remove()
+		- update
+	- pro editaci z TreeView
+		- TaskTreeModel::set_value_impl()
+
+	// TODO (?):
+	//iterator 	append (const TreeNodeChildren& node, Task& task)
+	//iterator 	append (Task& task)
+	//iterator 	erase (const iterator& iter)
+	//iterator 	insert (const iterator& iter, Task& task)
+	//iterator 	insert_after (const iterator& iter)
+	//bool 	is_ancestor (const iterator& iter, const iterator& descendant) const
+	//int 	iter_depth (const iterator& iter) const
+	//bool 	iter_is_valid (const iterator& iter) const
+	//void 	iter_swap (const iterator& a, const iterator& b)
+	//void 	move (const iterator& source, const iterator& destination)
+
+- politiky pro mazání nodù:
+	- smazat celý podstrom
+		- zdá se, že funguje dobøe. jednoduchá implementace
+	- pøepojit dìti na rodièe nebo top level
+		- velké problémy 
+
+------------------------------------------------
+BUG:
+(getodogui.exe:3160): GLib-GObject-CRITICAL **: g_object_set_property: assertion `G_IS_VALUE (value)' failed
+(getodogui.exe:3160): GLib-GObject-CRITICAL **: g_value_unset: assertion `G_IS_VALUE (value)' failed
+
+(getodogui.exe:3160): Gtk-CRITICAL **: file ../../../gtk+/gtk/gtktreeview.c:
+line 4882 (gtk_tree_view_bin_expose): assertion `has_parent' failed.
+There is a disparity between the internal view of the GtkTreeView,
+and the GtkTreeModel.  This generally means that the model has changed
+without letting the view know.  Any display from now on is likely to
+be incorrect.
+	
+	-> TaskTreeModel::iter_parent_vfunc
+
+Nìkde se nám bere iterátor, který obsahuje stamp 0 a všechny user_data pointery
+také 0.
+
+VYØEŠENO:
+TaskTreeModel::iter_parent_vfunc()
+if (!iter_is_valid(child)) // OK
+if (!iter_is_valid(iter)) // CHYBA
+
+------------------------------------------------
+BUG:
+sorting model
+
+
+Gtk-CRITICAL **: gtk_tree_model_sort_build_level: assertion `length > 0' failed
+
+http://markmail.org/message/u5egpaxqk7grkfnw
+
+Subject: That fscking bug in TnyGtkHeaderListModelLink to this message From: 
+Philip Van Hoof (sp...@pvanhoof.be)
+
+Date: 05/07/2007 03:48:33 PM
+
+List: org.gnome.tinymail-devel-list
+
+Is fixed: The bug about ghost rows.
+
+This was the problem: The GtkTreeModel implementations checked for me->
+items->len as largest length, not me->cur_len. Among them some have to 
+return FALSE if the requested item is > the final length.
+
+The me->cur_len is the "registered" length: the amount of times a 
+gtk_tree_model_row_inserted was called or the 'length that the Gtk+ system 
+should at this exact moment consider'. me->items->len is the true length or 
+'the length of the TnyList implementation': the amount of items that *are* 
+*in* the instance at this exact moment.
+
+The difference is that me->cur_len is what happened on the mainloop, me->
+items->len is "right now. at this exact moment, not considering the 
+mainloop": me->cur_len will "in the mainloop" eventually become me->items->
+len, but might be less at a specific moment in time.
+
+The assertion warning of a few weeks ago was caused by the sort model.
+
+For that assertion warning I had set me->cur_len to the initial value of 
+one. This was the bug because that made the GtkTreeView believe that it had 
+already seen the first row, yet I was gtk_tree_model_row_inserted it again 
+(so it showed the first row as a ghost row and as its actual row).
+
+It gave an assertion because the sort model did get a first iter (because 
+one of the methods that implement GtkTreeModel didn't return FALSE because 
+it checked for me->items->len for the length in stead of me->cur_len): only 
+me->cur_len is what GtkTreeWhateverThings know about because only *that* 
+length got already signalled to them (at a specific moment in time).
+
+This was the assertion in Gtk+:
+
+static void gtk_tree_model_sort_build_level (GtkTreeModelSort 
+*tree_model_sort, SortLevel *parent_level, SortElt *parent_elt) {
+
+... if (gtk_tree_model_get_iter_first (tree_model_sort->child_model, &iter) 
+== FALSE) return; length = gtk_tree_model_iter_n_children (tree_model_sort->
+child_model, NULL);
+
+... -> g_return_if_fail (length > 0); <-
+
+The developer was right: gtk_tree_model_get_iter_first should have returned 
+FALSE if the model's length is 0. At that time, though, me->items->len was 
+already at 1, yet me->cur_len or the amount of row_inserted calls that 
+happened, was still at 0.
+
+Lot's of bla bla bla, for a small fix :-)
+
+-- Philip Van Hoof, software developer home: me at pvanhoof dot be gnome: 
+pvanhoof at gnome dot org http://www.pvanhoof.be/blog
+
+
+-------------------------------------------------------------
+
+- Je tøeba mít vlastní GtkTreeModel? Nestaèilo by použít TreeStore?
+	- asi by staèilo!
+
+- použil by se odvozený TreeStore (TaskTreeStore)
+	- obsahoval by navíc handlery signálù od TaskManageru
+		- inserted
+		- deleted
+		- updated
+		- moved
+	- uvnitø by bylo jen pár sloupcù
+		- možnosti:
+			- pouze id
+				- pouze id, zbytek se bude pokaždé tahat z tasku pøes TaskManager
+				- možná zbyteènì nároèné
+			- více sloupcù
+				- sloupce:
+					- id tasku (skryté) - podle nìj se bude odkazovat do TaskManageru
+					- done
+					- percent done
+					- priority
+					- description
+					- deadline
+					- [další datumy]
+					- [typ rekurence]
+				- sice se tyto údaje zkopírují do TaskTreeStore, ale zas je už nebude
+					nutné tahat z tasku -> mohlo by být výhodnìjší pak pro sortování
+					- když se cokoliv v tasku zmìní, naètou se aktuální údaje
+						(signál updated)
+	- co je tøeba øešit?
+		- editace pøes treeview
+			- nastavení done, description, datumù apod.
+			- asi pøes vlastní TreeStore::set_value_impl()
+				nebo spíš použít TreeViewColumn::set_cell_data_func() na daný CellRenderer
+
+- jak najít row pro dané id tasku?
+	- možnosti:
+		- projít TreeStore, hledat takový row
+			- problém je, že se iterátor zneplatní pøi každé zmìnì v modelu
+				- pøi použití cest se stane to samé
+		- používat navíc cache
+			- mapa: id->iterátor
+			- podívat se do cache; když tam není, hledat a výsledek uložit do cache
+		- pøi prohledávání, koukat po pøedcích hledaného tasku podle informací
+			z TaskManageru
+		- používat persistentní iterátory
+			- pomùže to?
+
+- jak bude fungovat insert?
+	- TaskManager dostane nový task a zaøadí si ho, vyšle signál inserted(task)
+	- signál pøijme TaskTreeStore
+		- task má parent
+			- najít row s task.taskId, získat jeho children, append(children)
+		- task nemá parent
+			- append()
+	- TaskTreeStore sám odešle signál o insertu TreeView
+ 
+ - jak bude fungovat delete?
+ 	- TaskManager smaže task (a pøípadnì jeho potomky) a vyšle signál deleted(id)
+	- signál pøijme TaskTreeStore
+		- najít row s daným id, erase(iter)
+		- s daným iterátorem se smaží i všichni jeho potomci
+	- TaskTreeStore sám odešle signál o delete TreeView 
+
+- jak bude vypadat move?
+	- TaskManger pøesune task se starého parentu do nového
+		- vyšle signál moved(task, newParentId)
+	- signál pøijme TaskTreeStore
+		- najít row s task.taskId -> iterSrc
+		- najít row s newParentId -> iterDest
+		- move(iterSrc, iterDest)
+	- TaskTreeStore sám odešle signály TreeView
+
+- jak bude fungovat move pøes drag&drop?
+
+- budeme potøebovat:
+	- zjistit id tasku, který je právì vybraný (je na nìm kurzor)
+		- pøípadnì id všech vybraných taskù
+			- bude se hodit pøi hromadných operacích
+				- napø.: mazání, pøesuny, nastavení nìèeho apod.
+	- ovládat pøesuny taskù:
+		- èím?
+			- pomocí klávesových zkratek
+			- pøes menu
+		- odkud?
+			- pøes TaskManager podle id vybraných taskù
+	- editace tasku vyvolá signál updated
+		- všechny funkce TaskManageru, které nìjak mìní task

@@ -1,0 +1,224 @@
+===== GeToDo TODO =====
+
+====  Long term goals ====
+
+- prepare final Year Project release (2008/11-12)
+x- extend the Year Project to the Bachelor Thesis
+	x- specify the subject and register it (until 14.11.2008)
+	x- implement (summer 2009)
+
+==== Tasks ====
+
+*- fix a bug in tag synchronization in TaskPersistence::update()
+
+- Filtering
+	*- implement filtering throught SQL queries in FilterRule::filter()
+	*- support combining rule via AND, OR, NOT operations
+		- this can be made at two different levels:
+			*- combine the SQL queries - this is ok!
+					- SELECT ... UNION SELECT ... UNION SELECT ...
+					- SELECT ... INTERSECT SELECT ... INTERSECT SELECT ...
+			- combine the result sets
+				-> this is easy but only for non-hierarchical combining
+	*- prepare ListStore based model for filters
+		- write doxygen docs
+	*- selected tags -> add rules to contain selected tags via OR and bound
+		with selected rule via AND: (filter AND (tag1 OR tag2 OR tag3)
+		- filters could be selected not by TreeView selection by rather by
+		 	check boxes in a special column 
+	*- make a dialog for filter rule editing and saving
+	*- support renaming and deleting rules
+	*- (CTRL-) clicking on a selected rule should unselect it
+	- left clicking on a rule should not select it, but show a popup menu
+	- F2 on a rule -> rename
+	- double-clicking a rule should open an editing dialog
+	*- sort rules - by name, [by popularity?]
+		- put sorting model inside the FilterListModel
+			- have a switch to turn sorting on and off	
+	- refilter on editing
+	- fix bugs in filtering (GTK)
+
+- Tags
+	*- support renaming tags
+		-	using F2 key
+	- support purging unused tags
+	*- support multiple selection
+		- additional columns with checkboxes
+	*- (CTRL-) clicking on selected tag should unselect it
+	*- prepare ListStore based model for tags
+	*- sort tags - by name, [by popularity?]
+	- tags might need an additional column for count of tasks tagged with particular tag
+	*- write a custom ListStore
+		- use a common generic ListStore for tags and filter rules
+			- additional columns, eg. 'active', 'count tasks'
+
+*- fix support for (de)activating tag filters and rule filters separately
+
+- write docs
+	*- FilterListStore
+	*- FilterListStore::ModelColumns
+	*- GetodoError
+	*- MainWindow
+	*- Recurrence* - finish
+	*- TagListStore
+	*- TagListStore::ModelColumns
+	- Task - finish
+	*- TaskManager
+	- TaskPersistence
+
+- TaskManager
+	- change filters and tags map values from pointers to value types
+		- eg. std::map<id_t,Tag*> -> std::map<id_t,Tag> 
+
+- Task editing
+	- synchronize done & percentage values in the panel and the tree
+	- setting done should also set date completed
+
+- TaskPersistence
+	- write saveTagsFromString() to support out_of_focus saving of tags
+
+- new subtask should select the newly created task
+
+- put TreeModelFilter and TreeModelSort inside the TaskTreeModel
+	- make an interface to control these wrapper models
+
+*- Date, DateTime, Recurrence
+	*- make operator==() - useful for TaskPesistence
+
+- Task (database)
+	- rename: description -> title, longDescription -> description
+- SQL autoincrement - don't repeat what sqlite already set
+- use shared_ptr in TaskManager for holding pointers to Tasks, Tags, ...
+
+- exceptions!
+	- catch GetodoError exception around functions that throw it
+
+*- doxygen docs - try it, make it working
+*- *TaskPersistence, *FilterRulePersistence - split save() into insert() and update()
+- use operator= for copying Tasks and Tags
+
+- profile what happens in GUI (TaskTreeStore) - why it is so slow?
+
+*- finish architecture documentation in doc/architecture-cs.txt!
+
+- improve GUI design in Glade
+	- editing panel, menu, toolbar...	
+	*- tag list editing
+	- selecting a db file	
+*- bind GUI actions to libgetodo calls
+
+- recurrence editing dialog
+	- fix: make sensitive only controls for selected recurrence type,
+		make others insensitive
+- Recurrence
+	- next() for RecurrenceWeekly, RecurrenceMonthly
+	- use facet for RecurrenceIntervalDays and RecurrenceYearly (?)
+- delete operator
+	- don't check if the deleted pointer isn't NULL, it's redundant
+	- exception: don't delete what was never allocated (and had been initialized to NULL) 
+- TaskManager
+	*- write filtering code
+	*- add some new methods (see source code comments)
+	*- getPersistentTask() should not return TaskPersistence by reference but by value
+	- public methods shouldn't return pointers! - see shared_ptr
+*- TreeViews should be sortable (see bugs)
+- avoid code duplication!!!
+- save sqlite table names somewhere as constants
+- documenation
+	- we need: user docs, *programmer's guide
+	*- use Doxygen and write better doxygen comments
+	- write a README and INSTALL
+	*- write a paper on overall architecture and design notes
+	*- write file description into each file's header
+- write the rest of testing code to test the libgetodo
+	- [Duration, ...]
+- use Boost Test facilities for the testing code
+- use SQL transactions
+- apply advices from book Sutter, Alexandrescu: C++ 101 Programming Techniques
+
+- Task
+	- "done" field could be completely omitted
+	- dateCompleted != invalid date would suffice
+	- "done" column in the model could be virtual
+
+- write a simple Duration
+
+- sqlite3x doesn't support UTF8 file names
+	- try wchar_t interface (which is said to be working on Windows only)
+
+- std::cerr is not visible in Release build
+	- show errors as Gtk::MessageDialog
+	- question: how to support calling Gtk::MessageDialog before the main loop
+		started?
+
+==== Would be nice ====
+
+- use BOOST_FOREACH (or defined as "#define foreach BOOST_FOREACH")
+	- file:///C:/Program%20Files/boost/boost_1_34_1/doc/html/foreach.html
+
+==== Think of ====
+
+*- use a kind of bug tracking system
+	*- Flyspray - easier to install
+	- Bugzilla (http://www.bugzilla.org/docs/win32install.html)
+		- would be more interesting to try
+	- Trac
+- GTD
+	- apply GTD stuff on top of GeToDo facilities
+	- read the GTD book
+- TaskPersistence/TaskManager how to use individual property setters?
+	- should persistence set* also call set* in its managed task?
+- Task - think of priority:
+	- explicitly set
+	- computed from other things
+- Duration, FuzzyDate
+- FilterRule - think of format and function
+- think of a common interface to persistent objects (Task, Tag, FilterRule)
+*- think whether really use pointers to Task, Tag, ... NO -> use shared_ptr
+- *Persistence - make a common interface
+- Task - make simple properties public and remove their getters/setters (really?)
+- database triggers for checking date format validity
+- How to embed .glade file into the final .exe file? (Is it really needed?)
+- maybe make Task, Tag etc. "data classes" and store them by value 
+- use secondary index containers for reverse lookup of maps (Tasks, Tags, ...)
+	- eg.:
+		- map<id_t, shared_ptr<Tag>> indexed by id_t
+		- map<std::string, map<id_t, shared_ptr<Tag>>::iterator> indexed by tag name
+- database
+	- use autoincrement fields
+	- think of tree structure of tasks
+- use several types of tags
+	- normal tags (used as categories)
+	- status
+	- context (?)
+- better installer
+- tip: custom sorting in database
+	- see sqlite3_create_collation() in the SQLite C API.
+
+==== BUGS ====
+
+- strange crashes in testing module
+	- unhandled exceptions when writing somewhere usually in destructors of
+		a basic_stringstream or so
+	- from revision 44 on
+	- sometime works OK when sqlite3x optimization is /O2 (Maximize Speed)
+		- when optimiztion is disabled it crashes
+	- happens in conjuction of DateTime (stringstream operations) and sqlite3x
+- TreeModelSort doesn't work well with my custom TreeModels
+	- error message: "(getodogui.exe:2596): Gtk-CRITICAL **: gtk_tree_model_sort_build_level: assertion `length > 0' failed"
+	- TaskTreeView is empty
+
+==== Done - kept for reference ====
+
+* use boost::lexical_cast instead of stringstream for simple type conversions
+* run autoreconf --install (only once)
+* set LD_CONFIG_... for running main executable (for .so libraries)
+- write some testing code to test the libgetodo
+	*-	TaskManager
+	* TaskPersistence
+	* Tag, TagPersistence
+	* FilterRule, FilterRulePersistence
+	* Task, TaskPersistence
+	* Date, DateTime
+	* Recurrence, RecurrenceDaily, RecurrenceWeekly, RecurrenceMonthly,
+		RecurrenceYearly, RecurrenceIntervalDays

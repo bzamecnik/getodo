@@ -1,0 +1,183 @@
+===== GUI =====
+
+==== organizace ====
+
+- hlavní menu
+	- File
+		- New Task Database
+			- 1. fáze - budeme pracovat jen s fyzickými SQLite soubory
+			- 2. fáze - vytvoøí se SQLite databáze v pamìti a pøi Save se uloží do souboru
+		- Open
+			- 3. fáze - pracovní kopie v pamìti se budou používat i u Open
+				- pøi otevøení a uložení se pouze pøepojí deskriptor
+		- Save
+		- Save As
+		- Close
+		- [Print]
+		- [Print Preview]
+		- [Print Settings]
+		- Export
+		- Recent files
+		- Exit
+	- Edit
+		- New Task - rùzné možnosti, kde task vytvoøit - CTRL+N
+			- top level
+			- na stejné úrovní jako vybraný task
+			- pokud bude volné pøerovnání - pøed/za vybraným
+		- New Subtask - dtto - CTRL+SHIFT+N
+			- jako potomek vybraného
+		- Edit task - skok do editaèního panelu - CTRL+E
+			- navíc rùzné akce pro jednotlivé vlastnosti tasku
+		- Delete Selected Tasks - vymazat vybrané tasky i jejich potomky - DEL
+		- Delete All - vymazat všechny tasky
+		- Cut - CTRL+X
+		- Copy - CTRL+C
+		- [Copy As - rùzné formáty]
+		- Paste - jako subtask vybraného nebo task vedle na stejné úrovni - CTRL+V
+		- [Undo - CTRL+Z]
+		- [Redo - CTL+Y]
+		- Select All - CTRL+A
+		- Find (Tasks) - CTRL+F
+	- View
+		- Expand - selected/all
+		- Colapse - selected/all
+		- [Select Columns] - vybrat zobrazené sloupce TreeView
+		- Filter - nìkolik položek
+		- [Show ... - zobrazit/skrýt rùzné panely]
+	- Move
+		- Go To ... - Up, Down, Left, Right
+		- Move - 
+			- [Up/Down] - asi ne (protože budeme tøídit a nepamatovat si poøadí) 
+			- Left/Right - posun v hierarchii
+				- Left posune potomka na úroveò jeho rodièe - CTRL+LEFT
+				- Right posune sourozence na úroveò potomka - CTRL+RIGHT
+	- Sort
+		- øazení taskù podle rùzných kritérií
+		- Disable Sort
+	- Tools
+		- Tag Manager
+		- [Filter Manager]
+	- [Window] - nebude potøeba, dokud se nebude používat MDI (více oken najednou)
+	- [Help]
+		- Help
+		- About
+- toolbar - pár hodnì používaných vìcí
+	- New, Open, Save, Save As, Find, Filter, New, Edit, Delete, ... 
+- treeview pro Tasky
+- editaèní panel
+	- bude sloužit pro detailní prohlížení i editaci Taskù 
+	- editaèní prvky pro:
+		- název
+		- popis
+		- další vlastnosti
+		- tagy
+	- možnosti
+		- 1. - editace s potvrzením a uložením celého tasku
+		- 2. - editace s jemnìjší granularitou
+			- prùbìžné ukládání jednotlivých zmìn
+- panely pro filtrování
+	- filtrovací pravidla pro Tasky
+		- treeview, ale jen jako list
+		- vytvoøení filtru, filtrování
+		- uložení filtru
+		- editace filtru - vlastní dialog
+		- seznam uložených filtrù
+		- naètení uloženého filtru
+		- zrušení filtru
+	- tagy
+		- filtrování podle tagù (spojeno buï pomocí OR nebo AND)
+			- navíc i zobrazení tagù a jejich editace
+		- treeview, ale jen jako list
+		- èasem tøeba také tagcloud
+			- vizualizace statistiky tagù
+
+==== TreeView ====
+
+=== Tasky ===
+- nejdøíve jen list, pak i strom
+- buòky
+	- speciální typy jsou rùzná Date apod.
+		- použít vlastní CellRenderer (nebo existující z libgda aj.)
+		*- nebo je pøevést na string
+	- plán
+		- 1. fáze - jen zobrazení
+		- 2. fáze - i editace nìkterých typù (napø. názvu)
+- sloupce (zbytek bude pouze v editaèním panelu)
+	- taskId (int) (opravdu zobrazovat?)
+	- description (string)
+	- data - hlavnì deadline (vlastní CellRenderer nebo string)
+	- priority 
+	- completedPercentage
+		- vlastní renderer (nìco jako SpinButton)
+		- nebo pøevést na string
+		- navíc toggle pro Done
+	- Next Action toggle (tag)
+- výbìr, které sloupce budou zobrazeny a které budou skryté
+- èasem i Drag and Drop pro úpravu subtaskových relací
+- øazení podle sloupcù (TreeModelSort)
+	- kliknutím na hlavièku
+	- pøíkazem z menu (lze i skryté)
+	- bude tøeba napsat vlastní øadící funkci pro svoje typy
+	- opravit chybu: "gtk_tree_model_sort_build_level: assertion `length > 0' failed"
+		pøi aplikaci TreeModelSortu na vlastní TreeModel
+	- promyslet, jak má øazení fungovat 
+*- koøenový prvek (UPDATE: není tøeba, TreeModel to øeší sám)
+	- tasky tvoøí les, je tøeba je slouèit do stromu (jako potomky koøene)
+	- navíc skrytý koøen (pøes TreeModelFilter)
+- výbìr - pomocí Gtk::TreeSelection
+	- 1. fáze - Gtk::SELECTION_SINGLE
+	- 2. fáze - Gtk::SELECTION_MULTIPLE
+
+=== Tagy ===
+ 	- pouze list bez hierarchie
+ 	- sloupce
+		- Id (int) - skrýt
+		- Name (string) - zobrazit (pøípadnì i editovat)
+		- Active (bool) - pøi zaškrtnutí se tímto Tagem filtruje (AND s ostatními)
+			- navíc, pouze v TagModelu, ne pøímo v Tagu
+			-	TagModel by mohl nabízet getActiveTagsList()
+		
+=== FilterRules === 
+
+*- jak napojit TaskManager na TreeView
+	- možná øešení
+		*- 1.	- vlastní TreeModel pro každou entitu (Task, Tag, FilterRule)
+			- bude obsahovat TaskManager
+			- TaskManager bude posílat signály TreeModelu
+			- navíc TaskModel (TagModel, ...) s vlastní stromovou strukturou
+		- 2. - proxy nad TaskManagerem
+			- bude obsahovat TaskManager a mít jeho rozhraní
+			- pøi volání svých metod bude navíc pøedávat signály modelu
+			- odvozený TreeStore, který bude zpìtnì upravovat TaskManager pøes proxy
+
+- filtrování
+	- TaskModelFilter, který bude kontrolovat id Tasku
+	- aplikace FilterRule na TaskManager vyhodí taskset a v nìm si bude
+		TaskModelFilter vyhledávat, který Task zobrazit a který ne
+	- zobrazení (možnosti)
+		- 1. - zobrazit pouze vyfiltrované Tasky (ostatní úplnì skrýt)
+			- PLUS: výsledek filtrování nebudou rušit ostatní Tasky
+			- MINUS: nebude vidìt, kam vyfiltrované subtasky patøí
+		- 2. - ostatní Tasky zobrazit šedì (neaktivì)
+			- MINUS: ostatní Tasky budou zabírat mnoho místa
+			- PLUS: bude vidìt, kam vyfiltrované subtasky patøí
+
+==== obecné poznámky ====
+
+- promyslet klávesové zkratky (napø. Del nad taskTreeView apod.)
+- nedávat funkènost pøímo do signal handlerù
+	- akce by bylo možno spustit rùznými zpùsoby
+		- z menu, toolbaru, popup menu, klávesovou zkratkou
+	- výkonný kód do samostatných funkcí a ty pouze volat z rùzných handlerù
+- pro Gtk::Tooltip je tøeba GTK+ verze >= 2.12
+
+==== Aplikace ====
+
+- tøída GeToDoApp
+	- bude obsahovat vše potøebné:
+		- gtkmm::Main
+		- hlavní okno MainWindow
+		- TaskManager
+		- ...
+	- singleton
+- main() - instance GeToDoApp, run()

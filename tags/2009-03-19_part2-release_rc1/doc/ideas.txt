@@ -1,0 +1,18 @@
+- Task & persistence
+	- Problems:
+		- Sometimes we need to access TaskManager from Task or TaskPersistence
+		- There are two interfaces to Task: Task, TaskPersistence
+	- Posible solutions:
+		- TaskPersisence would contain a reference to TaskManager (instead of
+			just a database conneciton)
+		- Join Task and TaskPersistence
+			- everything would go to Task
+			- it would be easier to use
+			- what about copying?
+	- the same holds for Tag and FilterRule
+
+- Fuzzy dates
+	- due date could have a "leading time", ie. a period in which it
+		starts to appear
+
+- computed priority

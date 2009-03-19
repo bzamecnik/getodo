@@ -1,0 +1,131 @@
+===== GeToDo - architektura =====
+
+Projekt GeToDo je koncipován jako desktopová aplikace. Je rozdìlen do nìkolika modulù:
+  * základní knihovna Libgetodo
+  * grafické uivatelské rozhraní Getodogui
+  * embedded databáze	SQLite  
+
+Libgetodo zajišuje objektovou reprezentaci základních typù a jejich databázovou persistenci.
+
+Getodogui vyuívá funcionality Libgetodo a poskytuje k ní GUI.
+
+Schéma databáze je mono nalézt v souboru doc/sql/getodo-sqlite.sql. ER-diagram v doc/sql/diagram.png.
+
+Celı projekt je psán v jazyce C++ a buildován pomocí MS Visual Studia.
+Pouité knihovny:
+
+	* Boost - utility
+	* SQLite - embedded databáze
+	* SQLite3x - C++ wrapper nad SQLite
+	* GTK - GUI
+	* Gtkmm	- C++ wrapper nad GTK
+
+Poznámka: Zdrojové kódy knihovny SQLite3x jsou zahrnuty do stromu projektu GeToDo z jednoho prostého dùvodu: SQLite3x je v originálnì buildována pomocí dost obskurnì øešeného Makefile a v MinGW na Windows se mi ji nepodaøilo samostatnì sestavit. Nicménì poté, co jsem pro ni vytvoøil projekt ve Visual Studiu, lze sestavil bez problémù. Proto bylo technicky jednoduší ji zahrnout pøímo do stromu zdrojovıch kódù projektu GeToDo.
+
+==== Libgetodo ====
+
+Tøídy v tomto modulu náleí do namespace getodo.
+
+=== Task ===
+
+Datová tøída reprezentující jeden úkol. Odpovídá øádku v SQL tabulce Tasks, ale navíc umoòuje práci s tagy, nadøazenımi úkoly i podúkoly. Zmìny na instanci této tøídy se neprojeví pøímo v databázi, to tomu slouí tøída TaskPersistence. Z toho dùvodu zmìny na instanci tøídy Task se hodí spíš pro hromadné úpravy, ne úpravy jednotlivıch poloek. Na task mùe bıt èasto odkazováno pomocí jeho identifikátoru z databáze. 
+
+Tøída task poskytuje rovnì i jednoduché objektovì relaèní mapování:
+	* toDatabaseRow() - pøevod instance Task na øádek tabulky Tasks
+	* fromDatabaseRow()	- tovární metoda, je vytvoøí instanci Task podle øádku z tabulky Tasks
+
+Je zde také komfortnìjší práce s tagy - lze je èíst a nastavovat nejen podle identifikátoru, ale i podle øetezce s názvy tagù.	
+
+=== TaskPersistence ===
+
+Persistence pro tøídu Task realizující objektovì-relaèní mapování. Uvnitø si drí odkaz na task a databázové pøipojení. Pracuje s databázovovou knihovnou SQLite3x a nabízí základní operace jako naètení úkolu, vloení, úpravu a vymazání. Navíc je moné provádìt úpravy pouze nìkterıch poloek, take není nutné napø. pro pøepnutí pøíznaku, zda-li je úkol splnìn, pøepisovat kompletnì celı úkol i se všemi tagy a podúkoly.
+
+Instance této tøídy pro konkrétní úkol se vytváøí nejèastìji tovární metodou getPersistentTask() tøídy TaskManager. Je však moné do ní po pouití vloit odkaz na jinı úkol a provádìt persistenci s ním. 
+
+=== Tag ===
+
+Datová tøída reprezentující jeden tag. Tag má podobnì jako v jinıch aplikacích vıznam kategorie, avšak jednomu úkolu je mono pøiøadit libovolnì mnoho tagù.
+
+=== TagPersistence ===
+
+Persistence pro Tag. Má podobnı vıznam i pouití jako TaskPersistence, avšak neumoòuje individuální úpravu poloek (nemìlo by to ani velkı smysl).
+
+=== TaskManager ===
+
+Dùleitá tøída, která funguje jako objektová reprezentace údajù z databáze, ale navíc poskytuje velkou funkcionalitu. Uvnitø obsahuje zejména pøipojení do databáze a kolekce taskù, tagù a filtrovacích pravidel. Ve svém rozhraní má operace s tasky, tagy i filtry. Kromì toho umoòuje nastavit aktivní filtrovací pravidlo a podle nìj filtrovat tasky.
+
+Jeliko instance TaskManageru se pøímo pouívá v Getodogui a to nutnì potøebuje dostávat informace, e se právì nìco zmìnilo, obsahuje TaskManager i signály pro reportování zmìn. Pouívají se signály knihovny Sigc++ z GTK. Napøíklad je-li pøidán novı task, GUI se to ihned dozví a mùe vykreslit novı øádek ve svém seznamu taskù.
+
+Pokud je databáze ještì neinicializovaná, TaskManager vytvoøí sktrukturu jejích tabulek.
+
+=== FilterRule ===
+
+Datová tøída reprezentující pravidlo pro filtrování úkolù. Jedinou zásadní metodou je filter(), která provede filtrování a vrátí mnoinu úkolù, které vyhovují.
+
+=== FilterRulePersistence ===
+
+Persistence pro FilterRule. Funguje podobnì jako TaskPersistence. Poskytuje metody pro individuální úpravu datovıch poloek filtrovacícho pravidla.
+
+=== FilterBuilder ===
+
+Tovární tøída pro vırobu filtrovacích pravidel.
+
+=== Date ===
+
+Datová tøída reprezentující datum (bez èasu). Funguje jako obal nad boost::gregorian::date. Dùvodem k pouití vlastního obalu byla serializace s vlastním formátem stringu.
+
+=== DateTime ===
+
+Datová tøída reprezentující datum s èasem. Funguje jako obal nad boost::posix_time::ptime. Dùvodem k pouití vlastního obalu byla stejnì jako u Date serializace s vlastním formátem stringu.
+
+=== Duration ===
+
+Datová tøída reprezentující dobu trvání úkolu. (FIXME - zatím neimplementováno.)
+
+=== Recurrence ===
+
+Abstraktní datová tøída reprezentující opakování úkolu. Pomocí metody next() vrátí pøíští datum vıskytu po zadaném datu. (De)serializace øeší i typ rekurence. Rùzné implementace jsou ve tøídách:
+
+  * RecurrenceDaily
+  * RecurrenceIntervalDays
+  * RecurrenceMonthly
+  * RecurrenceOnce
+  * RecurrenceWeekly
+  * RecurrenceYearly
+
+=== GetodoError ===
+
+Obecná vıjimka v programu GeToDo.
+
+
+==== Getodogui ====
+
+GUI pro GeToDo vytvoøené s pomocí toolkitu GTK a jeho C++ wrapperu Gtkmm. Pro stavbu GUI se pouívá nástroj Glade (souèást GTK), pomocí kterého se vytvoøí XML soubor s definicí GUI. Tento XML soubor se pak za bìhu naète a instanciují se z nìj jednotlivé widgety.
+
+Eventy se øeší pomocí signálové knihovny Sigc++ (distribuované jako souèást balíku GTK).
+
+=== GeToDoApp ===
+
+Singleton tøída reprezentující aplikaci GeToDo. Zpracovává argumenty z pøíkazové øádky, vytváøí instanci TaskManageru, natahuje Glade soubory, z nich se za bìhu vytvoøí GUI a to spouští.
+
+=== MainWindow ===
+
+Hlavní okno aplikace, potomek Gtk::Window. Asi nejdùleitìjšími prvky jsou TreeView pro úkoly, jedno ListView pro filtry a druhé pro tagy. Kadı tento view má pod sebou ještì model. Modely jsou propojeny s TaskManagerem právì pomocí vıše zmínìnıch signálù. Praxi to vypadá tak, e kdy se nìco zmìní v TaskManageru, ten vyšle signál, kterı pak zpracuje model. Ten zase automaticky vyšle signál pohledu, tj. TreeView nebo ListView.
+
+=== RecurrenceDialog ===
+
+Dialog pro editaci rekurencí.
+
+=== RecurrenceDialog::MonthsModelColumns ===
+
+=== TaskTreeStore ===
+
+Model pro widget taskTreeView. Jedná se o podìdìnı TreeStore. Tuto monost jsem zvolil, jednak abych mohl zpracovávat signály z TaskManageru, ale abych mohl mít k dispozici i další funkce. Pùvodnì myšlená vlastní implementace rozhraní TreeModel, kde by byla optimalizována manipulace s tasky v modelu, se ukázala bıt pøíliš sloitá, tìkopádná.
+
+=== FilterListStore ===
+
+Jednoduchı obal nad ListStore. Funguje podobnì jako TaskTreeStore, jen je jednodušší, protoe nemusí øešit stromovou strukturu.
+
+=== TagListStore ===
+
+Skoro to samé jako FilterListStore.
