@@ -80,7 +80,7 @@ protected:
 	MainWindow* pWindow;
 private:
 	std::map<std::string, Gtk::Widget*> widgets;
-	TaskManager* taskManager;
+	boost::shared_ptr<TaskManager> taskManager;
 	static GeToDoApp* instance;
 
 	GeToDoApp(int argc, char* argv[]);

@@ -80,7 +80,7 @@ public:
 	/** Make task's copy but clean it as it's not done yet.
 	 * \return cleaned task copy
 	 */
-	Task* copyAsNew();
+	boost::shared_ptr<Task> copyAsNew();
 
 	// ----- Access member functions -----
 
@@ -179,7 +179,7 @@ public:
 	 * \param row database row with the task contents
 	 * \return newly created task
 	 */
-	static Task* fromDatabaseRow(databaseRow_t& row);
+	static boost::shared_ptr<Task> fromDatabaseRow(databaseRow_t& row);
 
 	// ----- text I/O -----
 	/** String representation.
@@ -228,7 +228,7 @@ private:
 	/** Database connection. */
 	boost::shared_ptr<sqlite3_connection> conn;
 	/** Task being persisted. */
-	Task* task;
+	boost::shared_ptr<Task> task;
 public:
 	/** Constructor for loading new tasks from database.
 	 * \param conn A database connection. If it is not alright
@@ -243,7 +243,11 @@ public:
 	 * other methods will throw GetodoError exceptions.
 	 * \param task task to modify
 	 */
-	TaskPersistence(boost::shared_ptr<sqlite3_connection> conn, Task* task);
+	TaskPersistence(boost::shared_ptr<sqlite3_connection> conn, boost::shared_ptr<Task> task);
+
+	/** Copy constructor */
+	TaskPersistence(const TaskPersistence& persistence);
+
 	~TaskPersistence();
 	
 	/** Insert task to database and assign an id.
@@ -269,16 +273,16 @@ public:
 	 * \throw GetodoError if there is no such a task
 	 * \param taskId task id to load
 	 */
-	Task* load(id_t taskId);
+	boost::shared_ptr<Task> load(id_t taskId);
 
 	/** Delete the task from database. */
 	void erase();
 
 	/** Get the task being persited. */
-	Task* getTask() const;
+	boost::shared_ptr<Task> getTask() const;
 
 	///** Set the task being persited. */
-	//void setTask(Task* task);
+	//void setTask(boost::shared_ptr<Task> task);
 
 	// Wrappers of member functions from Task that modify the Task
 	// - will call original function

@@ -81,8 +81,8 @@ bool Task::isValidId(id_t id) {
 	return id >= 0;
 }
 
-Task* Task::copyAsNew() {
-	Task* newTask = new Task(*this);
+boost::shared_ptr<Task> Task::copyAsNew() {
+	boost::shared_ptr<Task> newTask(new Task(*this));
 	newTask->dateCreated = DateTime::now();
 	newTask->dateLastModified = newTask->dateCreated;
 	newTask->dateDeadline = Date();
@@ -107,12 +107,12 @@ void Task::setParent(id_t newParentId, TaskManager& manager) {
 	if ((newParentId != parentId) && (newParentId != taskId)) {
 		// unset previous parent
 		if (hasParent()) {
-			Task* parentTask = manager.getTask(parentId);
+			boost::shared_ptr<Task> parentTask = manager.getTask(parentId);
 			if (parentTask) {
 				parentTask->removeSubtask(taskId);
 			}
 		}
-		Task* newParentTask = manager.getTask(newParentId);
+		boost::shared_ptr<Task> newParentTask = manager.getTask(newParentId);
 		id_t oldParentId = parentId;
 		if (newParentTask) {
 			newParentTask->addSubtask(taskId);
@@ -120,7 +120,7 @@ void Task::setParent(id_t newParentId, TaskManager& manager) {
 		} else {
 			parentId = Task::INVALID_ID;
 		}
-		TaskPersistence persistence(manager.getConnection(), this);
+		TaskPersistence persistence = manager.getPersistentTask(getTaskId());
 		persistence.setParentId();
 		// problem: we know this task id only after it is persisted!
 		manager.signal_task_moved(*this, oldParentId);
@@ -219,10 +219,8 @@ void Task::setTagsFromString(TaskManager& manager, const std::string& tagsString
 
 	// delete old tags that were not in the new tags list
 	// but not from TaskManger (they might be used somewhere else)
-	for (std::set<id_t>::iterator it = oldTagIds.begin();
-		 it != oldTagIds.end(); ++it)
-	{	
-		removeTag(*it);
+	foreach (id_t tagId, oldTagIds) {	
+		removeTag(tagId);
 	}
 }
 
@@ -327,8 +325,8 @@ databaseRow_t& Task::toDatabaseRow() const {
 	return row;
 }
 
-Task* Task::fromDatabaseRow(databaseRow_t& row) {
-	Task* task = new Task();
+boost::shared_ptr<Task> Task::fromDatabaseRow(databaseRow_t& row) {
+	boost::shared_ptr<Task> task(new Task());
 	
 	try {
 		task->taskId = boost::lexical_cast<id_t, std::string>(row["taskId"]);
@@ -404,11 +402,14 @@ std::ostream& operator<< (std::ostream& o, const Task& task) {
 
 // Constructor for loading new Tasks
 TaskPersistence::TaskPersistence(boost::shared_ptr<sqlite3_connection> c)
-	: conn(c), task(0) {}
+	: conn(c) {}
 
 // Constructor for modifying particular things in a Task
-TaskPersistence::TaskPersistence(boost::shared_ptr<sqlite3_connection> c, Task* t)
+TaskPersistence::TaskPersistence(boost::shared_ptr<sqlite3_connection> c, boost::shared_ptr<Task> t)
 	: conn(c), task(t) {}
+
+TaskPersistence::TaskPersistence(const TaskPersistence& persistence)
+	: conn(persistence.conn), task(persistence.task) {}
 
 TaskPersistence::~TaskPersistence() {}
 
@@ -556,7 +557,7 @@ databaseRow_t& TaskPersistence::prepareRowToSave() {
 	return row;
 }
 
-Task* TaskPersistence::load(id_t taskId) {
+boost::shared_ptr<Task> TaskPersistence::load(id_t taskId) {
 	checkDBConnection();
 	
 	// Load task itself
@@ -566,7 +567,6 @@ Task* TaskPersistence::load(id_t taskId) {
 	sqlite3_cursor cursor = cmd.executecursor();
 	if (!cursor.step()) {
 		throw GetodoError("No such a task to load: " + taskId);
-		return 0;
 	}
 	databaseRow_t row;
 	int columnsCount = cursor.colcount();
@@ -637,15 +637,14 @@ void TaskPersistence::erase() {
 	cmd.bind(1, task->getTaskId());
 	cmd.executenonquery();
 	
-	delete task;
-	task = 0;
+	task.reset();
 }
 
-Task* TaskPersistence::getTask() const {
+boost::shared_ptr<Task> TaskPersistence::getTask() const {
 	return task;
 }
 
-//void TaskPersistence::setTask(Task* task) {
+//void TaskPersistence::setTask(boost::shared_ptr<Task> task) {
 //	this->task = task;
 //}
 
