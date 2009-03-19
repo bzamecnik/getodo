@@ -28,9 +28,9 @@ FilterRule::FilterRule(id_t id, std::string n, std::string r)
 FilterRule::~FilterRule() {}
 
 
-idset_t& FilterRule::filter(sqlite3_connection& conn) {
+idset_t FilterRule::filter(sqlite3_connection& conn) {
 	// filter using a SQL query
-	idset_t& tasksOk = *(new idset_t());
+	idset_t tasksOk;
 
 	try {
 		sqlite3_command cmd(conn, rule + ";");
@@ -72,13 +72,15 @@ bool FilterRule::isEmpty() const {
 
 // ----- class FilterRulePersistence --------------------
 
-FilterRulePersistence::FilterRulePersistence(sqlite3_connection* c)
+FilterRulePersistence::FilterRulePersistence(boost::shared_ptr<sqlite3_connection> c)
 	: conn(c) {}
 
 FilterRulePersistence::~FilterRulePersistence() {}
 
-id_t FilterRulePersistence::insert(FilterRule& filter) {
+FilterRule FilterRulePersistence::insert(const FilterRule& filter) {
 	if (!conn) { throw GetodoError("No database connection in the persistence."); }
+
+	FilterRule newFilter = filter;
 
 	// id is defined NOT NULL, inserting NULL by not specifying
 	// the value sets it to the ROWID (ie. it's auto-incremented)
@@ -87,8 +89,8 @@ id_t FilterRulePersistence::insert(FilterRule& filter) {
 	cmd.bind(2, filter.rule);
 	cmd.executenonquery();
 	// get id which database automatically created
-	filter.id = sqlite3_last_insert_rowid(conn->db());
-	return filter.id;
+	newFilter.id = sqlite3_last_insert_rowid(conn->db());
+	return newFilter;
 }
 
 void FilterRulePersistence::update(const FilterRule& filter) {
@@ -183,8 +185,8 @@ FilterRule FilterBuilder::intersectFilters(const std::vector<FilterRule>& filter
 
 FilterRule FilterBuilder::joinFilters(
 		const std::vector<FilterRule>& filters,
-		std::string command,
-		std::string dualCommand
+		const std::string& command,
+		const std::string& dualCommand
 	) {
 	std::ostringstream ss;
 	std::vector<std::string> filterStrings;

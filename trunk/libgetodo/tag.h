@@ -59,13 +59,13 @@ public:
  * - erase()
  */
 class TagPersistence {
-	sqlite3_connection* conn;
+	boost::shared_ptr<sqlite3_connection> conn;
 public:
 	/** Constructor for loading new tags.
 	 * \param conn A database connection. If it is not alright
 	 * other methods will throw GetodoError exceptions.
 	 */
-	TagPersistence(sqlite3_connection* conn);
+	TagPersistence(boost::shared_ptr<sqlite3_connection> conn);
 	virtual ~TagPersistence();
 
 	/** Insert a new tag into the database.
@@ -76,10 +76,11 @@ public:
 	 * \param tag tag to be inserted to database
 	 *
 	 * \throw GetodoError if the database connection is broken
+	 * \throw GetodoError if the tag name is empty
 	 *
 	 * \return id id assigned by the database
 	 */
-	id_t insert(Tag& tag);
+	Tag insert(const Tag& tag);
 	
 	/** Update an existing tag.
 	 * The tag is assumend to have a valid persistent id, otherwise

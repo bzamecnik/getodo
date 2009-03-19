@@ -45,18 +45,20 @@ bool Tag::hasValidId() const {
 
 // ----- class TagPersistence --------------------
 
-TagPersistence::TagPersistence(sqlite3_connection* c) : conn(c) {}
+TagPersistence::TagPersistence(boost::shared_ptr<sqlite3_connection> c) : conn(c) {}
 
 TagPersistence::~TagPersistence() {}
 
-id_t TagPersistence::insert(Tag& tag) {
+Tag TagPersistence::insert(const Tag& tag) {
 	if (!conn) { 
 		throw GetodoError("No database connection in the persistence.");
 	}
 
 	if (tag.name.empty()) { // exclude empty tags
-		throw std::invalid_argument("Tag name empty");
+		throw GetodoError("Tag name empty");
 	}
+
+	Tag newTag = tag;
 
 	if (!tag.hasValidId()) {
 		sqlite3_command cmd(*conn, "SELECT tagId FROM Tag WHERE tagName = ?;");
@@ -65,9 +67,9 @@ id_t TagPersistence::insert(Tag& tag) {
 		if (cursor.step()) {
 			// if there is already a tag with such a name, set the
 			// tag.id respectively
-			tag.id = cursor.getint(0);
+			newTag.id = cursor.getint(0);
 			cursor.close();
-			return tag.id;
+			return newTag;
 		}
 		cursor.close();
 	}
@@ -78,8 +80,8 @@ id_t TagPersistence::insert(Tag& tag) {
 	cmd.bind(1, tag.name);
 	cmd.executenonquery();
 	// get the id which database automatically created
-	tag.id = sqlite3_last_insert_rowid(conn->db());
-	return tag.id;
+	newTag.id = sqlite3_last_insert_rowid(conn->db());
+	return newTag;
 }
 
 void TagPersistence::update(const Tag& tag) {

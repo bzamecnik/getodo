@@ -15,6 +15,8 @@
 #include "taskmanager.h"
 #include <sstream>
 
+using namespace sqlite3x;
+
 namespace getodo {
 
 // ----- class Task --------------------
@@ -224,7 +226,7 @@ private:
 class TaskPersistence {
 private:
 	/** Database connection. */
-	sqlite3x::sqlite3_connection* conn;
+	boost::shared_ptr<sqlite3_connection> conn;
 	/** Task being persisted. */
 	Task* task;
 public:
@@ -232,7 +234,7 @@ public:
 	 * \param conn A database connection. If it is not alright
 	 * other methods will throw GetodoError exceptions.
 	 */
-	TaskPersistence(sqlite3x::sqlite3_connection* conn);
+	TaskPersistence(boost::shared_ptr<sqlite3_connection> conn);
 	/** Constructor for modifying particular things in a task.
 	 * Any changes made through TaskPersistence interface will
 	 * show up in the \p task.
@@ -241,7 +243,7 @@ public:
 	 * other methods will throw GetodoError exceptions.
 	 * \param task task to modify
 	 */
-	TaskPersistence(sqlite3x::sqlite3_connection* conn, Task* task);
+	TaskPersistence(boost::shared_ptr<sqlite3_connection> conn, Task* task);
 	~TaskPersistence();
 	
 	/** Insert task to database and assign an id.
@@ -275,8 +277,8 @@ public:
 	/** Get the task being persited. */
 	Task* getTask() const;
 
-	/** Set the task being persited. */
-	void setTask(Task* task);
+	///** Set the task being persited. */
+	//void setTask(Task* task);
 
 	// Wrappers of member functions from Task that modify the Task
 	// - will call original function

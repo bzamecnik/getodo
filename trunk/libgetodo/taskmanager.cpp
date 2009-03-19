@@ -22,17 +22,16 @@ using namespace sqlite3x;
 // ----- Constructors & destructor -----
 
 TaskManager::TaskManager(const std::string& dbname)
-: conn(0) {
+{
 	try {
-		conn = new sqlite3_connection(dbname);
+		conn = boost::shared_ptr<sqlite3_connection>(new sqlite3_connection(dbname));
 	} catch(database_error&) {
-		conn = 0;
 		throw GetodoError("Can't connect to the database file: " + dbname);
 	}
 	tryLoadingFromDatabase();
 }
 
-TaskManager::TaskManager(sqlite3_connection* c)
+TaskManager::TaskManager(boost::shared_ptr<sqlite3_connection> c)
 : conn(c) {
 	tryLoadingFromDatabase();
 }
@@ -61,7 +60,7 @@ TaskManager::~TaskManager() {
 
 // ----- SQLite connection -----
 
-sqlite3_connection* TaskManager::getConnection() {
+boost::shared_ptr<sqlite3_connection> TaskManager::getConnection() {
 	return conn;
 }
 
@@ -97,6 +96,7 @@ Task* TaskManager::getTask(id_t taskId) {
 }
 
 TaskPersistence& TaskManager::getPersistentTask(id_t taskId) {
+	// TODO: handle situation when getTask throws GetodoError
 	return *(new TaskPersistence(conn, getTask(taskId)));
 }
 
@@ -201,9 +201,11 @@ id_t TaskManager::addTag(const Tag& tag) {
 	//if (hasTag(tag.name)) { return; }
 
 	TagPersistence tp(conn);
-	Tag* tagCopy = new Tag(tag);
+	Tag* tagCopy = 0;
 	// when saving, id is assigned by database
-	if (!tp.insert(*tagCopy)) {
+	try {
+		tagCopy = new Tag(tp.insert(tag));
+	} catch (GetodoError&) {
 		return Tag::INVALID_ID;
 	}
 	tags[tagCopy->id] = tagCopy;
@@ -286,8 +288,12 @@ std::vector<Tag*>& TaskManager::getTags() {
 id_t TaskManager::addFilterRule(const FilterRule& rule) {
 	FilterRulePersistence p(conn);
 	// when saving, filterRuleId is assigned by database
-	FilterRule* ruleCopy = new FilterRule(rule);
-	p.insert(*ruleCopy);
+	FilterRule* ruleCopy = 0;
+	try {
+		ruleCopy = new FilterRule(p.insert(rule));
+	} catch (GetodoError&) {
+		return FilterRule::INVALID_ID;
+	}
 	filters[ruleCopy->id] = ruleCopy;
 	signal_filter_inserted(*ruleCopy);
 	return ruleCopy->id;
@@ -352,7 +358,7 @@ std::vector<FilterRule*>& TaskManager::getFilterRules() {
 	return convertMapToVector<id_t, FilterRule>(filters);
 }
 
-idset_t& TaskManager::filterTasks(FilterRule& filterRule) {
+idset_t TaskManager::filterTasks(FilterRule& filterRule) {
 	// TODO: rethrow the exception
 	return filterRule.filter(*conn);
 }
@@ -388,12 +394,12 @@ bool TaskManager::hasActiveFilterRule() const {
 	return !activeFilterRule.isEmpty();
 }
 
-bool TaskManager::isTaskVisible(id_t taskId) {
+bool TaskManager::isTaskVisible(id_t taskId) const {
 	return !hasActiveFilterRule()
 		|| (visibleTasksCache.find(taskId) != visibleTasksCache.end());
 }
 
-idset_t TaskManager::getFilteredTasks() {
+idset_t TaskManager::getFilteredTasks() const {
 	return visibleTasksCache;
 }
 
@@ -541,8 +547,7 @@ bool TaskManager::checkDatabaseStructure() {
 		cursor.close();
 	} catch (database_error& ex) {
 		conn->close();
-		delete conn;
-		conn = 0;
+		conn.reset();
 		throw GetodoError(std::string("Bad database: ") + ex.what());
 	}
 	return tablesNeeded.empty();

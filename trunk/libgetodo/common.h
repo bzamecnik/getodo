@@ -24,8 +24,10 @@
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 #include <boost/lambda/lambda.hpp>
+#include <boost/shared_ptr.hpp>
 
 #include "sqlite3x/sqlite3x.hpp"
+
 #include "datetime.h"
 #include "recurrence.h"
 

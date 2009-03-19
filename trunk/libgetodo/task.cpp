@@ -403,11 +403,11 @@ std::ostream& operator<< (std::ostream& o, const Task& task) {
 // ----- class TaskPersistence --------------------
 
 // Constructor for loading new Tasks
-TaskPersistence::TaskPersistence(sqlite3_connection* c)
+TaskPersistence::TaskPersistence(boost::shared_ptr<sqlite3_connection> c)
 	: conn(c), task(0) {}
 
 // Constructor for modifying particular things in a Task
-TaskPersistence::TaskPersistence(sqlite3_connection* c, Task* t)
+TaskPersistence::TaskPersistence(boost::shared_ptr<sqlite3_connection> c, Task* t)
 	: conn(c), task(t) {}
 
 TaskPersistence::~TaskPersistence() {}
@@ -645,9 +645,9 @@ Task* TaskPersistence::getTask() const {
 	return task;
 }
 
-void TaskPersistence::setTask(Task* task) {
-	this->task = task;
-}
+//void TaskPersistence::setTask(Task* task) {
+//	this->task = task;
+//}
 
 void TaskPersistence::setDescription(const std::string& description) {
 	if (!task) { return; }

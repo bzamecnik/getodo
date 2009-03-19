@@ -45,7 +45,7 @@ public:
 	 * \param conn database connection
 	 * \return set of task ids that passed the filter
 	 */
-	idset_t& filter(sqlite3_connection& conn);
+	idset_t filter(sqlite3_connection& conn);
 
 	/** Convert to string.
 	 * \return a human-readable string representation of the filter rule
@@ -86,7 +86,7 @@ public:
 	 * \param conn A database connection. If it is not alright
 	 * other methods will throw GetodoError exceptions.
 	 */
-	FilterRulePersistence(sqlite3_connection* conn);
+	FilterRulePersistence(boost::shared_ptr<sqlite3_connection> conn);
 	virtual ~FilterRulePersistence();
 
 	/** Insert a new filter rule into the database.
@@ -98,7 +98,7 @@ public:
 	 *
 	 * \return id id assigned by the database.
 	 */
-	id_t insert(FilterRule& filter);
+	FilterRule insert(const FilterRule& filter);
 
 	/** Update an existing filter rule.
 	 * The rule is assumend to have a valid persistent id, otherwise
@@ -141,7 +141,7 @@ public:
 	 */
 	void setRule(FilterRule& filter, const std::string rule);
 private:
-	sqlite3_connection* conn;
+	boost::shared_ptr<sqlite3_connection> conn;
 	/** Update particular field of a filter rule.
 	 * This is a common implementation for setName() and setRule().
 	 * \throw GetodoError if the database connection is broken.
@@ -222,8 +222,8 @@ private:
 	// we have to join them a more complicated way
 	static FilterRule joinFilters(
 		const std::vector<FilterRule>& filters,
-		std::string command,
-		std::string dualCommand
+		const std::string& command,
+		const std::string& dualCommand
 		);
 };
 
