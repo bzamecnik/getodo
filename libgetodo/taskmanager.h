@@ -34,8 +34,8 @@ using namespace sqlite3x;
 class TaskManager : public sigc::trackable {
 private:
     std::map<id_t,Task*> tasks;
-    std::map<id_t,Tag*> tags;
-    std::map<id_t,FilterRule*> filters;
+    std::map<id_t,Tag> tags;
+    std::map<id_t,FilterRule> filters;
 
 	boost::shared_ptr<sqlite3_connection> conn;
 
@@ -185,7 +185,7 @@ public:
 	 * \param tagId tag identification
 	 * \return reference to the tag if it's is present in task manager
 	 */
-    Tag& getTag(id_t tagId);
+    Tag getTag(id_t tagId);
 
 	/** Get tag by its name.
 	 * \throw GetodoError if the tag is not found.
@@ -193,7 +193,7 @@ public:
 	 * \param tagName tag name
 	 * \return reference to the tag if it's is present in task manager
 	 */
-    Tag& getTag(const std::string& tagName);
+    Tag getTag(const std::string& tagName);
 
 	/** Edit tag.
 	 * Replace contents of tag identified by \p tagId by contents of \p tag.
@@ -206,7 +206,7 @@ public:
 	 * \param tag new tag
 	 * \return reference to the updated tag
 	 */
-    Tag& editTag(id_t tagId, const Tag& tag);
+    Tag editTag(id_t tagId, const Tag& tag);
 
 	/** Delete tag.
 	 * Raise #signal_tag_removed.
@@ -221,7 +221,7 @@ public:
 	 * This is useful for batch operations with all the tags.
 	 * \return vector of all tags
 	 */
-    std::vector<Tag*>& getTags();
+    std::vector<Tag> getTags();
 
     // ----- FilterRule operations -----
 
@@ -254,7 +254,7 @@ public:
 	 * \param filterRuleId filter rule identification
 	 * \return reference to the filter rule if it's is present in task manager
 	 */
-    FilterRule& getFilterRule(id_t filterRuleId);
+    FilterRule getFilterRule(id_t filterRuleId);
 
 	/** Edit filter rule.
 	 * Replace contents of filter rule identified by \p filterRuleId by
@@ -268,7 +268,7 @@ public:
 	 * \param filter new filter rule
 	 * \return reference to the updated tag
 	 */
-    FilterRule& editFilterRule(id_t filterRuleId, const FilterRule& filter);
+    FilterRule editFilterRule(id_t filterRuleId, const FilterRule& filter);
 
 	/** Delete filter rule.
 	 * Raise #signal_filter_removed.
@@ -283,7 +283,7 @@ public:
 	 * This is useful for batch operations with all the filter rules.
 	 * \return vector of all filter rules
 	 */
-    std::vector<FilterRule*>& getFilterRules();
+    std::vector<FilterRule> getFilterRules();
 
 	/** Filter tasks.
 	 * Filter tasks in task manager using a given filter rule.
@@ -291,7 +291,7 @@ public:
 	 * \param filterRule filter rule
 	 * \return set of task id that passed the filter, ie. they are visible
 	 */
-    idset_t filterTasks(FilterRule& filterRule);
+    idset_t filterTasks(const FilterRule& filterRule) const;
 
 	/** Set the active filtering rule.
 	 * Set \p filter as the active rule, filter tasks using this rule and

@@ -45,7 +45,7 @@ public:
 	 * \param conn database connection
 	 * \return set of task ids that passed the filter
 	 */
-	idset_t filter(sqlite3_connection& conn);
+	idset_t filter(boost::shared_ptr<sqlite3_connection> conn) const;
 
 	/** Convert to string.
 	 * \return a human-readable string representation of the filter rule

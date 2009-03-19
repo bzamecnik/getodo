@@ -28,12 +28,12 @@ FilterRule::FilterRule(id_t id, std::string n, std::string r)
 FilterRule::~FilterRule() {}
 
 
-idset_t FilterRule::filter(sqlite3_connection& conn) {
+idset_t FilterRule::filter(boost::shared_ptr<sqlite3_connection> conn) const {
 	// filter using a SQL query
 	idset_t tasksOk;
 
 	try {
-		sqlite3_command cmd(conn, rule + ";");
+		sqlite3_command cmd(*conn, rule + ";");
 		sqlite3_cursor cursor = cmd.executecursor();
 		while (cursor.step()) {
 			tasksOk.insert(tasksOk.end(), cursor.getint(0));
