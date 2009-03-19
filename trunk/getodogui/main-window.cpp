@@ -311,12 +311,16 @@ void MainWindow::on_buttonTaskDelete_clicked() {
 	// delete currently selected task
 	if (!taskManager) { return; }
 
-	// TODO: or delete multiple selected rows (use get_selected_rows())
-	Gtk::TreeModel::iterator iter = pTaskTreeView->get_selection()->get_selected();
-	if (iter) {
-		taskManager->deleteTask((*iter)[refTaskTreeModel->columns.id]);
-		
-		// TODO: select next row (will that work, when using a sorted model?)
+	Gtk::MessageDialog question("Really delete this task and all its subtasks?",
+		false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
+	if (question.run() == Gtk::RESPONSE_YES) {
+		// TODO: or delete multiple selected rows (use get_selected_rows())
+		Gtk::TreeModel::iterator iter = pTaskTreeView->get_selection()->get_selected();
+		if (iter) {
+			taskManager->deleteTask((*iter)[refTaskTreeModel->columns.id]);
+			
+			// TODO: select next row (will that work, when using a sorted model?)
+		}
 	}
 }
 

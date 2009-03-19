@@ -21,7 +21,6 @@ GeToDoApp::GeToDoApp(int argc, char* argv[])
 	}
 	
 	try {
-		std::cerr << dbName << std::endl;
 		taskManager = new TaskManager(dbName);
 	} catch (GetodoError& ex) {
 		std::cerr << ex.what() << std::endl;
