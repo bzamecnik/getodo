@@ -33,7 +33,7 @@ using namespace sqlite3x;
  */
 class TaskManager : public sigc::trackable {
 private:
-    std::map<id_t,Task*> tasks;
+	std::map<id_t,boost::shared_ptr<Task>> tasks;
     std::map<id_t,Tag> tags;
     std::map<id_t,FilterRule> filters;
 
@@ -98,12 +98,10 @@ public:
     bool hasTask(id_t taskId);
 
 	/** Get a task from task manager.
-	 * TODO: change the return type to Task& or shared_ptr<Task>.
-	 *
 	 * \param taskId task identification
 	 * \return pointer to task or 0 if not found
 	 */
-    Task* getTask(id_t taskId);
+    boost::shared_ptr<Task> getTask(id_t taskId);
 
 	/** Get task persistence for the task.
 	 * This is useful for modifying particular things without the need
@@ -112,7 +110,7 @@ public:
 	 * \param taskId task identification
 	 * \return task persistence
 	 */
-    TaskPersistence& getPersistentTask(id_t taskId);
+    TaskPersistence getPersistentTask(id_t taskId);
 	/** Edit task.
 	 * Replace contents of task identified by \p taskId by contents
 	 * of \p task.
@@ -127,7 +125,7 @@ public:
 	 * \param task new task contents
 	 * \return updated task
 	 */
-    Task& editTask(id_t taskId, const Task& task);
+    boost::shared_ptr<Task> editTask(id_t taskId, const Task& task);
 
 	/** Delete task and its whole subtree.
 	 * Delete the task and recursively the whole tree of its subtasks.
@@ -146,14 +144,14 @@ public:
 	 * This is useful for batch operations with all the tasks.
 	 * \return vector of all tasks
 	 */
-	std::vector<Task*>& getTasks();
+	std::vector<boost::shared_ptr<Task>> getTasks();
 
 	/** Get all top-level tasks present in task manager.
 	 * Top level tasks are those which have no parent. This is useful for batch
 	 * operations with all the tasks.
 	 * \return vector of all top-level tasks
 	 */
-	std::vector<Task*>& getTopLevelTasks();
+	std::vector<boost::shared_ptr<Task>> getTopLevelTasks();
 
     // ----- Tag operations -----
 
@@ -370,7 +368,7 @@ protected:
     bool checkDatabaseStructure();
 
 	/** Convert map to vector.
-	 * Make a vector from map values where value is a pointer.
+	 * Make a vector from map values.
 	 * 
 	 * TODO: Use output iterator and back_inserter.
 	 * See: http://bytes.com/groups/c/60522-returning-vector-reference#post225137 
@@ -379,14 +377,14 @@ protected:
 	 * \return vector of map values
 	 */
     template<typename T_key, typename T_value>
-    std::vector<T_value*>& convertMapToVector(std::map<T_key, T_value *>& m)
+    std::vector<T_value> convertMapToVector(const std::map<T_key, T_value>& m)
 	{
-        std::vector<T_value*>& vector = *(new std::vector<T_value*>());
-        std::map<T_key, T_value *>::iterator it;
-        for (it = m.begin(); it != m.end(); it++) {
-            vector.push_back(it->second);
-        }
-        return vector;
+		std::vector<T_value> vector;
+		std::pair<T_key, T_value> pair;
+		foreach (pair, m) {
+			vector.push_back(pair.second);
+		}
+		return vector;
     }
 };
 

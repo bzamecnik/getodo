@@ -59,7 +59,7 @@ public:
 	 *
 	 * \param manager valid TaskManager instance
 	 */
-	void setTaskManager(TaskManager* manager);
+	void setTaskManager(boost::shared_ptr<TaskManager> manager);
 protected:
 	/** Glade XML object using which are child widgets instantiated. */
 	Glib::RefPtr<Gnome::Glade::Xml> refXml;
@@ -250,7 +250,7 @@ private:
 	 * This is a vital component used to hold all the data and support
 	 * database persistence.
 	 */
-	TaskManager* taskManager;
+	boost::shared_ptr<TaskManager> taskManager;
 
 	// ---- filtering ----
 
@@ -351,7 +351,7 @@ private:
 	/* Create a new task.
 	 * \param newTask new task
 	 */
-	void createNewTask(Task& newTask, id_t parentId = Task::INVALID_ID);
+	void createNewTask(const Task& newTask, id_t parentId = Task::INVALID_ID);
 };
 
 } // namespace getodo

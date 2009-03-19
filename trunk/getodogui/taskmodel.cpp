@@ -38,7 +38,7 @@ void TaskTreeStore::on_task_removed(Task& task) {
 
 void TaskTreeStore::on_task_moved(Task& task, id_t oldParentId) {
 	Gtk::TreeModel::iterator taskIter;
-	Task* oldParentTask = manager.getTask(oldParentId);
+	boost::shared_ptr<Task> oldParentTask = manager.getTask(oldParentId);
 	// Find out in which task's children the moved task was
 	Gtk::TreeNodeChildren childrenIter = children();
 	if (oldParentTask) {
@@ -62,7 +62,7 @@ void TaskTreeStore::on_task_moved(Task& task, id_t oldParentId) {
 	if (!taskIter) { return; } // no such a task in the TreeStore
 	Gtk::TreeModel::iterator newTaskIter;
 	if (task.hasParent()) {
-		Task* parentTask = manager.getTask(task.getParentId());
+		boost::shared_ptr<Task> parentTask = manager.getTask(task.getParentId());
 		if (!parentTask) { return; }
 		Gtk::TreeModel::iterator newParentIter = getIterByTask(*parentTask);
 		newTaskIter = append(newParentIter->children());
@@ -79,11 +79,15 @@ void TaskTreeStore::on_task_moved(Task& task, id_t oldParentId) {
 }
 
 void TaskTreeStore::insertTask(Task& task) {
-	Task* parent = manager.getTask(task.getParentId());
 	Gtk::TreeModel::iterator iter;
-	if (task.hasParent() && parent) {
-		Gtk::TreeModel::iterator parentIter = getIterByTask(*parent);
-		iter = append(parentIter->children());
+	if (task.hasParent()) {
+		boost::shared_ptr<Task> parent = manager.getTask(task.getParentId());
+		if (parent) {
+			Gtk::TreeModel::iterator parentIter = getIterByTask(*parent);
+			iter = append(parentIter->children());
+		} else {
+			iter = append();
+		}
 	} else {
 		iter = append();
 	}
@@ -104,13 +108,15 @@ Gtk::TreeModel::iterator TaskTreeStore::getIterByTask(Task& task) {
 	// on this path, this function will not find it.
 
 	std::deque<int> taskIdPath;
-	Task* currentTask = &task;
 	id_t currentTaskId = task.getTaskId();
-	do {
+	taskIdPath.push_front(currentTaskId);
+	currentTaskId = task.getParentId();
+	boost::shared_ptr<Task> currentTask = manager.getTask(currentTaskId);
+	while (currentTask != 0) {
 		taskIdPath.push_front(currentTaskId);
 		currentTaskId = currentTask->getParentId();
 		currentTask = manager.getTask(currentTaskId);
-	} while (currentTask != 0);
+	}
 
 	// traverse down the treestore searching for proper ids
 	Gtk::TreeNodeChildren childrenIter = children();
@@ -173,7 +179,7 @@ void TaskTreeStore::refresh() {
 			std::vector<id_t>::iterator
 		>> stack;
 
-	std::vector<Task*>& topLevelTasks = manager.getTopLevelTasks();
+	std::vector<boost::shared_ptr<Task>>& topLevelTasks = manager.getTopLevelTasks();
 	// figure out top level task id's only
 	boost::shared_ptr<std::vector<id_t>> topLevelIds(
 		new std::vector<id_t>(topLevelTasks.size()));
@@ -186,17 +192,18 @@ void TaskTreeStore::refresh() {
 			std::vector<id_t>::iterator
 		>& pair = stack.top();
 		while (pair.second != pair.first->end()) {
-			Task* task = manager.getTask(*pair.second);
+			boost::shared_ptr<Task> task = manager.getTask(*pair.second);
 			if (!task) {
 				continue; // odd situation
 			}
 			Gtk::TreeModel::iterator iter;
 			if (task->hasParent()) {
-				Task* parentTask = manager.getTask(task->getParentId());
-				if (!parentTask) {
+				boost::shared_ptr<Task> parentTask = manager.getTask(task->getParentId());
+				if (parentTask) {
+					iter = append(getIterByTask(*parentTask)->children());
+				} else {
 					iter = append(); // odd situation
 				}
-				iter = append(getIterByTask(*parentTask)->children());
 			} else {
 				iter = append();
 			}
@@ -214,8 +221,8 @@ void TaskTreeStore::refresh() {
 	}
 
 	// dummy implementation - insert top level task only
-	//std::vector<Task*>& tasks = manager.getTasks();
-	//std::vector<Task*>::iterator it;
+	//std::vector<boost::shared_ptr<Task>> tasks = manager.getTasks();
+	//std::vector<boost::shared_ptr<Task>>::iterator it;
 	//for (it = tasks.begin(); it != tasks.end(); ++it) {
 	//	if (!(*it)->hasParent()) {
 	//		Gtk::TreeModel::iterator iter = append();

@@ -37,16 +37,13 @@ TaskManager::TaskManager(boost::shared_ptr<sqlite3_connection> c)
 }
 
 TaskManager::~TaskManager() {
-	if(conn) {
+	if (conn) {
 		conn->close();
 	}
-	for (std::map<id_t,Task*>::iterator it = tasks.begin();
-		it != tasks.end(); ++it) {
-		delete it->second;
-	}
+	// necessary?
 	tasks.clear();
-	tags.clear(); // necessary?
-	filters.clear(); // necessary?
+	tags.clear();
+	filters.clear();
 }
 
 
@@ -59,40 +56,40 @@ boost::shared_ptr<sqlite3_connection> TaskManager::getConnection() {
 // ----- Task operations -----
 
 id_t TaskManager::addTask(const Task& task) {
-	Task* taskCopy = new Task(task);
-	taskCopy->setTaskId(Task::INVALID_ID); // delete id
-	// save it to database and get the new taskId
-	TaskPersistence tp(conn, taskCopy);
-	tp.insert();
+	boost::shared_ptr<Task> newTask(new Task(task));
+	newTask->setTaskId(Task::INVALID_ID); // delete id
+	// save it to database and get a new taskId
+	TaskPersistence persistence(conn, newTask);
+	persistence.insert();
+	id_t newTaskId = newTask->getTaskId();
 	// insert the task into TaskManager
-	tasks[taskCopy->getTaskId()] = taskCopy;
-	signal_task_inserted(*taskCopy);
+	tasks[newTaskId] = newTask;
+	signal_task_inserted(*newTask);
 
 	// TODO: add all tags from task
 
-	return taskCopy->getTaskId();
+	return newTaskId;
 }
 
 bool TaskManager::hasTask(id_t taskId) {
-	std::map<id_t,Task*>::iterator it = tasks.find(taskId);
-	return (it != tasks.end());
+	return tasks.find(taskId) != tasks.end();
 }
 
-Task* TaskManager::getTask(id_t taskId) {
-	std::map<id_t,Task*>::iterator it = tasks.find(taskId);
+boost::shared_ptr<Task> TaskManager::getTask(id_t taskId) {
+	std::map<id_t,boost::shared_ptr<Task>>::iterator it = tasks.find(taskId);
 	if (it != tasks.end()) {
 		return it->second;
 	} else {
-		return 0; // better throw GetodoError
+		return boost::shared_ptr<Task>(); // better throw GetodoError
 	}
 }
 
-TaskPersistence& TaskManager::getPersistentTask(id_t taskId) {
+TaskPersistence TaskManager::getPersistentTask(id_t taskId) {
 	// TODO: handle situation when getTask throws GetodoError
-	return *(new TaskPersistence(conn, getTask(taskId)));
+	return TaskPersistence(conn, getTask(taskId));
 }
 
-Task& TaskManager::editTask(id_t taskId, const Task& task) {
+boost::shared_ptr<Task> TaskManager::editTask(id_t taskId, const Task& task) {
 	if (!hasTask(taskId)) {
 		throw GetodoError("No such a task to edit: "
 			+ boost::lexical_cast<std::string, id_t>(taskId));
@@ -102,35 +99,32 @@ Task& TaskManager::editTask(id_t taskId, const Task& task) {
 
 	// Note: Tags are synchronized in TaskPersistence::update().
 
-	Task* taskCopy = new Task(task); // copy
-	// Delete original task from tasks
-	delete tasks[taskId];
-	tasks[taskId] = 0;
+	boost::shared_ptr<Task> editedTask(new Task(task)); // copy
 	// Correct new task's taskId to be the same as the former's one
-	taskCopy->setTaskId(taskId);
-	// Copy new task there
-	tasks[taskId] = taskCopy;
+	editedTask->setTaskId(taskId);
+	// Copy new task there, the old is deleted automatically
+	tasks[taskId] = editedTask;
 	// Save it to database
-	TaskPersistence tp(conn, taskCopy);
-	tp.update();
-	signal_task_updated(*taskCopy);
-	return *taskCopy;
+	TaskPersistence persistence(conn, editedTask);
+	persistence.update();
+	signal_task_updated(*editedTask);
+	return editedTask;
 }
 
 void TaskManager::deleteTask(id_t taskId) {
-	Task* task = getTask(taskId);
-	if (task == 0) {
+	boost::shared_ptr<Task> task = getTask(taskId);
+	if (!task) {
 		throw GetodoError("No such a task to delete: "
 			+ boost::lexical_cast<std::string, id_t>(taskId));
 	}
 
-	Task* parent = 0;
+	boost::shared_ptr<Task> parent;
 	if (task->hasParent()) {
 		id_t parentId = task->getParentId();
 		parent = getTask(parentId);
 		parent->removeSubtask(taskId);
-		TaskPersistence& tp = getPersistentTask(parentId);
-		tp.update();
+		TaskPersistence persistence = getPersistentTask(parentId);
+		persistence.update();
 	}
 
 	//// connect deleted tasks's children to parent node if any
@@ -151,28 +145,27 @@ void TaskManager::deleteTask(id_t taskId) {
 	//}
 
 	// delete the whole subtree
-	std::vector<id_t>& subtaskIds = task->getSubtaskIds();
-	for (std::vector<id_t>::iterator it = subtaskIds.begin();
-		it != subtaskIds.end(); ++it)
-	{
-		deleteTask(*it); // recursion
+	std::vector<id_t> subtaskIds = task->getSubtaskIds();
+	foreach (id_t id, subtaskIds) {
+		deleteTask(id); // recursion
+		// TODO: handle GetodoError
 	}
 
 	signal_task_removed(*task);
 
 	// erase from database
-	TaskPersistence& tp = getPersistentTask(taskId);
-	tp.erase();
+	TaskPersistence persistence = getPersistentTask(taskId);
+	persistence.erase();
 	// erase from task manager
 	tasks.erase(taskId);
 }
 
-std::vector<Task*>& TaskManager::getTasks() {
-	return convertMapToVector<id_t, Task>(tasks);
+std::vector<boost::shared_ptr<Task>> TaskManager::getTasks() {
+	return convertMapToVector<id_t, boost::shared_ptr<Task>>(tasks);
 }
 
-std::vector<Task*>& TaskManager::getTopLevelTasks() {
-	std::vector<Task*>& allTasks = getTasks();
+std::vector<boost::shared_ptr<Task>> TaskManager::getTopLevelTasks() {
+	std::vector<boost::shared_ptr<Task>> allTasks = getTasks();
 	allTasks.erase(std::remove_if(allTasks.begin(), allTasks.end(),
 		boost::bind(&Task::hasParent, _1)), allTasks.end());
 	return allTasks;
@@ -260,12 +253,7 @@ void TaskManager::deleteTag(id_t tagId) {
 }
 
 std::vector<Tag> TaskManager::getTags() {
-	std::vector<Tag> tagVector;
-	std::pair<id_t, Tag> pair;
-	foreach (pair, tags) {
-		tagVector.push_back(pair.second);
-	}
-	return tagVector;
+	return convertMapToVector<id_t, Tag>(tags);
 }
 
 // ----- FilterRule operations -----
@@ -344,12 +332,7 @@ void TaskManager::deleteFilterRule(id_t filterRuleId) {
 }
 
 std::vector<FilterRule> TaskManager::getFilterRules() {
-	std::vector<FilterRule> filterVector;
-	std::pair<id_t, FilterRule> pair;
-	foreach (pair, filters) {
-		filterVector.push_back(pair.second);
-	}
-	return filterVector;
+	return convertMapToVector<id_t, FilterRule>(filters);
 }
 
 idset_t TaskManager::filterTasks(const FilterRule& filterRule) const {
@@ -427,7 +410,7 @@ void TaskManager::loadAllFromDatabase() {
 			}
 			row[cursor.getcolname(i)] = columnData;
 		}
-		Task* task = Task::fromDatabaseRow(row);
+		boost::shared_ptr<Task> task = Task::fromDatabaseRow(row);
 		// what if there's an exception
 		tasks[task->getTaskId()] = task;
 		row.clear();
@@ -477,7 +460,7 @@ void TaskManager::loadAllFromDatabase() {
 	cursor.close();
 
 	// load parent-subtask relations
-	for (std::map<id_t,Task*>::iterator it = tasks.begin();
+	for (std::map<id_t,boost::shared_ptr<Task>>::iterator it = tasks.begin();
 		it != tasks.end(); ++it)
 	{
 		if (!it->second) { continue; }

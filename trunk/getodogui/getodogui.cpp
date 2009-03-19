@@ -21,7 +21,7 @@ GeToDoApp::GeToDoApp(int argc, char* argv[])
 	}
 	
 	try {
-		taskManager = new TaskManager(dbName);
+		taskManager = boost::shared_ptr<TaskManager>(new TaskManager(dbName));
 	} catch (GetodoError& ex) {
 		std::cerr << ex.what() << std::endl;
 		exit(1);
