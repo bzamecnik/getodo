@@ -37,7 +37,7 @@ private:
     std::map<id_t,Tag*> tags;
     std::map<id_t,FilterRule*> filters;
 
-    sqlite3_connection* conn;
+	boost::shared_ptr<sqlite3_connection> conn;
 
 	/** Active filter rule. */
 	FilterRule activeFilterRule;
@@ -62,7 +62,7 @@ public:
 	 * If the database is not initialized, create the table structure.
 	 * \param conn database connection
 	 */
-    TaskManager(sqlite3_connection* conn);
+    TaskManager(boost::shared_ptr<sqlite3_connection> conn);
 
     virtual ~TaskManager();
 
@@ -75,9 +75,9 @@ public:
 	/** Get the database connection.
 	 * \return SQLite connection
 	 */
-    sqlite3_connection* getConnection(); // really publish?
+    boost::shared_ptr<sqlite3_connection> getConnection(); // really publish?
 
-	//void setConnection(sqlite3_connection* conn);
+	//void setConnection(boost::shared_ptr<sqlite3_connection> conn);
     
     // ----- Task operations -----
 
@@ -291,7 +291,7 @@ public:
 	 * \param filterRule filter rule
 	 * \return set of task id that passed the filter, ie. they are visible
 	 */
-    idset_t& filterTasks(FilterRule& filterRule);
+    idset_t filterTasks(FilterRule& filterRule);
 
 	/** Set the active filtering rule.
 	 * Set \p filter as the active rule, filter tasks using this rule and
@@ -320,12 +320,12 @@ public:
 	 * \param taskId identification of task to check
 	 * \return true if the task is passed the filter
 	 */
-	bool isTaskVisible(id_t taskId);
+	bool isTaskVisible(id_t taskId) const;
 
 	/** Get id's of task that passed the filter.
 	 * \return set of task id's that passed the filter, eg. they are visible
 	 */
-	idset_t getFilteredTasks();
+	idset_t getFilteredTasks() const;
 
 	// ----- signals for models -----
 	sigc::signal1<void, Task&> signal_task_inserted;
