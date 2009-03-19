@@ -65,10 +65,9 @@ void FilterListStore::setRowFromFilterRule(Gtk::TreeModel::iterator& iter, Filte
 // insert all filter rules from the task manager to the list store
 void FilterListStore::refresh() {
 	clear();
-	std::vector<FilterRule*>& filters = manager.getFilterRules();
-	std::vector<FilterRule*>::iterator it;
-	for (it = filters.begin(); it != filters.end(); ++it) {
-		insertFilterRule(**it);
+	std::vector<FilterRule> filters = manager.getFilterRules();
+	foreach (FilterRule filter, filters) {
+		insertFilterRule(filter);
 	}
 }
 

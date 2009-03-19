@@ -65,10 +65,9 @@ void TagListStore::setRowFromTag(Gtk::TreeModel::iterator& iter, Tag& tag) {
 // insert all tag from the task manager to the list store
 void TagListStore::refresh() {
 	clear();
-	std::vector<Tag*>& tags = manager.getTags();
-	std::vector<Tag*>::iterator it;
-	for (it = tags.begin(); it != tags.end(); ++it) {
-		insertTag(**it);
+	std::vector<Tag> tags = manager.getTags();
+	foreach (Tag tag, tags) {
+		insertTag(tag);
 	}
 }
 

@@ -44,17 +44,9 @@ TaskManager::~TaskManager() {
 		it != tasks.end(); ++it) {
 		delete it->second;
 	}
-	for (std::map<id_t,Tag*>::iterator it = tags.begin();
-		it != tags.end(); ++it) {
-		delete it->second;
-	}
-	for (std::map<id_t,FilterRule*>::iterator it = filters.begin();
-		it != filters.end(); ++it) {
-		delete it->second;
-	}
 	tasks.clear();
-	tags.clear();
-	filters.clear();
+	tags.clear(); // necessary?
+	filters.clear(); // necessary?
 }
 
 
@@ -189,89 +181,77 @@ std::vector<Task*>& TaskManager::getTopLevelTasks() {
 // ----- Tag operations -----
 
 id_t TaskManager::addTag(const Tag& tag) {
-	// for now tag names are not unique
-	if (hasTag(tag.id)) {
-		Tag* existingTag = tags[tag.id];
-		if (existingTag && (existingTag->name == tag.name)) {
-			return tag.id; // already in TaskManager
-			// or this could throw an exception...
-		}
+	if (hasTag(tag.name)) {
+		// tag names are unique
+		return getTag(tag.name).id; // already in TaskManager
+		// or this could throw an exception...
 	}
-	// if wa have unique tag name this would be sufficient:
-	//if (hasTag(tag.name)) { return; }
-
 	TagPersistence tp(conn);
-	Tag* tagCopy = 0;
-	// when saving, id is assigned by database
+	Tag newTag;
 	try {
-		tagCopy = new Tag(tp.insert(tag));
+		newTag = tp.insert(tag); // id is assigned by database
 	} catch (GetodoError&) {
 		return Tag::INVALID_ID;
 	}
-	tags[tagCopy->id] = tagCopy;
-	signal_tag_inserted(*tagCopy);
-	return tagCopy->id;
+	tags[newTag.id] = newTag;
+	signal_tag_inserted(newTag);
+	return newTag.id;
 }
 
 bool TaskManager::hasTag(id_t tagId) {
-	std::map<id_t,Tag*>::iterator it = tags.find(tagId);
-	return (it != tags.end());
+	return tags.find(tagId) != tags.end();
 }
 
 bool TaskManager::hasTag(const std::string& tagName) {
-	std::map<id_t, Tag*>::iterator it;
-	for (it = tags.begin(); it != tags.end(); ++it) {
-		if (it->second && (it->second->name == tagName)) { return true; }
+	std::pair<id_t, Tag> pair;
+	foreach (pair, tags) {
+		if (pair.second.name == tagName) { return true; }
 	}
 	return false;
 }
 
-Tag& TaskManager::getTag(id_t tagId) {
-	std::map<id_t,Tag*>::iterator foundTag = tags.find(tagId);
+Tag TaskManager::getTag(id_t tagId) {
+	std::map<id_t,Tag>::iterator foundTag = tags.find(tagId);
 	if (foundTag == tags.end()) {
 		throw GetodoError("No such a tag: "
 			+ boost::lexical_cast<std::string, id_t>(tagId));
 	}
-	return *(foundTag->second);
+	return foundTag->second;
 
 }
 
-Tag& TaskManager::getTag(const std::string& tagName) {
-	std::map<id_t, Tag*>::iterator it;
-	for (it = tags.begin(); it != tags.end(); ++it) {
-		if (it->second && (it->second->name == tagName)) { return *(it->second); }
+Tag TaskManager::getTag(const std::string& tagName) {
+	std::pair<id_t, Tag> pair;
+	foreach (pair, tags) {
+		if (pair.second.name == tagName) { return pair.second; }
 	}
 	throw GetodoError("No such a tag: " + tagName);
 }
 
-Tag& TaskManager::editTag(id_t tagId, const Tag& tag) {
+Tag TaskManager::editTag(id_t tagId, const Tag& tag) {
 	if (!hasTag(tagId)) {
 		throw GetodoError("No such a tag to edit: "
 			+ boost::lexical_cast<std::string, id_t>(tagId));
 	}
-
-	Tag* tagCopy = new Tag(tag);
-	// Delete original tag from tags
-	delete tags[tagId];
-	tags[tagId] = 0;
-	// correct new tag's tagId to be the same as the former's one
-	tagCopy->id = tagId;
-	// Copy new tag there
-	tags[tagId] = tagCopy;
-	// Save it to database
+	Tag editedTag(tag);
+	// correct edited tag's id to be the same as the former one's
+	editedTag.id = tagId;
+	// copy edited tag
+	tags[tagId] = editedTag;
+	// save it to database
 	TagPersistence p(conn);
-	p.update(*tagCopy);
-	signal_tag_updated(*tagCopy);
-	return *tagCopy;
+	p.update(editedTag);
+	signal_tag_updated(editedTag);
+	return editedTag;
 }
 
 void TaskManager::deleteTag(id_t tagId) {
-	std::map<id_t,Tag*>::iterator foundTag = tags.find(tagId);
+	std::map<id_t,Tag>::iterator foundTag = tags.find(tagId);
 	if (foundTag == tags.end()) {
 		throw GetodoError("No such a tag to delete: "
 			+ boost::lexical_cast<std::string, id_t>(tagId));
 	}
-	signal_tag_removed(*foundTag->second);
+	signal_tag_removed(foundTag->second);
 	// erase from database
 	TagPersistence p(conn);
 	p.erase(tagId);
@@ -279,74 +259,83 @@ void TaskManager::deleteTag(id_t tagId) {
 	tags.erase(tagId);
 }
 
-std::vector<Tag*>& TaskManager::getTags() {
-	return convertMapToVector<id_t, Tag>(tags);
+std::vector<Tag> TaskManager::getTags() {
+	std::vector<Tag> tagVector;
+	std::pair<id_t, Tag> pair;
+	foreach (pair, tags) {
+		tagVector.push_back(pair.second);
+	}
+	return tagVector;
 }
 
 // ----- FilterRule operations -----
 
 id_t TaskManager::addFilterRule(const FilterRule& rule) {
-	FilterRulePersistence p(conn);
+	FilterRulePersistence persistence(conn);
 	// when saving, filterRuleId is assigned by database
-	FilterRule* ruleCopy = 0;
+	FilterRule newRule;
 	try {
-		ruleCopy = new FilterRule(p.insert(rule));
+		newRule = persistence.insert(rule);
 	} catch (GetodoError&) {
 		return FilterRule::INVALID_ID;
 	}
-	filters[ruleCopy->id] = ruleCopy;
-	signal_filter_inserted(*ruleCopy);
-	return ruleCopy->id;
+	filters[newRule.id] = newRule;
+	signal_filter_inserted(newRule);
+	return newRule.id;
 }
 
 bool TaskManager::hasFilterRule(id_t filterRuleId) {
-	std::map<id_t,FilterRule*>::iterator it = filters.find(filterRuleId);
-	return (it != filters.end());
+	return filters.find(filterRuleId) != filters.end();
 }
 
 bool TaskManager::hasFilterRule(const std::string& filterRuleName) {
-	std::pair<id_t, FilterRule*> pair;
-	foreach(pair, filters) {
-		if (pair.second && (pair.second->name == filterRuleName)) { return true; }
+	std::pair<id_t, FilterRule> pair;
+	foreach (pair, filters) {
+		if (pair.second.name == filterRuleName) { return true; }
 	}
 	return false;
 }
 
-FilterRule& TaskManager::getFilterRule(id_t filterRuleId) {
-	if (!hasFilterRule(filterRuleId)) {
-		throw GetodoError("No such a filter rule.");
+FilterRule TaskManager::getFilterRule(id_t filterRuleId) {
+	std::map<id_t,FilterRule>::iterator foundRule = filters.find(filterRuleId);
+	if (foundRule == filters.end()) {
+		throw GetodoError("No such a filter rule: "
+			+ boost::lexical_cast<std::string, id_t>(filterRuleId));
 	}
-	return *(filters[filterRuleId]);
+	return foundRule->second;
+
+	// alternatively:
+	//if (!hasFilterRule(filterRuleId)) {
+	//	throw GetodoError("No such a filter rule.");
+	//}
+	//return filters[filterRuleId];
 }
 
-FilterRule& TaskManager::editFilterRule(id_t filterRuleId, const FilterRule& filter) {
+FilterRule TaskManager::editFilterRule(id_t filterRuleId, const FilterRule& filter) {
 	if (!hasFilterRule(filterRuleId)) {
-		throw GetodoError("No such a filter rule.");
+		throw GetodoError("No such a filter rule to edit: "
+			+ boost::lexical_cast<std::string, id_t>(filterRuleId));
 	}
-
-	FilterRule* ruleCopy = new FilterRule(filter);
-	// correct new FilterRule's filterRuleId to be the same as former's one
-	ruleCopy->id = filterRuleId;
-	// Delete original FilterRule from filters
-	delete filters[filterRuleId];
-	filters[filterRuleId] = 0;
-	// Copy new FilterRule there
-	filters[filterRuleId] = ruleCopy;
-	// Save it to database
-	FilterRulePersistence p(conn);
-	p.update(*ruleCopy);
-	signal_filter_updated(*ruleCopy);
-	return *ruleCopy;
+	FilterRule editedRule(filter);
+	// correct edited FilterRule's id to be the same as former one's
+	editedRule.id = filterRuleId;
+	// copy edited FilterRule
+	filters[filterRuleId] = editedRule;
+	// save it to database
+	FilterRulePersistence persistence(conn);
+	persistence.update(editedRule);
+	signal_filter_updated(editedRule);
+	return editedRule;
 }
 
 
 void TaskManager::deleteFilterRule(id_t filterRuleId) {
-	std::map<id_t,FilterRule*>::iterator foundFilter = filters.find(filterRuleId);
+	std::map<id_t,FilterRule>::iterator foundFilter = filters.find(filterRuleId);
 	if (foundFilter == filters.end()) {
 		throw GetodoError("No such a filter rule to delete: "
 			+ boost::lexical_cast<std::string, id_t>(filterRuleId));
 	}
-	signal_filter_removed(*foundFilter->second);
+	signal_filter_removed(foundFilter->second);
 	// erase from database
 	FilterRulePersistence p(conn);
 	p.erase(filterRuleId);
@@ -354,13 +343,18 @@ void TaskManager::deleteFilterRule(id_t filterRuleId) {
 	filters.erase(filterRuleId);
 }
 
-std::vector<FilterRule*>& TaskManager::getFilterRules() {
-	return convertMapToVector<id_t, FilterRule>(filters);
+std::vector<FilterRule> TaskManager::getFilterRules() {
+	std::vector<FilterRule> filterVector;
+	std::pair<id_t, FilterRule> pair;
+	foreach (pair, filters) {
+		filterVector.push_back(pair.second);
+	}
+	return filterVector;
 }
 
-idset_t TaskManager::filterTasks(FilterRule& filterRule) {
+idset_t TaskManager::filterTasks(const FilterRule& filterRule) const {
 	// TODO: rethrow the exception
-	return filterRule.filter(*conn);
+	return filterRule.filter(conn);
 }
 
 void TaskManager::setActiveFilterRule(const FilterRule& filter) {
@@ -455,7 +449,7 @@ void TaskManager::loadAllFromDatabase() {
 			row[cursor.getcolname(i)] = columnData;
 		}
 		id_t tagId = boost::lexical_cast<id_t, std::string>(row["tagId"]);
-		tags[tagId] = new Tag(tagId, row["tagName"]);
+		tags[tagId] = Tag(tagId, row["tagName"]);
 		row.clear();
 	}
 	cursor.close();
@@ -512,7 +506,7 @@ void TaskManager::loadAllFromDatabase() {
 			row[cursor.getcolname(i)] = columnData;
 		}
 		id_t filterRuleId = boost::lexical_cast<id_t, std::string>(row["filterRuleId"]);
-		filters[filterRuleId] = new FilterRule(filterRuleId, row["name"], row["rule"]);
+		filters[filterRuleId] = FilterRule(filterRuleId, row["name"], row["rule"]);
 		row.clear();
 	}
 	cursor.close();
