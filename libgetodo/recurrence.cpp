@@ -163,11 +163,9 @@ Date RecurrenceWeekly::next(Date start) {
 		bool haveNextWeekday = false;
 		boost::gregorian::greg_weekday startWeekday = start.date.day_of_week();
 		boost::gregorian::greg_weekday nextWeekday(1);
-		for(weekdaySet_t::iterator it = weekdaySelection.begin();
-			it != weekdaySelection.end(); ++it)
-		{
-			if (it->as_number() > startWeekday.as_number()) {
-				nextWeekday = *it;
+		foreach (boost::gregorian::greg_weekday weekday, weekdaySelection) {
+			if (weekday.as_number() > startWeekday.as_number()) {
+				nextWeekday = weekday;
 				haveNextWeekday = true;
 				break;
 			}

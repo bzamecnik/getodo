@@ -123,13 +123,8 @@ public:
 	bool hasTag(id_t tagId) const;
 	void removeTag(id_t tagId); //should throw an exception on failure
 	/** Get a list of tag ids which belong to the task. */
-	idset_t& getTagIds() const;
-	/** Get a list of tag names separated by a space. */
-	std::string getTagsAsString(TaskManager& manager) const;
-	/** Set tags from a string of tag names separated by whitespace. 
-	 * Try to synchronize old and new tags to minimize database queries.
-	*/
-	void setTagsFromString(TaskManager& manager, const std::string& tagsString);
+	idset_t getTagIds() const;
+	void clearTags();
 
 	// only update subtasks set. these two should be private!
 	void addSubtask(id_t taskId); //should throw an exception on failure (?)
@@ -137,7 +132,7 @@ public:
 	bool hasSubtask(id_t taskId) const;
 
 	/** Get a list of subtask ids. */
-	std::vector<id_t>& getSubtaskIds() const;
+	std::vector<id_t> getSubtaskIds() const;
 
 	DateTime getDateCreated() const;
 	void setDateCreated(const DateTime& dateCreated);
@@ -188,18 +183,23 @@ public:
 	 */
 	std::string toString() const;
 	friend std::ostream& operator<< (std::ostream& o, const Task& task);
-private:
-	/** Convert set to vector. Utility function. */
-	template<typename T>
-	std::vector<T>& convertSetToVector(std::set<T> s) const {
-		std::vector<T>& vector = *(new std::vector<T>());
-		std::set<T>::const_iterator it;
-		for (it = s.begin(); it != s.end(); it++) {
-			vector.push_back(*it);
-		}
-		return vector;
-	}
 };
+
+/** Get a list of tag names of a task separated by a space.
+ * \param task task from where to get the tags
+ * \param manager task manager used for tag name lookup
+ */
+std::string getTaskTagsAsString(const Task& task, TaskManager& manager);
+
+/** Add tags to task from a string.
+ * Add tags to task from a string of tag names separated by comma.
+ * New tags are added to the task manager.
+ *
+ * \param task task where to add the tags
+ * \param manager task manager used for tag name lookup
+ * \param tagsString tag names separated by comma (,)
+ */
+void addTaskTagsFromString(Task& task, TaskManager& manager, const std::string& tagsString);
 
 // ----- class TaskPersistence --------------------
 
@@ -404,6 +404,20 @@ private:
 	 */
 	bool checkTaskPersistent();
 };
+
+/** Set tags to task from a string.
+ * Set tags to task from a string of tag names separated by comma.
+ * Try to synchronize old and new tags to minimize database queries.
+ * New tags are added to the task manager.
+ *
+ * \param persistence task persistence
+ * \param manager task manager used for tag name lookup
+ * \param tagsString tag names separated by comma (,)
+ */
+void setTaskPersistenceTagsFromString(
+	TaskPersistence& persistence,
+	TaskManager& manager,
+	const std::string& tagsString);
 
 } // namespace getodo
 

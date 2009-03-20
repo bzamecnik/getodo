@@ -39,9 +39,11 @@ Kontextová nápovìda funguje u vìtšiny ovládacích prvkù. Zobrazí se, jakmile naje
 	- vytvoøí nový úkol na nejvyšší úrovni (takový úkol není podúkolem jiného)
 - New task on the same level
 	- vytvoøí nový úkol na stejné úrovni jako je úkol právì oznaèený v pøehledu úkolù
+	- tagy se zkopírují z pøedka, pokud nový úkol nìjakého má 
 	- pokud žádný oznaèení není, vytvoøí úkol na nejvyšší úrovni
 - New subtask
 	- vytvoøí nový úkol jako podúkol úkolu právì oznaèeného v pøehledu úkolù
+	- tagy se zkopírují z pøedka, pokud nový úkol nìjakého má
 	- pokud žádný oznaèení není, vytvoøí úkol na nejvyšší úrovni
 - Delete task
 	- vymaže úkol právì oznaèený v pøehledu úkolù a také všechny jeho potomky

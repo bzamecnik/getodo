@@ -157,9 +157,8 @@ void RecurrenceDialog::setRecurrence(const Recurrence& r) {
 		RecurrenceWeekly* weekly = static_cast<RecurrenceWeekly*>(recurrence);
 		weeklySpinbutton->set_value(weekly->getPeriod());
 		RecurrenceWeekly::weekdaySet_t weekdays = weekly->getWeekdaySelection();
-		RecurrenceWeekly::weekdaySet_t::iterator it;
-		for (it = weekdays.begin(); it != weekdays.end(); ++it) {
-			weekdayCheckbuttons[it->as_short_string()]->set_active(true);
+		foreach (RecurrenceWeekly::weekdaySet_t::value_type weekday, weekdays) {
+			weekdayCheckbuttons[weekday.as_short_string()]->set_active(true);
 		}
 	} else if (type == "Monthly") {
 		monthlyRadiobutton->set_active();

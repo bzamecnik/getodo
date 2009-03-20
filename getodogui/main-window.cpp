@@ -108,6 +108,11 @@ MainWindow::MainWindow(BaseObjectType* cobject,
 				sigc::mem_fun(*this, &MainWindow::on_taskLongDescriptionTextview_focus_out_event),
 				pTaskLongDescriptionTextView
 			));
+		pTaskTagsEntry->signal_focus_out_event().connect(
+			sigc::bind(
+				sigc::mem_fun(*this, &MainWindow::on_taskTagsEntry_focus_out_event),
+				pTaskTagsEntry
+			));
 		pTaskDoneCheckbutton->signal_toggled().connect(
 			sigc::mem_fun(*this, &MainWindow::on_taskDoneCheckbutton_toggled)
 			);
@@ -339,8 +344,11 @@ void MainWindow::on_buttonTaskNextByRecurrence_clicked() {
 	id_t taskId = getCurrentlyEditedTaskId();
 	boost::shared_ptr<Task> selectedTask = taskManager->getTask(taskId);
 	if (selectedTask) {
-		Date deadlineDate = selectedTask->getDateDeadline();
-		Date nextDate = selectedTask->getRecurrence().next(deadlineDate);
+		Date originalDate = selectedTask->getDateDeadline();
+		if (originalDate.date.is_not_a_date()) {
+			originalDate = Date::now();
+		}
+		Date nextDate = selectedTask->getRecurrence().next(originalDate);
 		
 		if (!nextDate.date.is_not_a_date()) {
 			boost::shared_ptr<Task> newTask = selectedTask->copyAsNew();
@@ -427,18 +435,20 @@ void MainWindow::on_tagNameCellRenderer_edited(
 bool MainWindow::on_taskDescriptionEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry) {
 	if (!entry || !editingPanelActive) { return false; }
 	return updateTaskPartial(boost::bind( &TaskPersistence::setDescription, _1,
-		boost::ref(entry->get_text()) ));
+		boost::cref(entry->get_text()) ));
 }
 
 bool MainWindow::on_taskLongDescriptionTextview_focus_out_event(GdkEventFocus* event, Gtk::TextView* textview) {
 	if (!textview || !editingPanelActive) { return false; }
 	return updateTaskPartial(boost::bind( &TaskPersistence::setLongDescription, _1,
-		boost::ref(textview->get_buffer()->get_text()) ));
+		boost::cref(textview->get_buffer()->get_text()) ));
 }
 
-//bool MainWindow: on_taskTagsEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry) {
-// //TODO: we need TaskPersistence.setTagsFromString()
-//}
+bool MainWindow::on_taskTagsEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry) {
+	if (!entry || !editingPanelActive) { return false; }
+	return updateTaskPartial(boost::bind( &setTaskPersistenceTagsFromString, _1,
+		boost::ref(*taskManager), boost::cref(entry->get_text()) ));
+}
 
 void MainWindow::on_taskDoneCheckbutton_toggled() {
 	if (!taskManager || !editingPanelActive) { return; }
@@ -468,25 +478,25 @@ bool MainWindow::on_taskPrioritySpinbutton_focus_out_event(GdkEventFocus* event,
 bool MainWindow::on_taskRecurrenceEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry) {
 	if (!entry || !editingPanelActive) { return false; }
 	return updateTaskPartial(boost::bind( &TaskPersistence::setRecurrence, _1,
-		boost::ref(*Recurrence::fromString(entry->get_text())) ));
+		boost::cref(*Recurrence::fromString(entry->get_text())) ));
 }
 
 bool MainWindow::on_taskDateDeadlineEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry) {
 	if (!entry || !editingPanelActive) { return false; }
 	return updateTaskPartial(boost::bind( &TaskPersistence::setDateDeadline, _1,
-		boost::ref(Date(entry->get_text())) ));
+		boost::cref(Date(entry->get_text())) ));
 }
 
 bool MainWindow::on_taskDateStartedEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry) {
 	if (!entry || !editingPanelActive) { return false; }
 	return updateTaskPartial(boost::bind( &TaskPersistence::setDateStarted, _1,
-		boost::ref(Date(entry->get_text())) ));
+		boost::cref(Date(entry->get_text())) ));
 }
 
 bool MainWindow::on_taskDateCompletedEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry) {
 	if (!entry || !editingPanelActive) { return false; }
 	return updateTaskPartial(boost::bind( &TaskPersistence::setDateCompleted, _1,
-		boost::ref(Date(entry->get_text())) ));
+		boost::cref(Date(entry->get_text())) ));
 }
 
 void MainWindow::on_buttonRecurrence_clicked() {
@@ -502,7 +512,7 @@ void MainWindow::on_buttonRecurrence_clicked() {
 		pTaskRecurrenceEntry->set_text(Recurrence::toString(dialog->getRecurrence()));
 	}
 	updateTaskPartial(boost::bind( &TaskPersistence::setRecurrence, _1,
-		boost::ref(dialog->getRecurrence()) ));
+		boost::cref(dialog->getRecurrence()) ));
 }
 
 void MainWindow::on_buttonRuleFilterNew_clicked() {
@@ -718,7 +728,7 @@ void MainWindow::fillEditingPanel(Task& task) {
 	pTaskDescriptionEntry->set_text(task.getDescription());
 	//refTaskLongDescriptionTextBuffer->set_text(task.getLongDescription());
 	pTaskLongDescriptionTextView->get_buffer()->set_text(task.getLongDescription());
-	pTaskTagsEntry->set_text(task.getTagsAsString(*taskManager));
+	pTaskTagsEntry->set_text(getTaskTagsAsString(task,*taskManager));
 	pTaskDoneCheckbutton->set_active(task.isDone());
 	pTaskCompletedPercentageSpinbutton->set_value(task.getCompletedPercentage());
 	pTaskPrioritySpinbutton->set_value(task.getPriority());
@@ -761,7 +771,8 @@ void MainWindow::saveEditingPanelToTask(Task& task) {
 
 	task.setDescription(pTaskDescriptionEntry->get_text());
 	task.setLongDescription(pTaskLongDescriptionTextView->get_buffer()->get_text());
-	task.setTagsFromString(*taskManager, pTaskTagsEntry->get_text());
+	task.clearTags();
+	addTaskTagsFromString(task, *taskManager, pTaskTagsEntry->get_text());
 	task.setDone(pTaskDoneCheckbutton->get_active());
 	task.setCompletedPercentage(pTaskCompletedPercentageSpinbutton->get_value_as_int());
 	task.setPriority(pTaskPrioritySpinbutton->get_value_as_int());
@@ -817,12 +828,21 @@ void MainWindow::createNewTask(const Task& newTask, id_t parentId) {
 	id_t newTaskId = taskManager->addTask(newTask);
 	boost::shared_ptr<Task> newTaskCopy = taskManager->getTask(newTaskId);
 	if (!newTaskCopy) { return; }
-	fillEditingPanel(*newTaskCopy);
-	
+
 	if (parentId != Task::INVALID_ID) {
 		// make the new task a child of given parent
 		newTaskCopy->setParent(parentId, *taskManager);
+		// copy tags from parent to subtask
+		boost::shared_ptr<Task> parentTask = taskManager->getTask(parentId);
+		if (parentTask) {
+			idset_t parentTags = parentTask ->getTagIds();
+			foreach (id_t tagId, parentTags) {
+				newTaskCopy->addTag(tagId);
+			}
+		}
 	}
+
+	fillEditingPanel(*newTaskCopy);
 
 	// select it
 	selectTask(refTaskTreeModel->getIterByTask(*newTaskCopy));

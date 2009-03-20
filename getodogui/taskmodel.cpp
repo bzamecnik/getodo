@@ -173,13 +173,15 @@ void TaskTreeStore::refresh() {
 	// appending to the TaskTreeStore
 	// - vector<id_t> - substasks
 	// - vector<id_t>::iterator - next task to process
+	// Note: shared_ptr to vector is needed. If the vector is stored by value
+	// the iterator pointing to it can get obsolete resulting in an error.
 	std::stack<
 		std::pair<
 			boost::shared_ptr<std::vector<id_t>>,
 			std::vector<id_t>::iterator
 		>> stack;
 
-	std::vector<boost::shared_ptr<Task>>& topLevelTasks = manager.getTopLevelTasks();
+	std::vector<boost::shared_ptr<Task>> topLevelTasks = manager.getTopLevelTasks();
 	// figure out top level task id's only
 	boost::shared_ptr<std::vector<id_t>> topLevelIds(
 		new std::vector<id_t>(topLevelTasks.size()));
@@ -209,7 +211,7 @@ void TaskTreeStore::refresh() {
 			}
 			setRowFromTask(iter, *task);
 			pair.second++;
-			boost::shared_ptr<std::vector<id_t>> subtasks(&task->getSubtaskIds());
+			boost::shared_ptr<std::vector<id_t>> subtasks(new std::vector<id_t>(task->getSubtaskIds()));
 			if (!subtasks->empty()) {
 				stack.push(std::make_pair(subtasks, subtasks->begin()));
 				goto continueloop; // break this loop and continue to the outer loop
