@@ -116,7 +116,7 @@ protected:
 	/** %Task editing panel widgets are automatically saved when they lose focus. */
 	bool on_taskDescriptionEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry);
 	bool on_taskLongDescriptionTextview_focus_out_event(GdkEventFocus* event, Gtk::TextView* textview);
-	//bool on_taskTagsEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry);
+	bool on_taskTagsEntry_focus_out_event(GdkEventFocus* event, Gtk::Entry* entry);
 	void on_taskDoneCheckbutton_toggled();
 	bool on_taskCompletedPercentageSpinbutton_focus_out_event(GdkEventFocus* event, Gtk::SpinButton* spinbutton);
 	bool on_taskPrioritySpinbutton_focus_out_event(GdkEventFocus* event, Gtk::SpinButton* spinbutton);

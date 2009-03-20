@@ -9,9 +9,35 @@ x- extend the Year Project to the Bachelor Thesis
 
 ==== Tasks ====
 
+- update documentation
+
+- exceptions!
+	- catch GetodoError exception around functions that throw them
+
+*- TaskPersistence
+	*- write saveTagsFromString() to support out_of_focus saving of tags
+
+- tag filtering panel
+	- add/rename/delete tag
+
+*- New subtask should copy tags from parent task to subtask
+
+*- Next task by recurrece
+	*- if deadline date is not set, use Date::now()
+
+- Task editing
+	- synchronize done & percentage values in the panel and the tree
+	- setting done should also set date completed
+
+*- TaskTreeStore::refresh() - why there are shared_ptr's to vector?
+	- otherwise the iterators pointing into the vector can get obsolete
+		(if the vector is copied by value) 
+
 *- fix a bug in tag synchronization in TaskPersistence::update()
 
-- Filtering
+- use BOOST_FOREACH where possible
+
+- Filter by Rules
 	*- implement filtering throught SQL queries in FilterRule::filter()
 	*- support combining rule via AND, OR, NOT operations
 		- this can be made at two different levels:
@@ -38,7 +64,7 @@ x- extend the Year Project to the Bachelor Thesis
 	- refilter on editing
 	- fix bugs in filtering (GTK)
 
-- Tags
+- Filter by Tags
 	*- support renaming tags
 		-	using F2 key
 	- support purging unused tags
@@ -51,6 +77,8 @@ x- extend the Year Project to the Bachelor Thesis
 	*- write a custom ListStore
 		- use a common generic ListStore for tags and filter rules
 			- additional columns, eg. 'active', 'count tasks'
+	- there could a toggle button to show only used tags
+		- unused tag could be there just for completion
 
 *- fix support for (de)activating tag filters and rule filters separately
 
@@ -62,22 +90,15 @@ x- extend the Year Project to the Bachelor Thesis
 	*- Recurrence* - finish
 	*- TagListStore
 	*- TagListStore::ModelColumns
-	- Task - finish
+	*- Task - finish
 	*- TaskManager
-	- TaskPersistence
+	*- TaskPersistence
 
 - TaskManager
-	- change filters and tags map values from pointers to value types
+	*- change filters and tags map values from pointers to value types
 		- eg. std::map<id_t,Tag*> -> std::map<id_t,Tag> 
 
-- Task editing
-	- synchronize done & percentage values in the panel and the tree
-	- setting done should also set date completed
-
-- TaskPersistence
-	- write saveTagsFromString() to support out_of_focus saving of tags
-
-- new subtask should select the newly created task
+*- new subtask should select the newly created task
 
 - put TreeModelFilter and TreeModelSort inside the TaskTreeModel
 	- make an interface to control these wrapper models
@@ -88,10 +109,7 @@ x- extend the Year Project to the Bachelor Thesis
 - Task (database)
 	- rename: description -> title, longDescription -> description
 - SQL autoincrement - don't repeat what sqlite already set
-- use shared_ptr in TaskManager for holding pointers to Tasks, Tags, ...
-
-- exceptions!
-	- catch GetodoError exception around functions that throw it
+*- use shared_ptr in TaskManager for holding pointers to Tasks, Tags, ...
 
 *- doxygen docs - try it, make it working
 *- *TaskPersistence, *FilterRulePersistence - split save() into insert() and update()
@@ -111,7 +129,7 @@ x- extend the Year Project to the Bachelor Thesis
 	- fix: make sensitive only controls for selected recurrence type,
 		make others insensitive
 - Recurrence
-	- next() for RecurrenceWeekly, RecurrenceMonthly
+	*- next() for RecurrenceWeekly, RecurrenceMonthly
 	- use facet for RecurrenceIntervalDays and RecurrenceYearly (?)
 - delete operator
 	- don't check if the deleted pointer isn't NULL, it's redundant
@@ -125,9 +143,9 @@ x- extend the Year Project to the Bachelor Thesis
 - avoid code duplication!!!
 - save sqlite table names somewhere as constants
 - documenation
-	- we need: user docs, *programmer's guide
+	*- we need: *user docs, *programmer's guide
 	*- use Doxygen and write better doxygen comments
-	- write a README and INSTALL
+	*- write a README and INSTALL
 	*- write a paper on overall architecture and design notes
 	*- write file description into each file's header
 - write the rest of testing code to test the libgetodo
@@ -151,9 +169,14 @@ x- extend the Year Project to the Bachelor Thesis
 	- question: how to support calling Gtk::MessageDialog before the main loop
 		started?
 
+- GUI
+	- editing panel
+		- use correct tab movements
+		- save editing panel to task on selection change in task tree view
+
 ==== Would be nice ====
 
-- use BOOST_FOREACH (or defined as "#define foreach BOOST_FOREACH")
+*- use BOOST_FOREACH (or defined as "#define foreach BOOST_FOREACH")
 	- file:///C:/Program%20Files/boost/boost_1_34_1/doc/html/foreach.html
 
 ==== Think of ====

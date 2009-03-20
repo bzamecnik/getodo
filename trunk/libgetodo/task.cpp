@@ -156,72 +156,12 @@ void Task::removeTag(id_t tagId) {
 	// when the tagId is bad, it might be reported
 	tags.erase(tagId);
 }
-idset_t& Task::getTagIds() const {
-	return *(new idset_t(tags));
-	//return convertSetToVector<id_t>(tags);
+idset_t Task::getTagIds() const {
+	return tags;
 }
 
-std::string Task::getTagsAsString(TaskManager& manager) const {
-	// eg.: "hello, world, three word tag, other tag"
-	std::vector<std::string> tagNames;
-	std::set<id_t>::const_iterator it;
-	for (it = tags.begin(); it != tags.end(); ++it) {
-		Tag& tag = manager.getTag(*it);
-		if (!tag.name.empty()) {
-			tagNames.push_back(tag.name);
-		}
-	}
-	std::sort(tagNames.begin(), tagNames.end());
-	return boost::algorithm::join(tagNames, ", "); // or join with ';'
-}
-
-void Task::setTagsFromString(TaskManager& manager, const std::string& tagsString) {
-	// synchronize the tags (from string to Task and TaskManager)
-
-	using namespace boost::algorithm;
-	std::vector<std::string> newTags;
-	// split the string with separator "," and discard empty parts
-	split(newTags, tagsString, is_any_of(","), token_compress_on);
-	// trim the parts
-	for (std::vector<std::string>::iterator it = newTags.begin();
-		it != newTags.end(); ++it)
-	{
-		trim(*it);
-		// possibly remove empty elements
-	}
-	
-	// synchronize the tags
-	std::set<id_t> oldTagIds;
-	std::copy(tags.begin(), tags.end(), std::inserter(oldTagIds, oldTagIds.begin()));
-	
-	for (std::vector<std::string>::iterator it = newTags.begin();
-		it != newTags.end(); ++it)
-	{
-		if (it->empty()) {
-			continue; // ingnore empty tag names
-		}
-
-		if (manager.hasTag(*it)) {
-			Tag& tag = manager.getTag(*it);
-			if (hasTag(tag.id)) {
-				// the task already has this tag
-				oldTagIds.erase(tag.id);
-			} else {
-				// a newly added tag (but it is already in TaskManager)
-				addTag(tag.id);
-			}
-		} else {
-			// a newly added tag (even to TaskManager)
-			id_t newTagId = manager.addTag(Tag(*it));
-			addTag(newTagId);
-		}
-	}
-
-	// delete old tags that were not in the new tags list
-	// but not from TaskManger (they might be used somewhere else)
-	foreach (id_t tagId, oldTagIds) {	
-		removeTag(tagId);
-	}
+void Task::clearTags() {
+	tags.clear();
 }
 
 void Task::addSubtask(id_t subtaskId) {
@@ -237,8 +177,12 @@ void Task::removeSubtask(id_t taskId) {
 	//should throw an exception on failure (?)
 	subtasks.erase(taskId);
 }
-std::vector<id_t>& Task::getSubtaskIds() const {
-	return convertSetToVector<id_t>(subtasks);
+std::vector<id_t> Task::getSubtaskIds() const {
+	std::vector<id_t> subtaskVector;
+	foreach (id_t subtaskId, subtasks) {
+		subtaskVector.push_back(subtaskId);
+	}
+	return subtaskVector;
 }
 
 DateTime Task::getDateCreated() const { return dateCreated; }
@@ -396,6 +340,50 @@ std::ostream& operator<< (std::ostream& o, const Task& task) {
 
 	o << "]" << std::endl;
 	return o;
+}
+
+// ----- Task convenience functions -----
+
+std::string getTaskTagsAsString(const Task& task, TaskManager& manager) {
+	// eg.: "hello, world, three word tag, other tag"
+	std::vector<std::string> tagNames;
+	std::set<id_t>::const_iterator it;
+	idset_t tags = task.getTagIds();
+	foreach (id_t tagId, tags) {
+		Tag tag = manager.getTag(tagId);
+		if (!tag.name.empty()) {
+			tagNames.push_back(tag.name);
+		}
+	}
+	std::sort(tagNames.begin(), tagNames.end());
+	return boost::algorithm::join(tagNames, ", "); // or join with ';'
+}
+
+void addTaskTagsFromString(
+	Task& task,
+	TaskManager& manager,
+	const std::string& tagsString)
+{
+	using namespace boost::algorithm;
+	std::vector<std::string> newTagNames;
+	// split the string with separator "," and discard empty parts
+	split(newTagNames, tagsString, is_any_of(","), token_compress_on);
+
+	foreach (std::string newTagName, newTagNames) {
+		trim(newTagName);
+		if (newTagName.empty()) {
+			continue; // ingnore empty tag names
+		}
+
+		if (manager.hasTag(newTagName)) {
+			Tag tag = manager.getTag(newTagName);
+			task.addTag(tag.id);
+		} else {
+			// a newly added tag (even to TaskManager)
+			id_t newTagId = manager.addTag(Tag(newTagName));
+			task.addTag(newTagId);
+		}
+	}
 }
 
 // ----- class TaskPersistence --------------------
@@ -805,6 +793,60 @@ bool TaskPersistence::checkTaskPersistent() {
 		throw GetodoError("Task hasn't been store into database yet.");
 	}
 	return true;
+}
+
+// ----- TaskPersistence convenience functions -----
+
+void setTaskPersistenceTagsFromString(
+	TaskPersistence& persistence,
+	TaskManager& manager,
+	const std::string& tagsString)
+{
+	// synchronize the tags (from string to Task and TaskManager)
+	boost::shared_ptr<Task> task = persistence.getTask();
+	if (!task) { return; }
+
+	using namespace boost::algorithm;
+	std::vector<std::string> newTagNames;
+	// split the string with separator "," and discard empty parts
+	split(newTagNames, tagsString, is_any_of(","), token_compress_on);
+	// trim the parts
+	foreach (std::string& newTagName, newTagNames) {
+		trim(newTagName);
+		// possibly remove empty elements
+	}
+	
+	// synchronize the tags
+	idset_t oldTagIds;
+	idset_t tags = task->getTagIds();
+	std::copy(tags.begin(), tags.end(), std::inserter(oldTagIds, oldTagIds.begin()));
+	
+	foreach (std::string newTagName, newTagNames) {
+		if (newTagName.empty()) {
+			continue; // ingnore empty tag names
+		}
+
+		if (manager.hasTag(newTagName)) {
+			Tag tag = manager.getTag(newTagName);
+			if (task->hasTag(tag.id)) {
+				// the task already has this tag
+				oldTagIds.erase(tag.id);
+			} else {
+				// a newly added tag (but it is already in TaskManager)
+				persistence.addTag(tag.id);
+			}
+		} else {
+			// a newly added tag (even to TaskManager)
+			id_t newTagId = manager.addTag(Tag(newTagName));
+			persistence.addTag(newTagId);
+		}
+	}
+
+	// delete old tags that were not in the new tags list
+	// but not from TaskManger (they might be used somewhere else)
+	foreach (id_t tagId, oldTagIds) {	
+		persistence.removeTag(tagId);
+	}
 }
 
 } // namespace getodo
